@@ -1,11 +1,11 @@
 project:
   type: website
-  output-dir: _site
+  output-dir: docs
 
 website:
   title: "DynaCortex | MMLab UIT"
   description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
-  site-url: "https://uitshirodoragon.github.io/dynacortex-hub/"
+  site-url: "https://uitshirodoragon.github.io/dynacortex-hub/docs/"
   page-navigation: true
   repo-url: "https://github.com/UITshirodoragon/dynacortex-hub"
   repo-actions: [edit, issue]

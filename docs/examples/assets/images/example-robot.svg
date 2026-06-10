@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+  <rect width="900" height="420" fill="#f8fafc"/>
+  <rect x="40" y="40" width="820" height="340" rx="24" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>
+  <text x="450" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#0f172a">DynaCortex Example</text>
+  <text x="450" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">Perception → Cortex → Dynamics → Action</text>
+
+  <rect x="90" y="190" width="150" height="80" rx="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+  <text x="165" y="225" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#075985">Camera</text>
+  <text x="165" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#075985">RGB / Depth</text>
+
+  <rect x="300" y="190" width="150" height="80" rx="16" fill="#fef9c3" stroke="#ca8a04" stroke-width="3"/>
+  <text x="375" y="225" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#713f12">Cortex</text>
+  <text x="375" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#713f12">AI / VLA</text>
+
+  <rect x="510" y="190" width="150" height="80" rx="16" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+  <text x="585" y="225" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#14532d">Dynamics</text>
+  <text x="585" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#14532d">Kinematics</text>
+
+  <rect x="720" y="190" width="110" height="80" rx="16" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>
+  <text x="775" y="225" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#7f1d1d">Robot</text>
+  <text x="775" y="250" text-anchor="middle" font-family="Arial" font-size="14" fill="#7f1d1d">Action</text>
+
+  <path d="M240 230 L300 230" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M450 230 L510 230" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M660 230 L720 230" stroke="#334155" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
+    </marker>
+  </defs>
+</svg>
