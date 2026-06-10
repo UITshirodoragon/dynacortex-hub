@@ -6,8 +6,6 @@ status: draft
 format:
   html:
     toc: true
-  pdf:
-    toc: true
 ---
 
 # DynaCortex Technical Report

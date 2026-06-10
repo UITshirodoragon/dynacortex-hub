@@ -1,11 +1,17 @@
-on:
+"on":
   push:
-    branches: main
+    branches:
+      - main
+  workflow_dispatch:
 
 name: Render and Publish DynaCortex Hub
 
 permissions:
   contents: write
+
+concurrency:
+  group: publish-github-pages
+  cancel-in-progress: true
 
 jobs:
   build-deploy:
@@ -18,10 +24,7 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Render Quarto Project
-        uses: quarto-dev/quarto-actions/render@v2
-
-      - name: Publish to GitHub Pages
+      - name: Render and publish to GitHub Pages
         uses: quarto-dev/quarto-actions/publish@v2
         with:
           target: gh-pages
