@@ -1,0 +1,12 @@
+---
+title: "Camera Parameters"
+status: draft
+---
+
+# Camera Parameters
+
+## Bảng tra cứu
+
+| Trường | Giá trị | Ghi chú |
+|---|---|---|
+| TBD | TBD | TBD |

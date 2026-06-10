@@ -1,0 +1,17 @@
+---
+title: "Implementation"
+description: "Cài đặt, code, runtime, setup, default config."
+categories: [implementation, runtime, setup]
+status: draft
+---
+
+# Implementation
+
+Cài đặt, code, runtime, setup, default config.
+
+## Nội dung sẽ bổ sung
+
+- Mục tiêu
+- Phạm vi
+- Tài liệu liên quan
+- Ghi chú cập nhật

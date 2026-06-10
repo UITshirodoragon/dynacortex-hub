@@ -1,0 +1,6 @@
+metric,value,unit
+reprojection_error,0.42,pixel
+fx,915.2,pixel
+fy,913.8,pixel
+cx,640.1,pixel
+cy,360.4,pixel

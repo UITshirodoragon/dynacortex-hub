@@ -1,0 +1,18 @@
+---
+title: "Note Title"
+description: "Mô tả ngắn."
+categories: [note]
+status: draft
+---
+
+# Note Title
+
+## Mục tiêu
+
+## Ý tưởng chính
+
+## Công thức / khái niệm
+
+## Liên quan đến DynaCortex
+
+## Ghi chú thêm

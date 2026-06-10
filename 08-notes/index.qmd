@@ -1,0 +1,17 @@
+---
+title: "Notes"
+description: "Note học tập cá nhân."
+categories: [notes, learning]
+status: draft
+---
+
+# Notes
+
+Note học tập cá nhân.
+
+## Nội dung sẽ bổ sung
+
+- Mục tiêu
+- Phạm vi
+- Tài liệu liên quan
+- Ghi chú cập nhật

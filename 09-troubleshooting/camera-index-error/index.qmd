@@ -1,0 +1,15 @@
+---
+title: "Camera Index Error"
+description: "Checklist debug lỗi camera index/device path."
+status: draft
+---
+
+# Camera Index Error
+
+Checklist debug lỗi camera index/device path.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

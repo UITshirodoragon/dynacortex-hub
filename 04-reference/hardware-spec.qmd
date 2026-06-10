@@ -1,0 +1,12 @@
+---
+title: "Hardware Specification"
+status: draft
+---
+
+# Hardware Specification
+
+## Bảng tra cứu
+
+| Trường | Giá trị | Ghi chú |
+|---|---|---|
+| TBD | TBD | TBD |

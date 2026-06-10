@@ -1,0 +1,15 @@
+---
+title: "Default Config"
+description: "Cấu hình mặc định của hệ thống."
+status: draft
+---
+
+# Default Config
+
+Cấu hình mặc định của hệ thống.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

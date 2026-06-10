@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0" default-locale="en-US">
+  <info>
+    <title>Minimal Numeric Style</title>
+    <id>http://www.zotero.org/styles/minimal-numeric</id>
+    <link href="http://www.zotero.org/styles/minimal-numeric" rel="self"/>
+    <author><name>DynaCortex Hub</name></author>
+    <category citation-format="numeric"/>
+    <category field="generic-base"/>
+    <updated>2026-06-10T00:00:00+00:00</updated>
+    <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
+  </info>
+  <macro name="author">
+    <names variable="author">
+      <name initialize-with=". " delimiter=", "/>
+      <label form="short" prefix=", "/>
+      <substitute><text variable="title"/></substitute>
+    </names>
+  </macro>
+  <macro name="issued">
+    <date variable="issued"><date-part name="year"/></date>
+  </macro>
+  <citation collapse="citation-number">
+    <sort><key variable="citation-number"/></sort>
+    <layout prefix="[" suffix="]" delimiter=", ">
+      <text variable="citation-number"/>
+    </layout>
+  </citation>
+  <bibliography>
+    <layout>
+      <text variable="citation-number" prefix="[" suffix="] "/>
+      <text macro="author" suffix=", "/>
+      <text variable="title" font-style="italic" suffix=", "/>
+      <text macro="issued" suffix="."/>
+    </layout>
+  </bibliography>
+</style>

@@ -1,0 +1,23 @@
+---
+title: "Camera Calibration Report"
+description: "Báo cáo calibration camera."
+categories: [report, camera, calibration]
+status: draft
+format:
+  html:
+    toc: true
+  pdf:
+    toc: true
+---
+
+# Camera Calibration Report
+
+## Tóm tắt
+
+## Mục tiêu
+
+## Phương pháp
+
+## Kết quả
+
+## Kết luận

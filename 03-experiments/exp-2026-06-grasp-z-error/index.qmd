@@ -1,0 +1,39 @@
+---
+title: "EXP 2026-06 Grasp Z Error"
+description: "Phân tích lỗi grasp pose z lệch trong runtime thực tế."
+categories: [experiment]
+status: draft
+---
+
+# EXP 2026-06 Grasp Z Error
+
+Phân tích lỗi grasp pose z lệch trong runtime thực tế.
+
+## 1. Mục tiêu
+
+## 2. Giả thuyết
+
+## 3. Setup
+
+| Thành phần | Giá trị |
+|---|---|
+| Machine | TBD |
+| OS | TBD |
+| Hardware | TBD |
+| Software | TBD |
+
+## 4. Quy trình
+
+## 5. Dữ liệu thu được
+
+## 6. Kết quả
+
+## 7. Phân tích
+
+## 8. Kết luận
+
+## 9. File liên quan
+
+- `assets/`
+- `data/`
+- `logs/`

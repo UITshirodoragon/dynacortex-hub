@@ -1,0 +1,21 @@
+---
+title: "EXP YYYY-MM Topic"
+categories: [experiment]
+status: draft
+---
+
+# EXP YYYY-MM Topic
+
+## 1. Mục tiêu
+
+## 2. Giả thuyết
+
+## 3. Setup
+
+## 4. Quy trình
+
+## 5. Kết quả
+
+## 6. Phân tích
+
+## 7. Kết luận

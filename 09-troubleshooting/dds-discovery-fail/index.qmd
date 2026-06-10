@@ -1,0 +1,15 @@
+---
+title: "DDS Discovery Fail"
+description: "Checklist debug khi ROS2/DDS discovery không thấy node/topic."
+status: draft
+---
+
+# DDS Discovery Fail
+
+Checklist debug khi ROS2/DDS discovery không thấy node/topic.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

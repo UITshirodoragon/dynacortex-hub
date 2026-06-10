@@ -1,0 +1,17 @@
+---
+title: "Reports"
+description: "Báo cáo hoàn chỉnh, có thể export PDF/HTML."
+categories: [report]
+status: draft
+---
+
+# Reports
+
+Báo cáo hoàn chỉnh, có thể export PDF/HTML.
+
+## Nội dung sẽ bổ sung
+
+- Mục tiêu
+- Phạm vi
+- Tài liệu liên quan
+- Ghi chú cập nhật

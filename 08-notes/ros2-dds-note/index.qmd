@@ -1,0 +1,15 @@
+---
+title: "ROS2 DDS Note"
+description: "Note học tập về ROS2 DDS, discovery, transport và networking."
+status: draft
+---
+
+# ROS2 DDS Note
+
+Note học tập về ROS2 DDS, discovery, transport và networking.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

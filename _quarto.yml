@@ -1,0 +1,131 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "DynaCortex | MMLab UIT"
+  description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
+  page-navigation: true
+  repo-url: "https://github.com/YOUR_GITHUB_USERNAME/dynacortex-hub"
+  repo-actions: [edit, issue]
+
+  navbar:
+    left:
+      - text: "Home"
+        file: index.qmd
+      - text: "Foundations"
+        file: 01-system-foundations/index.qmd
+      - text: "Implementation"
+        file: 02-implementation/index.qmd
+      - text: "Experiments"
+        file: 03-experiments/index.qmd
+      - text: "Reference"
+        file: 04-reference/index.qmd
+      - text: "Literature"
+        file: 05-literature/index.qmd
+      - text: "Reports"
+        file: 06-reports/index.qmd
+      - text: "Inbox"
+        file: 07-inbox/index.qmd
+      - text: "Notes"
+        file: 08-notes/index.qmd
+      - text: "Troubleshooting"
+        file: 09-troubleshooting/index.qmd
+      - text: "Examples"
+        file: examples/index.qmd
+
+  sidebar:
+    style: docked
+    search: true
+    contents:
+      - index.qmd
+      
+      - section: "01. System Foundations"
+        contents:
+          - 01-system-foundations/index.qmd
+          - 01-system-foundations/math/index.qmd
+          - 01-system-foundations/kinematics-dynamics/index.qmd
+          - 01-system-foundations/robotics-overview/index.qmd
+          - 01-system-foundations/ai-embodied-ai-vla/index.qmd
+          - 01-system-foundations/system-architecture/index.qmd
+
+      - section: "02. Implementation"
+        contents:
+          - 02-implementation/index.qmd
+          - 02-implementation/setup-environment/index.qmd
+          - 02-implementation/docker-ros2/index.qmd
+          - 02-implementation/jetson-runtime/index.qmd
+          - 02-implementation/camera-calibration/index.qmd
+          - 02-implementation/robot-runtime/index.qmd
+          - 02-implementation/default-config/index.qmd
+
+      - section: "03. Experiments"
+        contents:
+          - 03-experiments/index.qmd
+          - 03-experiments/exp-2026-06-camera-calibration/index.qmd
+          - 03-experiments/exp-2026-06-dds-ethernet/index.qmd
+          - 03-experiments/exp-2026-06-grasp-z-error/index.qmd
+
+      - section: "04. Reference"
+        contents:
+          - 04-reference/index.qmd
+          - 04-reference/setup-deploy.qmd
+          - 04-reference/frame-convention.qmd
+          - 04-reference/ros2-topics.qmd
+          - 04-reference/config-schema.qmd
+          - 04-reference/camera-parameters.qmd
+          - 04-reference/hardware-spec.qmd
+          - 04-reference/command-cheatsheet.qmd
+
+      - section: "05. Literature"
+        contents:
+          - 05-literature/index.qmd
+          - 05-literature/paper-template.qmd
+          - 05-literature/neugrasp/index.qmd
+          - 05-literature/octo/index.qmd
+          - 05-literature/rt-1/index.qmd
+          - 05-literature/rt-2/index.qmd
+
+      - section: "06. Reports"
+        contents:
+          - 06-reports/index.qmd
+          - 06-reports/camera-calibration-report/report.qmd
+          - 06-reports/robotnetwork-technical-report/report.qmd
+
+      - section: "07. Inbox"
+        contents:
+          - 07-inbox/index.qmd
+
+      - section: "08. Notes"
+        contents:
+          - 08-notes/index.qmd
+          - 08-notes/ros2-dds-note/index.qmd
+          - 08-notes/se3-so3-note/index.qmd
+          - 08-notes/camera-model-note/index.qmd
+
+      - section: "09. Troubleshooting"
+        contents:
+          - 09-troubleshooting/index.qmd
+          - 09-troubleshooting/rviz2-opengl-warning/index.qmd
+          - 09-troubleshooting/dds-discovery-fail/index.qmd
+          - 09-troubleshooting/camera-index-error/index.qmd
+
+      - examples/index.qmd
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-fold: false
+    number-sections: false
+    smooth-scroll: true
+    callout-appearance: default
+    link-external-icon: true
+
+bibliography: references/references.bib
+execute:
+  freeze: auto

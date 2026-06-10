@@ -1,0 +1,15 @@
+---
+title: "Kinematics & Dynamics"
+description: "Động học, động lực học, SE(3), SO(3), Jacobian và motion planning."
+status: draft
+---
+
+# Kinematics & Dynamics
+
+Động học, động lực học, SE(3), SO(3), Jacobian và motion planning.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

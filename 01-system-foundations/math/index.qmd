@@ -1,0 +1,15 @@
+---
+title: "Math Foundations"
+description: "Nền tảng đại số tuyến tính, xác suất, tối ưu và các công thức toán dùng trong robotics/AI."
+status: draft
+---
+
+# Math Foundations
+
+Nền tảng đại số tuyến tính, xác suất, tối ưu và các công thức toán dùng trong robotics/AI.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

@@ -1,0 +1,17 @@
+---
+title: "Literature"
+description: "Paper note, đọc paper, phân tích phương pháp."
+categories: [literature, paper]
+status: draft
+---
+
+# Literature
+
+Paper note, đọc paper, phân tích phương pháp.
+
+## Nội dung sẽ bổ sung
+
+- Mục tiêu
+- Phạm vi
+- Tài liệu liên quan
+- Ghi chú cập nhật

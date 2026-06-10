@@ -1,0 +1,15 @@
+---
+title: "Camera Calibration"
+description: "Triển khai calibration, lưu intrinsic/extrinsic và kiểm tra reprojection error."
+status: draft
+---
+
+# Camera Calibration
+
+Triển khai calibration, lưu intrinsic/extrinsic và kiểm tra reprojection error.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

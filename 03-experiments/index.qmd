@@ -1,0 +1,17 @@
+---
+title: "Experiments"
+description: "Thử nghiệm, log, dữ liệu, kết quả."
+categories: [experiment, log, result]
+status: draft
+---
+
+# Experiments
+
+Thử nghiệm, log, dữ liệu, kết quả.
+
+## Nội dung sẽ bổ sung
+
+- Mục tiêu
+- Phạm vi
+- Tài liệu liên quan
+- Ghi chú cập nhật

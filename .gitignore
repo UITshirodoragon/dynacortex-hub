@@ -1,0 +1,28 @@
+_site/
+.quarto/
+_freeze/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large experiment data
+*.bag
+*.db3
+*.mp4
+*.avi
+*.mkv
+*.ply
+*.pcd
+
+/.quarto/
+**/*.quarto_ipynb

@@ -1,0 +1,17 @@
+---
+title: "Inbox"
+description: "Ghi nhanh, chưa chuẩn hóa."
+categories: [inbox, draft]
+status: draft
+---
+
+# Inbox
+
+Ghi nhanh, chưa chuẩn hóa.
+
+## Nội dung sẽ bổ sung
+
+- Mục tiêu
+- Phạm vi
+- Tài liệu liên quan
+- Ghi chú cập nhật

@@ -1,0 +1,44 @@
+---
+title: "DynaCortex | MMLab UIT"
+description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
+status: standard
+---
+
+# DynaCortex | MMLab UIT
+
+**Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT**
+
+DynaCortex là nhóm các dự án nghiên cứu và thử nghiệm về Trí tuệ nhân tạo hiện thân và Robot (Embodied AI & Robotics), được thực hiện tại Phòng thí nghiệm Đa phương tiện (MMLab) thuộc Trường Đại học Công nghệ Thông tin, ĐHQG-HCM (UIT). Chuỗi các dự án này tập trung phát triển hệ thống nhận thức thông minh (Cortex) kết hợp chặt chẽ với động lực học chuyển động (Dynamics) của robot.
+
+## Mục tiêu của Project Hub
+
+DynaCortex Hub được tổ chức như một không gian tài liệu kỹ thuật, ghi chú học tập, nhật ký thử nghiệm, tài liệu tham chiếu và báo cáo nghiên cứu cho các hướng liên quan đến Embodied AI, Robotics, Vision-Language-Action Models, robot perception, robot control, simulation-to-real transfer và hệ thống robot thông minh.
+
+## Cấu trúc tài liệu
+
+| Mục | Vai trò |
+|---|---|
+| [Examples](examples/) | Trang mẫu cho syntax `.qmd`: code block, Mermaid, công thức, hình ảnh, bảng, citation |
+| [System Foundations](01-system-foundations/) | Nền tảng toán/kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống |
+| [Implementation](02-implementation/) | Cài đặt, code, runtime, setup, default config |
+| [Experiments](03-experiments/) | Thử nghiệm, log, dữ liệu, kết quả |
+| [Reference](04-reference/) | Bảng tra cứu chuẩn, thông số, lệnh, config |
+| [Literature](05-literature/) | Paper note, đọc paper, phân tích phương pháp |
+| [Reports](06-reports/) | Báo cáo hoàn chỉnh, có thể export PDF/HTML |
+| [Inbox](07-inbox/) | Ghi nhanh, chưa chuẩn hóa |
+| [Notes](08-notes/) | Note học tập cá nhân |
+| [Troubleshooting](09-troubleshooting/) | Lỗi, nguyên nhân, cách kiểm tra và cách xử lý |
+
+## Trạng thái tài liệu
+
+| Status | Ý nghĩa |
+|---|---|
+| `draft` | Ghi nhanh, chưa kiểm chứng |
+| `working` | Đang dùng được nhưng chưa chuẩn hóa |
+| `validated` | Đã kiểm chứng bằng thử nghiệm, code hoặc log |
+| `standard` | Tài liệu chuẩn của dự án |
+| `deprecated` | Không còn dùng, giữ lại để truy vết |
+
+## Bắt đầu nhanh
+
+Xem trang [Setup & Deploy](04-reference/setup-deploy.qmd) để cài Quarto, preview local và deploy bằng GitHub Pages.

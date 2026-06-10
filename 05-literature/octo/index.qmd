@@ -1,0 +1,15 @@
+---
+title: "Octo"
+description: "Paper note và phân tích Octo."
+status: draft
+---
+
+# Octo
+
+Paper note và phân tích Octo.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan

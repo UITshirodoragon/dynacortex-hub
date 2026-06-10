@@ -1,0 +1,15 @@
+---
+title: "System Architecture"
+description: "Tổng quan kiến trúc hệ thống DynaCortex."
+status: draft
+---
+
+# System Architecture
+
+Tổng quan kiến trúc hệ thống DynaCortex.
+
+## Mục tiêu
+
+## Nội dung chính
+
+## Liên kết liên quan
