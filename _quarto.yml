@@ -6,7 +6,7 @@ website:
   title: "DynaCortex | MMLab UIT"
   description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
   page-navigation: true
-  repo-url: "https://github.com/YOUR_GITHUB_USERNAME/dynacortex-hub"
+  repo-url: "https://github.com/UITshirodoragon/dynacortex-hub.git"
   repo-actions: [edit, issue]
 
   navbar:
