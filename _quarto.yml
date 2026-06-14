@@ -6,7 +6,7 @@ website:
   title: "DynaCortex"
   description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
   site-url: "https://uitshirodoragon.github.io/dynacortex-hub/docs/"
-  page-navigation: false
+  page-navigation: true
   repo-url: "https://github.com/UITshirodoragon/dynacortex-hub"
   repo-actions: [edit, issue]
 
@@ -22,16 +22,6 @@ website:
         file: 03-experiments/index.qmd
       - text: "Reference"
         file: 04-reference/index.qmd
-      - text: "Literature"
-        file: 05-literature/index.qmd
-      - text: "Reports"
-        file: 06-reports/index.qmd
-      - text: "Inbox"
-        file: 07-inbox/index.qmd
-      - text: "Notes"
-        file: 08-notes/index.qmd
-      - text: "Troubleshooting"
-        file: 09-troubleshooting/index.qmd
       - text: "Examples"
         file: examples/index.qmd
 
