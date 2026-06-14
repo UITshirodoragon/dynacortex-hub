@@ -4,7 +4,7 @@
     "href": "examples/index.html",
     "title": "QMD Syntax Examples",
     "section": "",
-    "text": "Trang này dùng để kiểm tra nhanh những thành phần thường gặp khi viết tài liệu kỹ thuật bằng .qmd.\n\n\nBạn có thể viết chữ đậm, chữ nghiêng, inline code, gạch ngang, link nội bộ như Setup & Deploy, và danh sách:\n\nRobotics\nEmbodied AI\nVision-Language-Action Models\nSimulation-to-real transfer\n\n\n\n\n\n\n\nNote\n\n\n\nĐây là một callout note. Dùng để nhấn mạnh ghi chú quan trọng trong tài liệu.\n\n\n\n\n\n\n\n\nWarning\n\n\n\nĐây là một callout warning. Dùng cho rủi ro, lỗi dễ gặp hoặc điều cần kiểm tra kỹ.\n\n\n\n\n\nCode block thường dùng để ghi lệnh terminal, config, Python hoặc snippet ROS2.\nquarto preview\nros2 topic list\nros2 node list\nimport numpy as np\n\nT_base_cam = np.eye(4)\np_cam = np.array([0.1, 0.0, 0.5, 1.0])\np_base = T_base_cam @ p_cam\nprint(p_base)\n\n\n\nInline math: điểm 3D trong hệ camera có thể viết là (p_{cam} = [x, y, z]^T).\nBlock equation:\n\\[\nT =\n\\begin{bmatrix}\nR & t \\\\\n0 & 1\n\\end{bmatrix},\n\\quad R \\in SO(3), \\quad t \\in \\mathbb{R}^3\n\\tag{1}\\]\nTham chiếu phương trình: xem Equation 1.\n\n\n\n\n\n\n\n\nflowchart LR\n    A[Camera Capture] --&gt; B[Calibration]\n    B --&gt; C[TSDF / 3D Reconstruction]\n    C --&gt; D[Grasp Prediction]\n    D --&gt; E[Robot Runtime]\n    E --&gt; F[Execution Log]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1: DynaCortex example robot diagram\n\n\n\nTham chiếu hình: xem Figure 1.\n\n\n\n\n\n\nThành phần\nVai trò\nGhi chú\n\n\n\n\nJetson\nEdge runtime\nCamera, inference, robot runtime\n\n\nLaptop/PC\nVisualization & development\nRViz2, Gazebo, debugging\n\n\nEthernet\nDDS transport\nỔn định hơn Wi-Fi trong nhiều tình huống\n\n\nQuarto\nDocumentation engine\nRender .qmd sang HTML/PDF\n\n\n\n\n\n\nBảng nhỏ có thể viết trực tiếp bằng Markdown. Bảng kết quả thí nghiệm nên lưu CSV và render bằng code cell.\n\n# Ví dụ tuỳ chọn: nếu đã cài Python + Jupyter + pandas, có thể bật eval để render CSV.\nimport pandas as pd\n\npd.read_csv(\"assets/tables/example-calibration.csv\")\n\nHoặc viết bảng trực tiếp bằng Markdown như ví dụ ở trên để website build nhẹ và ổn định hơn.\n\n\n\nVí dụ citation: Octo là một generalist robot policy mã nguồn mở (Ghosh et al. 2024), còn RT-1 là một Robotics Transformer cho real-world control (Brohan et al. 2023).\n\n\n\n\nCode block\nMermaid diagram\nMath equation\nFigure\nMarkdown table\nCSV table\nCitation",
+    "text": "Trang này dùng để kiểm tra nhanh những thành phần thường gặp khi viết tài liệu kỹ thuật bằng .qmd.\n\n\nBạn có thể viết chữ đậm, chữ nghiêng, inline code, gạch ngang, link nội bộ như Setup & Deploy, và danh sách:\n\nRobotics\nEmbodied AI\nVision-Language-Action Models\nSimulation-to-real transfer\n\n\n\n\n\n\n\nNote\n\n\n\nĐây là một callout note. Dùng để nhấn mạnh ghi chú quan trọng trong tài liệu.\n\n\n\n\n\n\n\n\nWarning\n\n\n\nĐây là một callout warning. Dùng cho rủi ro, lỗi dễ gặp hoặc điều cần kiểm tra kỹ.\n\n\n\n\n\nCode block thường dùng để ghi lệnh terminal, config, Python hoặc snippet ROS2.\nquarto preview\nros2 topic list\nros2 node list\nimport numpy as np\n\nT_base_cam = np.eye(4)\np_cam = np.array([0.1, 0.0, 0.5, 1.0])\np_base = T_base_cam @ p_cam\nprint(p_base)\n\n\n\nInline math: điểm 3D trong hệ camera có thể viết là \\(e = m^c\\) hoặc dưới dạng vector cột:\nBlock equation:\n\\[\nT =\n\\begin{bmatrix}\nR & t \\\\\n0 & 1\n\\end{bmatrix},\n\\quad R \\in SO(3), \\quad t \\in \\mathbb{R}^3\n\\tag{1}\\]\nTham chiếu phương trình: xem Equation 1.\n\n\n\n\n\n\n\n\nflowchart LR\n    A[Camera Capture] --&gt; B[Calibration]\n    B --&gt; C[TSDF / 3D Reconstruction]\n    C --&gt; D[Grasp Prediction]\n    D --&gt; E[Robot Runtime]\n    E --&gt; F[Execution Log]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1: DynaCortex example robot diagram\n\n\n\nTham chiếu hình: xem Figure 1.\n\n\n\n\n\n\nThành phần\nVai trò\nGhi chú\n\n\n\n\nJetson\nEdge runtime\nCamera, inference, robot runtime\n\n\nLaptop/PC\nVisualization & development\nRViz2, Gazebo, debugging\n\n\nEthernet\nDDS transport\nỔn định hơn Wi-Fi trong nhiều tình huống\n\n\nQuarto\nDocumentation engine\nRender .qmd sang HTML/PDF\n\n\n\n\n\n\nBảng nhỏ có thể viết trực tiếp bằng Markdown. Bảng kết quả thí nghiệm nên lưu CSV và render bằng code cell.\n\n# Ví dụ tuỳ chọn: nếu đã cài Python + Jupyter + pandas, có thể bật eval để render CSV.\nimport pandas as pd\n\npd.read_csv(\"assets/tables/example-calibration.csv\")\n\nHoặc viết bảng trực tiếp bằng Markdown như ví dụ ở trên để website build nhẹ và ổn định hơn.\n\n\n\nVí dụ citation: Octo là một generalist robot policy mã nguồn mở (Ghosh et al. 2024), còn RT-1 là một Robotics Transformer cho real-world control (Brohan et al. 2023).\n\n\n\n\nCode block\nMermaid diagram\nMath equation\nFigure\nMarkdown table\nCSV table\nCitation",
     "crumbs": [
       "Home",
       "QMD Syntax Examples"
@@ -37,7 +37,7 @@
     "href": "examples/index.html#công-thức-toán-học",
     "title": "QMD Syntax Examples",
     "section": "",
-    "text": "Inline math: điểm 3D trong hệ camera có thể viết là (p_{cam} = [x, y, z]^T).\nBlock equation:\n\\[\nT =\n\\begin{bmatrix}\nR & t \\\\\n0 & 1\n\\end{bmatrix},\n\\quad R \\in SO(3), \\quad t \\in \\mathbb{R}^3\n\\tag{1}\\]\nTham chiếu phương trình: xem Equation 1.",
+    "text": "Inline math: điểm 3D trong hệ camera có thể viết là \\(e = m^c\\) hoặc dưới dạng vector cột:\nBlock equation:\n\\[\nT =\n\\begin{bmatrix}\nR & t \\\\\n0 & 1\n\\end{bmatrix},\n\\quad R \\in SO(3), \\quad t \\in \\mathbb{R}^3\n\\tag{1}\\]\nTham chiếu phương trình: xem Equation 1.",
     "crumbs": [
       "Home",
       "QMD Syntax Examples"
@@ -110,810 +110,6 @@
     ]
   },
   {
-    "objectID": "09-troubleshooting/index.html",
-    "href": "09-troubleshooting/index.html",
-    "title": "Troubleshooting",
-    "section": "",
-    "text": "Lỗi, nguyên nhân, cách kiểm tra và cách xử lý.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "09. Troubleshooting",
-      "Troubleshooting"
-    ]
-  },
-  {
-    "objectID": "09-troubleshooting/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "09-troubleshooting/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Troubleshooting",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "09. Troubleshooting",
-      "Troubleshooting"
-    ]
-  },
-  {
-    "objectID": "09-troubleshooting/camera-index-error/index.html",
-    "href": "09-troubleshooting/camera-index-error/index.html",
-    "title": "Camera Index Error",
-    "section": "",
-    "text": "Checklist debug lỗi camera index/device path.",
-    "crumbs": [
-      "Home",
-      "09. Troubleshooting",
-      "Camera Index Error"
-    ]
-  },
-  {
-    "objectID": "08-notes/ros2-dds-note/index.html",
-    "href": "08-notes/ros2-dds-note/index.html",
-    "title": "ROS2 DDS Note",
-    "section": "",
-    "text": "Note học tập về ROS2 DDS, discovery, transport và networking.",
-    "crumbs": [
-      "Home",
-      "08. Notes",
-      "ROS2 DDS Note"
-    ]
-  },
-  {
-    "objectID": "08-notes/camera-model-note/index.html",
-    "href": "08-notes/camera-model-note/index.html",
-    "title": "Camera Model Note",
-    "section": "",
-    "text": "Note học tập về camera model, intrinsic, extrinsic và distortion.",
-    "crumbs": [
-      "Home",
-      "08. Notes",
-      "Camera Model Note"
-    ]
-  },
-  {
-    "objectID": "05-literature/rt-1/index.html",
-    "href": "05-literature/rt-1/index.html",
-    "title": "RT-1",
-    "section": "",
-    "text": "Paper note và phân tích RT-1.",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "RT-1"
-    ]
-  },
-  {
-    "objectID": "05-literature/octo/index.html",
-    "href": "05-literature/octo/index.html",
-    "title": "Octo",
-    "section": "",
-    "text": "Paper note và phân tích Octo.",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "Octo"
-    ]
-  },
-  {
-    "objectID": "05-literature/index.html",
-    "href": "05-literature/index.html",
-    "title": "Literature",
-    "section": "",
-    "text": "Paper note, đọc paper, phân tích phương pháp.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "Literature"
-    ]
-  },
-  {
-    "objectID": "05-literature/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "05-literature/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Literature",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "Literature"
-    ]
-  },
-  {
-    "objectID": "04-reference/ros2-topics.html",
-    "href": "04-reference/ros2-topics.html",
-    "title": "ROS2 Topics",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "ROS2 Topics"
-    ]
-  },
-  {
-    "objectID": "04-reference/ros2-topics.html#bảng-tra-cứu",
-    "href": "04-reference/ros2-topics.html#bảng-tra-cứu",
-    "title": "ROS2 Topics",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "ROS2 Topics"
-    ]
-  },
-  {
-    "objectID": "04-reference/hardware-spec.html",
-    "href": "04-reference/hardware-spec.html",
-    "title": "Hardware Specification",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Hardware Specification"
-    ]
-  },
-  {
-    "objectID": "04-reference/hardware-spec.html#bảng-tra-cứu",
-    "href": "04-reference/hardware-spec.html#bảng-tra-cứu",
-    "title": "Hardware Specification",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Hardware Specification"
-    ]
-  },
-  {
-    "objectID": "04-reference/config-schema.html",
-    "href": "04-reference/config-schema.html",
-    "title": "Config Schema",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Config Schema"
-    ]
-  },
-  {
-    "objectID": "04-reference/config-schema.html#bảng-tra-cứu",
-    "href": "04-reference/config-schema.html#bảng-tra-cứu",
-    "title": "Config Schema",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Config Schema"
-    ]
-  },
-  {
-    "objectID": "04-reference/camera-parameters.html",
-    "href": "04-reference/camera-parameters.html",
-    "title": "Camera Parameters",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Camera Parameters"
-    ]
-  },
-  {
-    "objectID": "04-reference/camera-parameters.html#bảng-tra-cứu",
-    "href": "04-reference/camera-parameters.html#bảng-tra-cứu",
-    "title": "Camera Parameters",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Camera Parameters"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-grasp-z-error/index.html",
-    "href": "03-experiments/exp-2026-06-grasp-z-error/index.html",
-    "title": "EXP 2026-06 Grasp Z Error",
-    "section": "",
-    "text": "Phân tích lỗi grasp pose z lệch trong runtime thực tế.\n\n\n\n\n\n\n\n\n\n\n\nThành phần\nGiá trị\n\n\n\n\nMachine\nTBD\n\n\nOS\nTBD\n\n\nHardware\nTBD\n\n\nSoftware\nTBD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nassets/\ndata/\nlogs/",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 Grasp Z Error"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-grasp-z-error/index.html#setup",
-    "href": "03-experiments/exp-2026-06-grasp-z-error/index.html#setup",
-    "title": "EXP 2026-06 Grasp Z Error",
-    "section": "",
-    "text": "Thành phần\nGiá trị\n\n\n\n\nMachine\nTBD\n\n\nOS\nTBD\n\n\nHardware\nTBD\n\n\nSoftware\nTBD",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 Grasp Z Error"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-grasp-z-error/index.html#file-liên-quan",
-    "href": "03-experiments/exp-2026-06-grasp-z-error/index.html#file-liên-quan",
-    "title": "EXP 2026-06 Grasp Z Error",
-    "section": "",
-    "text": "assets/\ndata/\nlogs/",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 Grasp Z Error"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-camera-calibration/index.html",
-    "href": "03-experiments/exp-2026-06-camera-calibration/index.html",
-    "title": "EXP 2026-06 Camera Calibration",
-    "section": "",
-    "text": "Kiểm tra camera calibration và ảnh hưởng đến sai số 3D.\n\n\n\n\n\n\n\n\n\n\n\nThành phần\nGiá trị\n\n\n\n\nMachine\nTBD\n\n\nOS\nTBD\n\n\nHardware\nTBD\n\n\nSoftware\nTBD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nassets/\ndata/\nlogs/",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 Camera Calibration"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-camera-calibration/index.html#setup",
-    "href": "03-experiments/exp-2026-06-camera-calibration/index.html#setup",
-    "title": "EXP 2026-06 Camera Calibration",
-    "section": "",
-    "text": "Thành phần\nGiá trị\n\n\n\n\nMachine\nTBD\n\n\nOS\nTBD\n\n\nHardware\nTBD\n\n\nSoftware\nTBD",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 Camera Calibration"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-camera-calibration/index.html#file-liên-quan",
-    "href": "03-experiments/exp-2026-06-camera-calibration/index.html#file-liên-quan",
-    "title": "EXP 2026-06 Camera Calibration",
-    "section": "",
-    "text": "assets/\ndata/\nlogs/",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 Camera Calibration"
-    ]
-  },
-  {
-    "objectID": "02-implementation/robot-runtime/index.html",
-    "href": "02-implementation/robot-runtime/index.html",
-    "title": "Robot Runtime",
-    "section": "",
-    "text": "Runtime điều khiển robot, safety, workspace và logging.",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Robot Runtime"
-    ]
-  },
-  {
-    "objectID": "02-implementation/index.html",
-    "href": "02-implementation/index.html",
-    "title": "Implementation",
-    "section": "",
-    "text": "Cài đặt, code, runtime, setup, default config.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Implementation"
-    ]
-  },
-  {
-    "objectID": "02-implementation/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "02-implementation/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Implementation",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Implementation"
-    ]
-  },
-  {
-    "objectID": "02-implementation/default-config/index.html",
-    "href": "02-implementation/default-config/index.html",
-    "title": "Default Config",
-    "section": "",
-    "text": "Cấu hình mặc định của hệ thống.",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Default Config"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/system-architecture/index.html",
-    "href": "01-system-foundations/system-architecture/index.html",
-    "title": "System Architecture",
-    "section": "",
-    "text": "Tổng quan kiến trúc hệ thống DynaCortex.",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "System Architecture"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/math/index.html",
-    "href": "01-system-foundations/math/index.html",
-    "title": "Math Foundations",
-    "section": "",
-    "text": "Nền tảng đại số tuyến tính, xác suất, tối ưu và các công thức toán dùng trong robotics/AI.",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "Math Foundations"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/index.html",
-    "href": "01-system-foundations/index.html",
-    "title": "System Foundations",
-    "section": "",
-    "text": "Nền tảng toán/kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "System Foundations"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "01-system-foundations/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "System Foundations",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "System Foundations"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/ai-embodied-ai-vla/index.html#nội-dung-chính",
-    "href": "01-system-foundations/ai-embodied-ai-vla/index.html#nội-dung-chính",
-    "title": "AI, Embodied AI & VLA",
-    "section": "Nội dung chính",
-    "text": "Nội dung chính",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "AI, Embodied AI & VLA"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/ai-embodied-ai-vla/index.html#liên-kết-liên-quan",
-    "href": "01-system-foundations/ai-embodied-ai-vla/index.html#liên-kết-liên-quan",
-    "title": "AI, Embodied AI & VLA",
-    "section": "Liên kết liên quan",
-    "text": "Liên kết liên quan",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "AI, Embodied AI & VLA"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/kinematics-dynamics/index.html",
-    "href": "01-system-foundations/kinematics-dynamics/index.html",
-    "title": "Kinematics & Dynamics",
-    "section": "",
-    "text": "Động học, động lực học, SE(3), SO(3), Jacobian và motion planning.",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "Kinematics & Dynamics"
-    ]
-  },
-  {
-    "objectID": "01-system-foundations/robotics-overview/index.html",
-    "href": "01-system-foundations/robotics-overview/index.html",
-    "title": "Robotics Overview",
-    "section": "",
-    "text": "Tổng quan robotics, perception, control, manipulation, simulation và real robot.",
-    "crumbs": [
-      "Home",
-      "01. System Foundations",
-      "Robotics Overview"
-    ]
-  },
-  {
-    "objectID": "02-implementation/camera-calibration/index.html",
-    "href": "02-implementation/camera-calibration/index.html",
-    "title": "Camera Calibration",
-    "section": "",
-    "text": "Triển khai calibration, lưu intrinsic/extrinsic và kiểm tra reprojection error.",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Camera Calibration"
-    ]
-  },
-  {
-    "objectID": "02-implementation/docker-ros2/index.html",
-    "href": "02-implementation/docker-ros2/index.html",
-    "title": "Docker ROS2",
-    "section": "",
-    "text": "Setup Docker Ubuntu/ROS2 cho runtime và development.",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Docker ROS2"
-    ]
-  },
-  {
-    "objectID": "02-implementation/jetson-runtime/index.html",
-    "href": "02-implementation/jetson-runtime/index.html",
-    "title": "Jetson Runtime",
-    "section": "",
-    "text": "Cấu hình Jetson cho camera, runtime và edge inference.",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Jetson Runtime"
-    ]
-  },
-  {
-    "objectID": "02-implementation/setup-environment/index.html",
-    "href": "02-implementation/setup-environment/index.html",
-    "title": "Setup Environment",
-    "section": "",
-    "text": "Cài đặt môi trường phát triển cơ bản.",
-    "crumbs": [
-      "Home",
-      "02. Implementation",
-      "Setup Environment"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-dds-ethernet/index.html",
-    "href": "03-experiments/exp-2026-06-dds-ethernet/index.html",
-    "title": "EXP 2026-06 DDS Ethernet",
-    "section": "",
-    "text": "Kiểm tra ROS2 DDS qua Ethernet giữa Jetson và laptop/PC.\n\n\n\n\n\n\n\n\n\n\n\nThành phần\nGiá trị\n\n\n\n\nMachine\nTBD\n\n\nOS\nTBD\n\n\nHardware\nTBD\n\n\nSoftware\nTBD\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nassets/\ndata/\nlogs/",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 DDS Ethernet"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-dds-ethernet/index.html#setup",
-    "href": "03-experiments/exp-2026-06-dds-ethernet/index.html#setup",
-    "title": "EXP 2026-06 DDS Ethernet",
-    "section": "",
-    "text": "Thành phần\nGiá trị\n\n\n\n\nMachine\nTBD\n\n\nOS\nTBD\n\n\nHardware\nTBD\n\n\nSoftware\nTBD",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 DDS Ethernet"
-    ]
-  },
-  {
-    "objectID": "03-experiments/exp-2026-06-dds-ethernet/index.html#file-liên-quan",
-    "href": "03-experiments/exp-2026-06-dds-ethernet/index.html#file-liên-quan",
-    "title": "EXP 2026-06 DDS Ethernet",
-    "section": "",
-    "text": "assets/\ndata/\nlogs/",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "EXP 2026-06 DDS Ethernet"
-    ]
-  },
-  {
-    "objectID": "03-experiments/index.html",
-    "href": "03-experiments/index.html",
-    "title": "Experiments",
-    "section": "",
-    "text": "Thử nghiệm, log, dữ liệu, kết quả.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "Experiments"
-    ]
-  },
-  {
-    "objectID": "03-experiments/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "03-experiments/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Experiments",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "03. Experiments",
-      "Experiments"
-    ]
-  },
-  {
-    "objectID": "04-reference/command-cheatsheet.html",
-    "href": "04-reference/command-cheatsheet.html",
-    "title": "Command Cheatsheet",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Command Cheatsheet"
-    ]
-  },
-  {
-    "objectID": "04-reference/command-cheatsheet.html#bảng-tra-cứu",
-    "href": "04-reference/command-cheatsheet.html#bảng-tra-cứu",
-    "title": "Command Cheatsheet",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Command Cheatsheet"
-    ]
-  },
-  {
-    "objectID": "04-reference/frame-convention.html",
-    "href": "04-reference/frame-convention.html",
-    "title": "Frame Convention",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Frame Convention"
-    ]
-  },
-  {
-    "objectID": "04-reference/frame-convention.html#bảng-tra-cứu",
-    "href": "04-reference/frame-convention.html#bảng-tra-cứu",
-    "title": "Frame Convention",
-    "section": "",
-    "text": "Trường\nGiá trị\nGhi chú\n\n\n\n\nTBD\nTBD\nTBD",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Frame Convention"
-    ]
-  },
-  {
-    "objectID": "04-reference/index.html",
-    "href": "04-reference/index.html",
-    "title": "Reference",
-    "section": "",
-    "text": "Bảng tra cứu chuẩn, thông số, lệnh, config.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Reference"
-    ]
-  },
-  {
-    "objectID": "04-reference/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "04-reference/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Reference",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Reference"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html",
-    "href": "04-reference/setup-deploy.html",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "Trang này ghi lại quy trình tối thiểu để chạy DynaCortex Hub bằng Quarto và publish lên GitHub Pages.\n\n\nCần có:\n\nGit\nQuarto CLI\nVS Code\nVS Code extension: Quarto, Markdown All in One, Markdown Table Formatter, YAML, GitLens\nPython/Jupyter nếu muốn chạy code cell trong .qmd\nZotero + Better BibTeX nếu muốn quản lý citation nghiêm túc\n\nKiểm tra sau khi cài:\nquarto check\ngit --version\npython --version\n\n\n\nTại thư mục gốc của repo:\nquarto preview\nLệnh này render website và mở preview local trên trình duyệt.\n\n\n\nquarto render\nOutput HTML sẽ nằm trong thư mục _site/.\n\n\n\nTên repo đã chốt:\ndynacortex-hub\nKhởi tạo Git local:\ngit init\ngit add .\ngit commit -m \"Initialize DynaCortex Hub Quarto website\"\ngit branch -M main\ngit remote add origin https://github.com/YOUR_GITHUB_USERNAME/dynacortex-hub.git\ngit push -u origin main\n\n\n\nRepo này đã có file:\n.github/workflows/publish.yml\nMỗi khi push lên main, GitHub Actions sẽ render Quarto project và publish sang branch gh-pages.\nSau lần push đầu tiên, vào GitHub:\nRepository Settings → Pages → Source → Deploy from branch → gh-pages\nSau đó đợi GitHub Pages build xong.\n\n\n\ngit status\ngit add .\ngit commit -m \"Update docs\"\ngit push\n\n\n\nKhông nên commit trực tiếp các file lớn như:\n*.bag\n*.db3\n*.mp4\n*.mkv\n*.ply\n*.pcd\nVới dữ liệu lớn, nên dùng storage riêng hoặc Git LFS nếu thật sự cần versioning.",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#cài-công-cụ-cần-thiết",
-    "href": "04-reference/setup-deploy.html#cài-công-cụ-cần-thiết",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "Cần có:\n\nGit\nQuarto CLI\nVS Code\nVS Code extension: Quarto, Markdown All in One, Markdown Table Formatter, YAML, GitLens\nPython/Jupyter nếu muốn chạy code cell trong .qmd\nZotero + Better BibTeX nếu muốn quản lý citation nghiêm túc\n\nKiểm tra sau khi cài:\nquarto check\ngit --version\npython --version",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#preview-local",
-    "href": "04-reference/setup-deploy.html#preview-local",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "Tại thư mục gốc của repo:\nquarto preview\nLệnh này render website và mở preview local trên trình duyệt.",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#render-local",
-    "href": "04-reference/setup-deploy.html#render-local",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "quarto render\nOutput HTML sẽ nằm trong thư mục _site/.",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#tạo-github-repository",
-    "href": "04-reference/setup-deploy.html#tạo-github-repository",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "Tên repo đã chốt:\ndynacortex-hub\nKhởi tạo Git local:\ngit init\ngit add .\ngit commit -m \"Initialize DynaCortex Hub Quarto website\"\ngit branch -M main\ngit remote add origin https://github.com/YOUR_GITHUB_USERNAME/dynacortex-hub.git\ngit push -u origin main",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#deploy-bằng-github-actions",
-    "href": "04-reference/setup-deploy.html#deploy-bằng-github-actions",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "Repo này đã có file:\n.github/workflows/publish.yml\nMỗi khi push lên main, GitHub Actions sẽ render Quarto project và publish sang branch gh-pages.\nSau lần push đầu tiên, vào GitHub:\nRepository Settings → Pages → Source → Deploy from branch → gh-pages\nSau đó đợi GitHub Pages build xong.",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#workflow-cập-nhật-hằng-ngày",
-    "href": "04-reference/setup-deploy.html#workflow-cập-nhật-hằng-ngày",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "git status\ngit add .\ngit commit -m \"Update docs\"\ngit push",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "04-reference/setup-deploy.html#lưu-ý-về-dữ-liệu-lớn",
-    "href": "04-reference/setup-deploy.html#lưu-ý-về-dữ-liệu-lớn",
-    "title": "Setup & Deploy",
-    "section": "",
-    "text": "Không nên commit trực tiếp các file lớn như:\n*.bag\n*.db3\n*.mp4\n*.mkv\n*.ply\n*.pcd\nVới dữ liệu lớn, nên dùng storage riêng hoặc Git LFS nếu thật sự cần versioning.",
-    "crumbs": [
-      "Home",
-      "04. Reference",
-      "Setup & Deploy"
-    ]
-  },
-  {
-    "objectID": "05-literature/neugrasp/index.html",
-    "href": "05-literature/neugrasp/index.html",
-    "title": "NeuGrasp",
-    "section": "",
-    "text": "Paper note và phân tích NeuGrasp.",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "NeuGrasp"
-    ]
-  },
-  {
-    "objectID": "05-literature/paper-template.html",
-    "href": "05-literature/paper-template.html",
-    "title": "Paper Note Template",
-    "section": "",
-    "text": "Trường\nNội dung\n\n\n\n\nTên paper\n\n\n\nTác giả\n\n\n\nNăm\n\n\n\nHội nghị/Tạp chí\n\n\n\nCode\n\n\n\nDataset\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n[@citekey]",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "Paper Note Template"
-    ]
-  },
-  {
-    "objectID": "05-literature/paper-template.html#thông-tin-paper",
-    "href": "05-literature/paper-template.html#thông-tin-paper",
-    "title": "Paper Note Template",
-    "section": "",
-    "text": "Trường\nNội dung\n\n\n\n\nTên paper\n\n\n\nTác giả\n\n\n\nNăm\n\n\n\nHội nghị/Tạp chí\n\n\n\nCode\n\n\n\nDataset",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "Paper Note Template"
-    ]
-  },
-  {
-    "objectID": "05-literature/paper-template.html#citation",
-    "href": "05-literature/paper-template.html#citation",
-    "title": "Paper Note Template",
-    "section": "",
-    "text": "[@citekey]",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "Paper Note Template"
-    ]
-  },
-  {
-    "objectID": "05-literature/rt-2/index.html",
-    "href": "05-literature/rt-2/index.html",
-    "title": "RT-2",
-    "section": "",
-    "text": "Paper note và phân tích RT-2.",
-    "crumbs": [
-      "Home",
-      "05. Literature",
-      "RT-2"
-    ]
-  },
-  {
-    "objectID": "06-reports/index.html",
-    "href": "06-reports/index.html",
-    "title": "Reports",
-    "section": "",
-    "text": "Báo cáo hoàn chỉnh, có thể export PDF/HTML.\nWebsite mặc định render báo cáo sang HTML. Để xuất riêng một báo cáo sang PDF trên máy đã cài TeX, dùng:\nquarto render 06-reports/camera-calibration-report/report.qmd --to pdf\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "06. Reports",
-      "Reports"
-    ]
-  },
-  {
-    "objectID": "06-reports/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "06-reports/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Reports",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "06. Reports",
-      "Reports"
-    ]
-  },
-  {
-    "objectID": "07-inbox/index.html",
-    "href": "07-inbox/index.html",
-    "title": "Inbox",
-    "section": "",
-    "text": "Ghi nhanh, chưa chuẩn hóa.\n\n\n\nMục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "07. Inbox",
-      "Inbox"
-    ]
-  },
-  {
-    "objectID": "07-inbox/index.html#nội-dung-sẽ-bổ-sung",
-    "href": "07-inbox/index.html#nội-dung-sẽ-bổ-sung",
-    "title": "Inbox",
-    "section": "",
-    "text": "Mục tiêu\nPhạm vi\nTài liệu liên quan\nGhi chú cập nhật",
-    "crumbs": [
-      "Home",
-      "07. Inbox",
-      "Inbox"
-    ]
-  },
-  {
     "objectID": "08-notes/index.html",
     "href": "08-notes/index.html",
     "title": "Notes",
@@ -938,94 +134,110 @@
     ]
   },
   {
-    "objectID": "08-notes/se3-so3-note/index.html",
-    "href": "08-notes/se3-so3-note/index.html",
-    "title": "SE(3) / SO(3) Note",
+    "objectID": "06-reports/index.html",
+    "href": "06-reports/index.html",
+    "title": "Reports",
     "section": "",
-    "text": "Note học tập về SE(3), SO(3), transform và pose.",
+    "text": "Nội dung đang được cập nhật …",
     "crumbs": [
       "Home",
-      "08. Notes",
-      "SE(3) / SO(3) Note"
+      "06. Reports",
+      "Reports"
     ]
   },
   {
-    "objectID": "09-troubleshooting/dds-discovery-fail/index.html",
-    "href": "09-troubleshooting/dds-discovery-fail/index.html",
-    "title": "DDS Discovery Fail",
+    "objectID": "04-reference/index.html",
+    "href": "04-reference/index.html",
+    "title": "Reference",
     "section": "",
-    "text": "Checklist debug khi ROS2/DDS discovery không thấy node/topic.",
+    "text": "Nội dung đang được cập nhật …",
     "crumbs": [
       "Home",
-      "09. Troubleshooting",
-      "DDS Discovery Fail"
+      "04. Reference",
+      "Reference"
     ]
   },
   {
-    "objectID": "09-troubleshooting/rviz2-opengl-warning/index.html",
-    "href": "09-troubleshooting/rviz2-opengl-warning/index.html",
-    "title": "RViz2 OpenGL Warning",
+    "objectID": "02-implementation/index.html",
+    "href": "02-implementation/index.html",
+    "title": "Implementation",
     "section": "",
-    "text": "Lỗi/warning OpenGL trong RViz2 và cách kiểm tra.",
+    "text": "Nội dung đang được cập nhật …",
+    "crumbs": [
+      "Home",
+      "02. Implementation",
+      "Implementation"
+    ]
+  },
+  {
+    "objectID": "01-system-foundations/index.html",
+    "href": "01-system-foundations/index.html",
+    "title": "System Foundations",
+    "section": "",
+    "text": "Nội dung đang được cập nhật …",
+    "crumbs": [
+      "Home",
+      "01. System Foundations",
+      "System Foundations"
+    ]
+  },
+  {
+    "objectID": "03-experiments/index.html",
+    "href": "03-experiments/index.html",
+    "title": "Experiments",
+    "section": "",
+    "text": "Nội dung đang được cập nhật …",
+    "crumbs": [
+      "Home",
+      "03. Experiments",
+      "Experiments"
+    ]
+  },
+  {
+    "objectID": "05-literature/index.html",
+    "href": "05-literature/index.html",
+    "title": "Literature",
+    "section": "",
+    "text": "Nội dung đang được cập nhật …",
+    "crumbs": [
+      "Home",
+      "05. Literature",
+      "Literature"
+    ]
+  },
+  {
+    "objectID": "07-inbox/index.html",
+    "href": "07-inbox/index.html",
+    "title": "Inbox",
+    "section": "",
+    "text": "Nội dung đang được câp nhật …",
+    "crumbs": [
+      "Home",
+      "07. Inbox",
+      "Inbox"
+    ]
+  },
+  {
+    "objectID": "09-troubleshooting/index.html",
+    "href": "09-troubleshooting/index.html",
+    "title": "Troubleshooting",
+    "section": "",
+    "text": "Nội dung đang được cập nhật …",
     "crumbs": [
       "Home",
       "09. Troubleshooting",
-      "RViz2 OpenGL Warning"
+      "Troubleshooting"
     ]
   },
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "DynaCortex | MMLab UIT",
+    "title": "DynaCortex",
     "section": "",
-    "text": "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT\nDynaCortex là nhóm các dự án nghiên cứu và thử nghiệm về Trí tuệ nhân tạo hiện thân và Robot (Embodied AI & Robotics), được thực hiện tại Phòng thí nghiệm Đa phương tiện (MMLab) thuộc Trường Đại học Công nghệ Thông tin, ĐHQG-HCM (UIT). Chuỗi các dự án này tập trung phát triển hệ thống nhận thức thông minh (Cortex) kết hợp chặt chẽ với động lực học chuyển động (Dynamics) của robot.\n\n\nDynaCortex Hub được tổ chức như một không gian tài liệu kỹ thuật, ghi chú học tập, nhật ký thử nghiệm, tài liệu tham chiếu và báo cáo nghiên cứu cho các hướng liên quan đến Embodied AI, Robotics, Vision-Language-Action Models, robot perception, robot control, simulation-to-real transfer và hệ thống robot thông minh.\n\n\n\n\n\n\nMục\nVai trò\n\n\n\n\nExamples\nTrang mẫu cho syntax .qmd: code block, Mermaid, công thức, hình ảnh, bảng, citation\n\n\nSystem Foundations\nNền tảng toán/kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống\n\n\nImplementation\nCài đặt, code, runtime, setup, default config\n\n\nExperiments\nThử nghiệm, log, dữ liệu, kết quả\n\n\nReference\nBảng tra cứu chuẩn, thông số, lệnh, config\n\n\nLiterature\nPaper note, đọc paper, phân tích phương pháp\n\n\nReports\nBáo cáo hoàn chỉnh, có thể export PDF/HTML\n\n\nInbox\nGhi nhanh, chưa chuẩn hóa\n\n\nNotes\nNote học tập cá nhân\n\n\nTroubleshooting\nLỗi, nguyên nhân, cách kiểm tra và cách xử lý\n\n\n\n\n\n\n\n\n\nStatus\nÝ nghĩa\n\n\n\n\ndraft\nGhi nhanh, chưa kiểm chứng\n\n\nworking\nĐang dùng được nhưng chưa chuẩn hóa\n\n\nvalidated\nĐã kiểm chứng bằng thử nghiệm, code hoặc log\n\n\nstandard\nTài liệu chuẩn của dự án\n\n\ndeprecated\nKhông còn dùng, giữ lại để truy vết\n\n\n\n\n\n\nXem trang Setup & Deploy để cài Quarto, preview local và deploy bằng GitHub Pages.",
+    "text": "DynaCortex là nhóm các dự án nghiên cứu và thử nghiệm về Trí tuệ nhân tạo hiện thân và Robot (Embodied AI & Robotics), được thực hiện tại Phòng thí nghiệm Đa phương tiện (MMLab) thuộc Trường Đại học Công nghệ Thông tin, ĐHQG-HCM (UIT). Chuỗi các dự án này tập trung phát triển hệ thống nhận thức thông minh (Cortex) kết hợp chặt chẽ với động lực học chuyển động (Dynamics) của robot.",
     "crumbs": [
       "Home",
-      "DynaCortex | MMLab UIT"
-    ]
-  },
-  {
-    "objectID": "index.html#mục-tiêu-của-project-hub",
-    "href": "index.html#mục-tiêu-của-project-hub",
-    "title": "DynaCortex | MMLab UIT",
-    "section": "",
-    "text": "DynaCortex Hub được tổ chức như một không gian tài liệu kỹ thuật, ghi chú học tập, nhật ký thử nghiệm, tài liệu tham chiếu và báo cáo nghiên cứu cho các hướng liên quan đến Embodied AI, Robotics, Vision-Language-Action Models, robot perception, robot control, simulation-to-real transfer và hệ thống robot thông minh.",
-    "crumbs": [
-      "Home",
-      "DynaCortex | MMLab UIT"
-    ]
-  },
-  {
-    "objectID": "index.html#cấu-trúc-tài-liệu",
-    "href": "index.html#cấu-trúc-tài-liệu",
-    "title": "DynaCortex | MMLab UIT",
-    "section": "",
-    "text": "Mục\nVai trò\n\n\n\n\nExamples\nTrang mẫu cho syntax .qmd: code block, Mermaid, công thức, hình ảnh, bảng, citation\n\n\nSystem Foundations\nNền tảng toán/kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống\n\n\nImplementation\nCài đặt, code, runtime, setup, default config\n\n\nExperiments\nThử nghiệm, log, dữ liệu, kết quả\n\n\nReference\nBảng tra cứu chuẩn, thông số, lệnh, config\n\n\nLiterature\nPaper note, đọc paper, phân tích phương pháp\n\n\nReports\nBáo cáo hoàn chỉnh, có thể export PDF/HTML\n\n\nInbox\nGhi nhanh, chưa chuẩn hóa\n\n\nNotes\nNote học tập cá nhân\n\n\nTroubleshooting\nLỗi, nguyên nhân, cách kiểm tra và cách xử lý",
-    "crumbs": [
-      "Home",
-      "DynaCortex | MMLab UIT"
-    ]
-  },
-  {
-    "objectID": "index.html#trạng-thái-tài-liệu",
-    "href": "index.html#trạng-thái-tài-liệu",
-    "title": "DynaCortex | MMLab UIT",
-    "section": "",
-    "text": "Status\nÝ nghĩa\n\n\n\n\ndraft\nGhi nhanh, chưa kiểm chứng\n\n\nworking\nĐang dùng được nhưng chưa chuẩn hóa\n\n\nvalidated\nĐã kiểm chứng bằng thử nghiệm, code hoặc log\n\n\nstandard\nTài liệu chuẩn của dự án\n\n\ndeprecated\nKhông còn dùng, giữ lại để truy vết",
-    "crumbs": [
-      "Home",
-      "DynaCortex | MMLab UIT"
-    ]
-  },
-  {
-    "objectID": "index.html#bắt-đầu-nhanh",
-    "href": "index.html#bắt-đầu-nhanh",
-    "title": "DynaCortex | MMLab UIT",
-    "section": "",
-    "text": "Xem trang Setup & Deploy để cài Quarto, preview local và deploy bằng GitHub Pages.",
-    "crumbs": [
-      "Home",
-      "DynaCortex | MMLab UIT"
+      "DynaCortex"
     ]
   }
 ]

@@ -5,13 +5,4 @@ categories: [reference, cheatsheet]
 status: draft
 ---
 
-# Reference
-
-Bảng tra cứu chuẩn, thông số, lệnh, config.
-
-## Nội dung sẽ bổ sung
-
-- Mục tiêu
-- Phạm vi
-- Tài liệu liên quan
-- Ghi chú cập nhật
+Nội dung đang được cập nhật ...

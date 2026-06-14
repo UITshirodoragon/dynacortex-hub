@@ -5,13 +5,4 @@ categories: [experiment, log, result]
 status: draft
 ---
 
-# Experiments
-
-Thử nghiệm, log, dữ liệu, kết quả.
-
-## Nội dung sẽ bổ sung
-
-- Mục tiêu
-- Phạm vi
-- Tài liệu liên quan
-- Ghi chú cập nhật
+Nội dung đang được cập nhật ...

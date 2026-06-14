@@ -1,17 +1,8 @@
 ---
 title: "System Foundations"
-description: "Nền tảng toán/kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống."
+description: "Nền tảng toán, kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống."
 categories: [math, system, foundation]
 status: draft
 ---
 
-# System Foundations
-
-Nền tảng toán/kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống.
-
-## Nội dung sẽ bổ sung
-
-- Mục tiêu
-- Phạm vi
-- Tài liệu liên quan
-- Ghi chú cập nhật
+Nội dung đang được cập nhật ...

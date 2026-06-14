@@ -47,7 +47,8 @@ print(p_base)
 
 ## 3. Công thức toán học
 
-Inline math: điểm 3D trong hệ camera có thể viết là \(p_{cam} = [x, y, z]^T\).
+Inline math: điểm 3D trong hệ camera có thể viết là $e = m^c$ hoặc dưới dạng vector cột: 
+
 
 Block equation:
 

@@ -5,13 +5,4 @@ categories: [troubleshooting]
 status: draft
 ---
 
-# Troubleshooting
-
-Lỗi, nguyên nhân, cách kiểm tra và cách xử lý.
-
-## Nội dung sẽ bổ sung
-
-- Mục tiêu
-- Phạm vi
-- Tài liệu liên quan
-- Ghi chú cập nhật
+Nội dung đang được cập nhật ...

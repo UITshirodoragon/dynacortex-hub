@@ -5,20 +5,4 @@ categories: [report]
 status: draft
 ---
 
-# Reports
-
-Báo cáo hoàn chỉnh, có thể export PDF/HTML.
-
-Website mặc định render báo cáo sang HTML. Để xuất riêng một báo cáo sang PDF
-trên máy đã cài TeX, dùng:
-
-```bash
-quarto render 06-reports/camera-calibration-report/report.qmd --to pdf
-```
-
-## Nội dung sẽ bổ sung
-
-- Mục tiêu
-- Phạm vi
-- Tài liệu liên quan
-- Ghi chú cập nhật
+Nội dung đang được cập nhật ...
