@@ -1,0 +1,205 @@
+---
+title: "Hiện trạng ROS2 SDK/demo package của MyArm Master 750"
+description: "Phân tích node, launch, URDF/Xacro, API usage và các thiếu sót kỹ thuật trong ROS2 demo package myarm_m750."
+categories: [reference, myarm, myarm-master-750, ros2-sdk, urdf, xacro, rviz2, demo, analysis]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Hiện trạng ROS2 SDK/demo package của MyArm Master 750
+
+Trang này phản ánh package ROS2 `myArm/myarm_m750` và URDF/Xacro trong `mycobot_ros2` đã trích ra. Nội dung tập trung vào nhà sản xuất đang demo gì, node nào gọi API nào, URDF/Xacro ghi gì, và các khoảng trống kỹ thuật trong source.
+
+::: callout-warning
+Package `myarm_m750` trong source đang xét là demo ROS2/RViz đơn giản. Source không chứa `ros2_control` hardware plugin, `joint_trajectory_controller`, `FollowJointTrajectory` action server hoặc MoveIt2 config đầy đủ cho robot thật.
+:::
+
+## 1. Package inventory
+
+```text
+myArm/myarm_m750/
+├── launch/
+├── myarm_m750/
+├── package.xml
+└── setup.py
+```
+
+URDF/Xacro nằm ở `mycobot_description/urdf/myarm_m750/`.
+
+## 2. Flow ROS2 thật sự trong demo đọc joint
+
+`read_control.py` là file khớp nhất với `pymycobot` source. Node tạo timer $T=0.02~\mathrm{s}$, tương đương:
+
+$$
+f = \frac{1}{T} = 50~\mathrm{Hz}
+$$ {#eq-read-control-frequency}
+
+```{mermaid}
+flowchart LR
+    HW[M750 hardware] -->|MyArmM.get_joints_angle, deg| NODE[read_control.py]
+    NODE -->|JointState.position, rad| JS[/joint_states]
+    JS --> RSP[robot_state_publisher]
+    RSP --> TF[/tf]
+    TF --> RVIZ[RViz2]
+```
+
+Trong source:
+
+```python
+angles = self.mam.get_joints_angle()
+gripper_angle = angles.pop(6)
+gripper_angle /= -3500
+angle = [a / 180 * pi for a in angles]
+angle.append(gripper_angle)
+joint_state.position = angle
+```
+
+Tức là $q_1$ đến $q_6$ được đổi bằng $q_i[\mathrm{rad}] = \frac{\pi}{180}q_i[^\circ]$. Riêng gripper dùng $g=e_7/(-3500)$, source không giải thích hệ số này.
+
+## 3. Audit node/API usage
+
+| File | ROS2 interface | SDK usage | Đối chiếu với source pymycobot | Trạng thái |
+| --- | --- | --- | --- | --- |
+| `read_control.py` | publish `/joint_states`; timer $0.02~\mathrm{s}=50~\mathrm{Hz}$ | `MyArmM('/dev/ttyACM0')`; `set_servo_enabled(i,0)`; `get_joints_angle()` | Các method này có trong `MyArmM`; đọc độ và đổi sang rad. | Khớp nhất trong package. |
+| `slider_control.py` | subscribe `joint_states` | import `MyArmM`; gọi `set_fresh_mode(1)`, `send_angles(...)` | `set_fresh_mode` và `send_angles` không có trong `MyArmM` source. | Lẫn API/legacy method. |
+| `simple_gui.py` | Tkinter GUI | instantiate `MyArmM`; gọi `send_coords`, `send_angles`, `get_coords`, `get_angles`, `set_gripper_state` | Nhiều method không thuộc `MyArmM` source. | Không phải reference API chính xác. |
+| `teleop_keyboard.py` | keyboard loop | `MyArmM`; gọi `set_free_mode`, `send_angles`, `get_coords`, `send_coords` | Các method này không có trong `MyArmM`. | Lẫn Coordinate/legacy naming. |
+| `follow_display.py` | publish joint state-like data | `MyArmM`; gọi `release_all_servos`, `get_radians`, `get_coords` | `MyArmM` source không có các method này. | Không khớp SDK mới. |
+| `combined_control.py` | publish two joint-state style topics | `MyArmM`, `MyArmC`; đọc `MyArmC.get_joints_angle()` | Demo mix C650/M750. | Không đại diện standalone M750. |
+
+_Dữ liệu nguồn: `assets/tables/ros2_node_api_audit.csv`._
+
+| File | ROS2 interface | SDK usage | Đối chiếu với source pymycobot | Trạng thái |
+| --- | --- | --- | --- | --- |
+| `read_control.py` | publish `/joint_states`; timer $0.02~\mathrm{s}=50~\mathrm{Hz}$ | `MyArmM('/dev/ttyACM0')`; `set_servo_enabled(i,0)`; `get_joints_angle()` | Các method này có trong `MyArmM`; đọc độ và đổi sang rad. | Khớp nhất trong package. |
+| `slider_control.py` | subscribe `joint_states` | import `MyArmM`; gọi `set_fresh_mode(1)`, `send_angles(...)` | `set_fresh_mode` và `send_angles` không có trong `MyArmM` source. | Lẫn API/legacy method. |
+| `simple_gui.py` | Tkinter GUI | instantiate `MyArmM`; gọi `send_coords`, `send_angles`, `get_coords`, `get_angles`, `set_gripper_state` | Nhiều method không thuộc `MyArmM` source. | Không phải reference API chính xác. |
+| `teleop_keyboard.py` | keyboard loop | `MyArmM`; gọi `set_free_mode`, `send_angles`, `get_coords`, `send_coords` | Các method này không có trong `MyArmM`. | Lẫn Coordinate/legacy naming. |
+| `follow_display.py` | publish joint state-like data | `MyArmM`; gọi `release_all_servos`, `get_radians`, `get_coords` | `MyArmM` source không có các method này. | Không khớp SDK mới. |
+| `combined_control.py` | publish two joint-state style topics | `MyArmM`, `MyArmC`; đọc `MyArmC.get_joints_angle()` | Demo mix C650/M750. | Không đại diện standalone M750. |
+
+Điểm trung tâm: package M750 import `MyArmM`; không thấy `MyArmMControl`. Do đó package ROS2 này không phản ánh Coordinate API class hiện tại.
+
+## 4. URDF/Xacro: limits và đơn vị
+
+| Joint URDF | Type | Miền giá trị | Ghi chú đơn vị |
+| --- | --- | --- | --- |
+| joint1 | revolute | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ | URDF và JointState dùng rad. |
+| joint2 | revolute | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ | URDF và JointState dùng rad. |
+| joint3 | revolute | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ | URDF và JointState dùng rad. |
+| joint4 | revolute | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ | URDF và JointState dùng rad. |
+| joint5 | revolute | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ | URDF và JointState dùng rad. |
+| joint6 | revolute | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ | URDF và JointState dùng rad. |
+| gripper | prismatic | $[0.000, 0.035]~\mathrm{m}$<br>$[0.0, 34.5]~\mathrm{mm}$ | URDF dùng m; tương ứng 34.5 mm. |
+| gripper_r | prismatic | $[0.000, 0.060]~\mathrm{m}$<br>$[0.0, 60.0]~\mathrm{mm}$ | URDF dùng m; tương ứng 60.0 mm. |
+
+_Dữ liệu nguồn: `assets/tables/ros2_urdf_joint_limits_normalized.csv`._
+
+| Joint URDF | Type | Miền giá trị | Ghi chú đơn vị |
+| --- | --- | --- | --- |
+| joint1 | revolute | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ | URDF và JointState dùng rad. |
+| joint2 | revolute | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ | URDF và JointState dùng rad. |
+| joint3 | revolute | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ | URDF và JointState dùng rad. |
+| joint4 | revolute | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ | URDF và JointState dùng rad. |
+| joint5 | revolute | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ | URDF và JointState dùng rad. |
+| joint6 | revolute | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ | URDF và JointState dùng rad. |
+| gripper | prismatic | $[0.000, 0.035]~\mathrm{m}$<br>$[0.0, 34.5]~\mathrm{mm}$ | URDF dùng m; tương ứng 34.5 mm. |
+| gripper_r | prismatic | $[0.000, 0.060]~\mathrm{m}$<br>$[0.0, 60.0]~\mathrm{mm}$ | URDF dùng m; tương ứng 60.0 mm. |
+
+Các `origin` quan trọng trong URDF/Xacro có đơn vị m/rad:
+
+| Joint | `origin xyz/rpy` trong source | Diễn giải đơn vị |
+|---|---|---|
+| joint2 | `xyz="0 0 -0.175"`, `rpy="-1.57079 -1.57079 0"` | $z=-0.175~\mathrm{m}$<br>$z=-175.0~\mathrm{mm}$; RPY $\approx -1.571~\mathrm{rad}$ / $-90.0^\circ$. |
+| joint3 | `xyz="-0.303 -0.057 0"`, `rpy="0 3.14159 -1.57079"` | $x=-0.303~\mathrm{m}$ / $-303.0~\mathrm{mm}$; $y=-0.057~\mathrm{m}$ / $-57.0~\mathrm{mm}$. |
+| joint5 | `xyz="0 0 -0.258"`, `rpy="0 1.57079 0"` | $z=-0.258~\mathrm{m}$ / $-258.0~\mathrm{mm}$; pitch $\approx 1.571~\mathrm{rad}$ / $90.0^\circ$. |
+
+Những origin này không phải bảng MDH; chúng là biến đổi trong URDF tree và còn phụ thuộc mesh origins/visual/collision frames.
+
+## 5. Đối chiếu URDF limits với docs và SDK
+
+| Joint | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | Docs Coordinate | SDK `MyArmM` | SDK `MyArmMControl` | ROS2 URDF/Xacro |
+| --- | --- | --- | --- | --- | --- | --- |
+| $q_1$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170, 170]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ |
+| $q_2$ | $[-1.449, 1.449]~\mathrm{rad}$<br>$[-83, 83]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.047, 1.658]~\mathrm{rad}$<br>$[-60, 95]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ |
+| $q_3$ | $[-1.571, 1.466]~\mathrm{rad}$<br>$[-90, 84]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.571, 1.309]~\mathrm{rad}$<br>$[-90, 75]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ |
+| $q_4$ | $[-2.705, 2.670]~\mathrm{rad}$<br>$[-155, 153]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_5$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ |
+| $q_6$ | $[-2.670, 2.670]~\mathrm{rad}$<br>$[-153, 153]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_7$ / gripper | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | không liệt kê | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | URDF: prismatic gripper<br>không phải góc $q_7$ |
+
+_Dữ liệu nguồn: `assets/tables/joint_limit_crosscheck_normalized.csv`._
+
+| Joint | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | Docs Coordinate | SDK `MyArmM` | SDK `MyArmMControl` | ROS2 URDF/Xacro |
+| --- | --- | --- | --- | --- | --- | --- |
+| $q_1$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170, 170]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ |
+| $q_2$ | $[-1.449, 1.449]~\mathrm{rad}$<br>$[-83, 83]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.047, 1.658]~\mathrm{rad}$<br>$[-60, 95]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ |
+| $q_3$ | $[-1.571, 1.466]~\mathrm{rad}$<br>$[-90, 84]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.571, 1.309]~\mathrm{rad}$<br>$[-90, 75]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ |
+| $q_4$ | $[-2.705, 2.670]~\mathrm{rad}$<br>$[-155, 153]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_5$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ |
+| $q_6$ | $[-2.670, 2.670]~\mathrm{rad}$<br>$[-153, 153]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_7$ / gripper | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | không liệt kê | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | URDF: prismatic gripper<br>không phải góc $q_7$ |
+
+Các lệch nổi bật:
+
+- URDF joint1 là $[-3.037,2.915]~\mathrm{rad}$ / $[-174,167]~^\circ$, trong khi docs Coordinate là $[-2.880,2.880]~\mathrm{rad}$ / $[-165,165]~^\circ$.
+- URDF joint3 là $[-1.440,1.650]~\mathrm{rad}$ / $[-82.5,94.5]~^\circ$, trong khi docs Coordinate là $[-1.745,1.396]~\mathrm{rad}$ / $[-100,80]~^\circ$.
+- URDF joint5 là $[-1.675,1.553]~\mathrm{rad}$ / $[-96,89]~^\circ$, trong khi docs Coordinate là $[-1.571,2.094]~\mathrm{rad}$ / $[-90,120]~^\circ$.
+- URDF joint6 là $[-2.967,2.967]~\mathrm{rad}$ / $[-170,170]~^\circ$, trong khi docs Coordinate là $[-3.142,3.142]~\mathrm{rad}$ / $[-180,180]~^\circ$.
+
+## 6. ros2_control và MoveIt2 execution: trạng thái source
+
+| Issue | Evidence in source | Technical impact |
+| --- | --- | --- |
+| Không có `MyArmMControl` trong package M750 | Import audit trong `myarm_m750` thấy `MyArmM` hoặc legacy `MyArm`, không thấy `MyArmMControl`. | ROS2 demo không phản ánh Coordinate API class hiện tại. |
+| Không có `ros2_control` hardware interface | Không thấy `<ros2_control>` tag, `hardware_interface::SystemInterface`, controller YAML. | Package không phải control stack chuẩn. |
+| Không có MoveIt2 config đầy đủ | Không thấy SRDF, `kinematics.yaml`, `ompl_planning.yaml`, `move_group` launch. | Không có planning/execution pipeline đầy đủ. |
+| API mismatch trong scripts điều khiển | `slider_control.py` gọi `send_angles`; `simple_gui.py` gọi `send_coords`; `MyArmM` không có các method này. | Có thể lỗi runtime với SDK v4.0.4/v4.0.5. |
+| URDF limits lệch docs/SDK | URDF joint1..6 giới hạn rad khác docs Coordinate và `robot_info.py`. | Tool đọc URDF sẽ validate khác Python SDK/firmware. |
+| Gripper biểu diễn khác giữa URDF và SDK | URDF dùng prismatic `gripper`, `gripper_r`; SDK/docs có J7 angle/potential. | Không có ánh xạ một-một hiển nhiên. |
+
+`package.xml` có thể khai báo `controller_manager`, nhưng khai báo dependency không đồng nghĩa source đã có hardware interface hoặc controller YAML.
+
+```text
+MoveIt2 -> FollowJointTrajectory -> joint_trajectory_controller -> hardware_interface -> pymycobot -> robot
+```
+
+Graph trên không xuất hiện trong package đang xét. Flow thật sự giống hơn:
+
+```text
+robot thật -> pymycobot MyArmM -> read_control.py -> /joint_states -> robot_state_publisher -> RViz2
+```
+
+## 7. ROS2 graph và ý nghĩa kỹ thuật
+
+ROS2 là middleware cho robotic applications; nó cung cấp computation graph gồm node, topic, service, action và tooling để quan sát/debug [@ros2programming2025]. Với package M750 này, graph source-level có hai nhóm chính:
+
+```{mermaid}
+flowchart TD
+    subgraph Static_RViz_Demo
+        JGUI[joint_state_publisher_gui] --> JS1[/joint_states/]
+        JS1 --> RSP1[robot_state_publisher]
+        RSP1 --> RVIZ1[RViz2]
+    end
+
+    subgraph Dynamic_Follow_Demo
+        ARM[M750 hardware] --> SDK[MyArmM.get_joints_angle, deg]
+        SDK --> READ[read_control.py]
+        READ --> JS2[/joint_states, rad]
+        JS2 --> RSP2[robot_state_publisher]
+        RSP2 --> RVIZ2[RViz2]
+    end
+```
+
+Đây là graph visualization/follow, không phải trajectory execution hoặc closed-loop controller.
+
+## 8. Trạng thái tổng hợp
+
+- Phần đáng tin nhất của package là `read_control.py`: dùng `MyArmM`, đọc độ, publish rad lên `/joint_states`.
+- Package không dùng `MyArmMControl`, nên không đại diện cho Coordinate firmware/API hiện tại.
+- Nhiều file điều khiển gọi method không tồn tại trong `MyArmM` source v4.0.4.
+- URDF/Xacro có đơn vị và limits riêng; các limits này lệch docs và Python SDK.
+- Gripper trong URDF là prismatic, trong demo lại có scaling $g=e_7/(-3500)$ không được giải thích bằng calibration source.
+- Không thấy source cho `ros2_control`, `joint_trajectory_controller`, `FollowJointTrajectory` hoặc MoveIt2 config đầy đủ.

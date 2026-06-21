@@ -1,0 +1,6 @@
+Cụm firmware/API,Trạng thái trong source/docs,Ý nghĩa kỹ thuật hiện tại
+Pico / Master Control,"Docs firmware mô tả joint status, alarm, joint control, IO, system params; release notes có nhắc tối ưu communication lên 1M.",Cụm control core cấp thấp nhưng tên Basic/Pico/Master trong docs không thật sạch.
+Basic / Screen / Transponder,ROS2 docs hướng dẫn chọn Transponder và USB UART khi nối PC/Jetson.,Cụm UI/bridge trong demo ROS2.
+Atom / Tool,"Docs/API có tool firmware version, tool IO, LED/button, gripper/tool interface.",Cụm đầu tay máy tách khỏi motion chain 6R.
+Shake firmware + `MyArmM`,"Source `MyArmM` default $1{,}000{,}000~\mathrm{bit/s}$ và tập trung joint/servo/encoder/status.",Ít exposed Cartesian API; gần joint/servo layer hơn.
+Coordinate firmware + `MyArmMControl`,"Source default $115{,}200~\mathrm{bit/s}$; LOCAL-OBS: coord firmware mới public trên myStudio và chạy được $1{,}000{,}000~\mathrm{bit/s}$ khi truyền baudrate explicit.",Có joint + Cartesian + frame + fresh mode; Python source không chứa IK/FK firmware.

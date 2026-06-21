@@ -1,0 +1,18 @@
+---
+title: "MoveIt 2 là gì"
+description: "Khái niệm MoveIt 2: MoveIt 2 là gì."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# MoveIt 2 là gì?
+
+MoveIt 2 là framework cho manipulation planning: model robot, lập kế hoạch tránh va chạm, IK, planning pipeline và trajectory execution.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[MoveIt 2 là gì]
+    B --> C[Output]
+```

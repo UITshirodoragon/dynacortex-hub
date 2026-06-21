@@ -1,0 +1,18 @@
+---
+title: "Planning Group và Robot State"
+description: "Khái niệm MoveIt 2: Planning Group và Robot State."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Planning Group và Robot State
+
+Planning group là tập joint/link được planner điều khiển. Robot state là cấu hình hiện tại hoặc giả định của robot trong planning.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[Planning Group và Robot State]
+    B --> C[Output]
+```

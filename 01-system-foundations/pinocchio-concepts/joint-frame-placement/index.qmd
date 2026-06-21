@@ -1,0 +1,12 @@
+---
+title: "Joint, Frame và Placement"
+description: "Khái niệm Pinocchio: Joint, Frame và Placement."
+categories: [pinocchio, computation]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Joint, Frame và Placement
+
+Joint mô tả bậc tự do. Frame là hệ tọa độ được gắn vào model. Placement là transform của joint/frame trong cây động học.

@@ -1,0 +1,248 @@
+---
+title: "Note ngày 16-06-2026"
+description: ""
+categories: [note]
+status: standard
+---
+
+# prompt: 
+
+tôi cần bạn tìm hiểu một chút về các bộ controler điều khiển robot arm, thì hiện tại myarm đang có 2 bộ firmware khác nhau hoàn toàn về câu chuyện đó là đó là shake firmware và coordinate firmware thì hiện tại tôi đang sài coordinate biết rằng tôi làm việc chủ yếu điều khiển robot qua 2 api cốt là write coords và get coords tức là FK và IK nằm trong firmware luôn nhưng có nhiều vấn đề là tôi không thể quản lý được phần này, tôi cần bạn giúp tôi tìm kiếm thử liệu các hãng robot khác các dòng robot khác họ có đưa phần FK và IK vào firmware luôn không hay họ đưa và phần SDK vẫn nằm trên tâng application ? hay FK và IK do bên ROS2 lo? hãy giúp tôi tìm các sdk, thư viện, framework điều khiển robot nổi tiểng coi họ làm như thế nào và so sánh với myarm đến từ các dòng robot phổ biến và phổ biến từ lowcost, opensource đến production seeed studio reBot Arm B601-DM, lerobot, UR, Franka, ABB, xArm, Tronssen, WidowX,..... và nhiều hãng khác
+
+## Kết luận chính
+
+Có, **nhiều hãng robot đưa FK/IK vào controller/firmware**, đặc biệt là robot công nghiệp/cobot như **UR, ABB, Kinova, xArm**. Việc myArm `coordinate firmware` cho bạn dùng `write_coords()` và `get_coords()` không phải là chuyện lạ.
+
+Nhưng khác biệt lớn là: các hãng production thường vẫn cung cấp **tài liệu robot model, frame, TCP, tool offset, safety state, lỗi IK, singularity, joint limit, driver ROS/MoveIt rõ ràng hơn**. Còn với myArm, phần `coordinate firmware` tiện nhưng khá “black-box”, nên khó kiểm chứng khi bạn làm grasping/camera/robot frame.
+
+---
+
+## 1. myArm M750 đang thuộc kiểu nào?
+
+Theo tài liệu chính thức, M750 có 2 interface firmware: **Shake Firmware API** và **Coordinate Firmware API**. Coordinate API dùng class `MyArmMControl`, có `get_angles`, `write_angle`, `write_angles`, `get_coords`, `write_coord`, `write_coords` đúng như bạn đang dùng. `write_coords(coords, speed, mode)` nhận danh sách tọa độ và firmware tự xử lý phần chuyển sang chuyển động robot. ([Elephant Robotics Documentation][1])
+
+Diễn giải kỹ thuật:
+
+| Mode                | Bản chất                              |                      FK/IK nằm ở đâu? | Mức kiểm soát của bạn                |
+| ------------------- | ------------------------------------- | ------------------------------------: | ------------------------------------ |
+| Shake firmware      | Điều khiển joint/servo thô hơn        | Chủ yếu bạn làm việc theo joint/servo | Cao hơn nhưng khó dùng cho Cartesian |
+| Coordinate firmware | Gửi pose Cartesian `[x,y,z,rx,ry,rz]` | Gần như nằm trong firmware/controller | Dễ dùng nhưng black-box              |
+
+Vì vậy, `write_coords()` của myArm giống cách robot công nghiệp cho gửi Cartesian target, nhưng myArm chưa cho bạn nhiều công cụ để kiểm tra nghiệm IK, singularity, TCP, frame, calibration model, hoặc replay trajectory ở mức chi tiết.
+
+---
+
+## 2. Các hãng khác làm như thế nào?
+
+| Robot / stack                              | FK/IK thường nằm ở đâu?                                                                                                                                                                                                                                               | Cách điều khiển phổ biến                                                                                                  | So với myArm coordinate firmware                                                                                                                  |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Universal Robots UR**                    | Trong robot controller có sẵn FK/IK. URScript có `get_forward_kin()` dùng calibrated kinematics và `get_inverse_kin()` chuyển tool pose sang joint space. ([Universal Robots][2])                                                                                     | `movej`, `movel`, RTDE, URScript, ROS2 driver + MoveIt. `movel(pose)` nhận target pose Cartesian. ([Universal Robots][3]) | Rất giống myArm ở mức gửi pose, nhưng UR minh bạch hơn: có hàm IK/FK, qnear, TCP, safety, driver ROS2 tốt.                                        |
+| **Kinova Gen3 / Gen3 Lite**                | High-level API gửi target angular/Cartesian một lần; robot base quản lý vòng điều khiển 1 kHz, gọi robot control library để tính IK, áp protection zones, singularity management, self-collision avoidance. ([Kinova Robotics][4])                                    | Kortex API, Web App, ROS/Kortex, high-level servoing hoặc low-level servoing.                                             | Gần giống myArm coordinate mode, nhưng Kinova nói rõ controller làm IK + limit + singularity + self-collision.                                    |
+| **xArm / UFACTORY**                        | Hybrid. SDK có API `set_position`, `get_position`, `get_ik/get_inverse_kinematics`, `get_fk/get_forward_kinematics`; robot cũng hỗ trợ TCP/Cartesian motion. ([GitHub][5])                                                                                            | Python SDK, C++ SDK, ROS, Modbus-TCP, MoveIt.                                                                             | Tương tự myArm nhưng SDK giàu hơn: có endpoint FK/IK rõ ràng hơn và ecosystem ROS tốt hơn.                                                        |
+| **Franka Panda / FR3**                     | Thiên về research low-level. `libfranka/pylibfranka` cho control 1 kHz, joint/Cartesian position/velocity/torque; model API tính FK/IK, mass matrix, Coriolis, gravity. ([Franka Robotics][6])                                                                        | libfranka, franka_ros2, MoveIt, impedance/torque control, external planner.                                               | Ngược myArm: Franka mở nhiều phần model/control hơn, phù hợp nghiên cứu controller nhưng yêu cầu hiểu real-time/safety.                           |
+| **ABB RobotWare / RobotStudio**            | Controller/RobotWare xử lý chuyển động theo `robtarget`, configuration, `MoveL`, `MoveJ`. ABB dùng `confdata` để phân biệt các nghiệm cấu hình robot; với linear motion, controller chọn cấu hình gần nhất nếu không bật configuration supervision. ([ABB Search][7]) | RAPID, RobotStudio, RobotWare, EGM, external path correction.                                                             | Production hơn myArm rất nhiều: controller mạnh, nhưng proprietary. Bạn thường không tự viết IK trừ khi offline planning hoặc digital twin.       |
+| **Seeed reBot Arm B601-DM**                | Có xu hướng open-source/research: ROS2 integration, Pinocchio integration cho FK/IK và gravity compensation, LeRobot integration. ([GitHub][8])                                                                                                                       | MotorBridge/Python SDK, ROS2, Pinocchio, LeRobot.                                                                         | Ngược hướng myArm coordinate: FK/IK có thể nằm ở host bằng Pinocchio/ROS2, dễ debug hơn cho nghiên cứu.                                           |
+| **Trossen / Interbotix / WidowX / ViperX** | Thường dựa vào ROS packages, MoveIt, Gazebo; smart servos lo vòng servo, còn kinematics/planning nằm ở ROS/MoveIt. Tài liệu Interbotix nói các arm 4/5/6 DOF dùng chung ROS code và hỗ trợ MoveIt/Gazebo. ([Trossen Robotics][9])                                     | Interbotix ROS packages, MoveIt, Python interface, DYNAMIXEL.                                                             | Gần research/open-source hơn myArm coordinate. Dễ gắn MoveIt/URDF hơn, nhưng controller-level Cartesian có thể không mạnh bằng robot công nghiệp. |
+| **LeRobot / SO-100 / SO-101**              | Không phải robot controller truyền thống. LeRobot là framework học điều khiển/dataset/policy; thường action space là joint/motor hoặc end-effector delta tùy robot wrapper. ([GitHub][10])                                                                            | Record data, train policy, evaluate policy; teleoperation/imitation learning.                                             | Không thay thế IK/FK firmware. Nó nằm ở tầng policy/data; phần kinematics vẫn do wrapper/robot/ROS/Pinocchio xử lý.                               |
+
+---
+
+## 3. Vậy FK/IK nên nằm ở đâu là “chuẩn”?
+
+Không có một chuẩn duy nhất. Có 3 kiến trúc phổ biến:
+
+### Kiến trúc A — Controller/Firmware lo FK/IK
+
+Đây là kiểu **UR, ABB, Kinova, xArm, myArm coordinate firmware**.
+
+Luồng:
+
+```text
+Application / Python
+    gửi target Cartesian pose
+        ↓
+Robot controller / firmware
+    IK + limit + trajectory + servo + safety
+        ↓
+Motor drivers
+```
+
+Ưu điểm: dễ dùng, an toàn hơn, ít phải viết controller.
+
+Nhược điểm: khó debug, khó biết nghiệm IK nào được chọn, khó đồng bộ với mô phỏng, khó can thiệp post-processing grasp.
+
+myArm coordinate firmware của bạn đang thuộc nhóm này.
+
+---
+
+### Kiến trúc B — Application/SDK/ROS lo FK/IK, firmware chỉ chạy joint target
+
+Đây là kiểu **Interbotix/WidowX, reBot + Pinocchio, nhiều robot DIY/research**.
+
+Luồng:
+
+```text
+Perception / Grasp / Planner
+    ↓
+MoveIt / Pinocchio / KDL / TRAC-IK
+    tính joint trajectory
+        ↓
+ros2_control / SDK
+    gửi joint position / velocity
+        ↓
+Motor firmware
+```
+
+MoveIt 2 là nền tảng manipulation cho ROS2, có motion planning, kinematics, perception; mặc định MoveIt dùng KDL numerical IK plugin, và có thể thay bằng TRAC-IK để ổn định hơn trong joint limits. ([MoveIt][11])
+
+Ưu điểm: minh bạch, tái lập được trong simulation, debug được từng frame, rất hợp với nghiên cứu.
+
+Nhược điểm: bạn phải tự đảm bảo model URDF/DH đúng, joint limit đúng, collision đúng, controller ổn định.
+
+---
+
+### Kiến trúc C — Hybrid
+
+Đây là kiểu thực tế nhất trong lab:
+
+```text
+Host:
+    perception, grasp estimation, frame transform, validation FK/IK, planning sơ bộ
+Robot controller:
+    execute motion, safety, servo, final trajectory
+```
+
+UR, xArm, Kinova, Franka, ABB đều có thể chạy hybrid ở các mức khác nhau. Ví dụ UR có IK/FK trong controller nhưng ROS2 driver vẫn tích hợp MoveIt để plan/execute trajectory. ([Universal Robots Documentation][12])
+
+---
+
+## 4. ROS2 có “lo FK/IK” không?
+
+Nói chính xác: **ROS2 tự nó không lo FK/IK**.
+
+Các phần liên quan là:
+
+| Thành phần                     | Vai trò                                                                     |
+| ------------------------------ | --------------------------------------------------------------------------- |
+| `robot_state_publisher` + URDF | Publish TF/FK từ joint states                                               |
+| MoveIt 2                       | Motion planning, IK plugin, collision checking, trajectory planning         |
+| KDL / TRAC-IK                  | Solver IK/FK/Jacobian                                                       |
+| Pinocchio                      | FK/IK/dynamics/gravity compensation rất mạnh cho research                   |
+| ros2_control                   | Framework realtime control + hardware interface; không phải IK solver chính |
+
+`ros2_control` là framework điều khiển realtime robot trong ROS2; nó chuẩn hóa hardware interface và controller, nhưng bài toán IK thường nằm ở MoveIt/solver hoặc controller riêng phía trên. ([control.ros.org][13])
+
+---
+
+## 5. Liên hệ trực tiếp với bài toán NeuGrasp + MyArm của bạn
+
+Với setup của bạn, vấn đề không phải là “myArm đặt IK trong firmware là sai”. Vấn đề là bạn đang làm **vision-based grasping**, nên cần kiểm soát chặt chuỗi:
+
+```text
+camera frame
+→ object / grasp pose
+→ workspace frame
+→ robot base frame
+→ target TCP pose
+→ IK
+→ joint trajectory
+→ executed EE pose
+```
+
+Nếu `write_coords()` là black-box, bạn sẽ khó biết lỗi đến từ đâu:
+
+| Lỗi có thể xảy ra       | Vì sao khó debug với coordinate firmware                           |
+| ----------------------- | ------------------------------------------------------------------ |
+| Sai camera extrinsic    | Robot vẫn chạy, nhưng pose target đã sai từ đầu                    |
+| Sai TCP/tool offset     | `get_coords()` có thể không tương ứng đúng với gripper tip thật    |
+| Sai convention RPY      | Firmware nhận `rx, ry, rz` nhưng bạn không chắc là Euler order nào |
+| IK chọn nghiệm khác     | Cùng một TCP pose có nhiều nghiệm joint                            |
+| Singularity/limit       | Firmware có thể tự né hoặc fail nhưng bạn không thấy rõ lý do      |
+| Sai z grasp khoảng 7 cm | Có thể do frame/table/cube/camera/TCP, không chỉ do model grasp    |
+
+---
+
+## 6. Đề xuất stack hợp lý cho bạn
+
+Tôi khuyên bạn **không bỏ coordinate firmware ngay**, nhưng phải xây thêm một lớp “shadow kinematics” trên host.
+
+### Phương án thực dụng nhất
+
+```text
+NeuGrasp / perception
+    ↓
+SE(3) transform validation
+    ↓
+Host-side FK/IK checker
+    - URDF hoặc DH tự đo
+    - Pinocchio/KDL/MoveIt
+    - check joint limits
+    - check table collision
+    - check TCP offset
+    ↓
+Nếu pose hợp lệ:
+    gửi write_coords() cho myArm coordinate firmware
+    ↓
+Sau khi chạy:
+    get_coords() + get_angles()
+    so sánh với FK host-side
+```
+
+Mục tiêu không phải thay thế firmware ngay, mà là **kiểm chứng firmware**.
+
+---
+
+## 7. Checklist cần làm với myArm
+
+Bạn nên tạo 5 test nhỏ:
+
+1. **FK consistency test**
+   Gọi `get_angles()`, tính FK bằng model host-side, so với `get_coords()` từ firmware.
+
+2. **Round-trip IK test**
+   Lấy một pose từ `get_coords()`, gửi lại bằng `write_coords()`, kiểm tra joint/pose có giữ ổn không.
+
+3. **Grid workspace test**
+   Chạy các điểm `[x,y,z]` trên workspace, log điểm nào fail, điểm nào lệch nhiều.
+
+4. **RPY convention test**
+   Test từng trục `rx`, `ry`, `rz` riêng lẻ để xác nhận Euler order và đơn vị.
+
+5. **TCP offset test**
+   Gắn marker ở đầu gripper thật, đo sai lệch giữa TCP firmware và điểm kẹp thực tế.
+
+---
+
+## Chốt ngắn
+
+myArm coordinate firmware đang đi theo hướng **controller-side Cartesian control**, giống nhiều robot thật như UR/Kinova/xArm/ABB. Nhưng vì bạn làm nghiên cứu grasping, cách tốt nhất là coi `write_coords()` như **motion execution API**, không coi nó là nguồn chân lý duy nhất.
+
+Nguồn chân lý nên là:
+
+```text
+URDF/DH + calibrated TCP + calibrated camera extrinsic + host-side FK/IK checker
+```
+
+Sau đó mới dùng `write_coords()` để execute. Đây là cách cân bằng giữa sự tiện của firmware và khả năng debug cần thiết cho NeuGrasp/real robot.
+
+[1]: https://docs.elephantrobotics.com/docs/myarm-master_750-en/4-FunctionsAndApplications/6-SDKDevelopment/6.1-BasedOnPythonDevelopmentAndUse/2_API.html "API · GitBook"
+[2]: https://www.universal-robots.com/manuals/EN/HTML/SW5_19/Content/prod-scriptmanual/G5/get_forward_kin_q_current_joint_positions.htm "get_forward_kin(q=’current_joint_positions’, tcp=’active_tcp’)"
+[3]: https://www.universal-robots.com/manuals/EN/HTML/SW10_6/Content/prod-scriptmanual/G5/movel_posea12v025t.htm?utm_source=chatgpt.com "movel(pose, a=1.2, v=0.25, t=0, r=0)"
+[4]: https://www.kinovarobotics.com/uploads/User-Guide-Gen3-R07.pdf "Kinova® Gen3 Ultra lightweight robot User Guide"
+[5]: https://github.com/xarm-developer/xarm-python-sdk?utm_source=chatgpt.com "xArm-Python-SDK"
+[6]: https://frankarobotics.github.io/libfranka/pylibfranka/latest/ "pylibfranka Documentation — pylibfranka 0.21.2 documentation"
+[7]: https://search.abb.com/library/Download.aspx?Action=Launch&DocumentID=3HAC050947-001&DocumentPartId=&LanguageCode=en&utm_source=chatgpt.com "Technical reference manual - RAPID Overview"
+[8]: https://github.com/Seeed-Projects/reBot-DevArm "GitHub - Seeed-Projects/reBot-DevArm: Open Source Robotic Arm for All Developers · GitHub"
+[9]: https://docs.trossenrobotics.com/interbotix_xsarms_docs/ "Interbotix X-Series Arms — Interbotix X-Series Arms Documentation"
+[10]: https://github.com/huggingface/lerobot?utm_source=chatgpt.com "LeRobot: Making AI for Robotics more accessible with end- ..."
+[11]: https://moveit.picknik.ai/?utm_source=chatgpt.com "MoveIt 2 Documentation — MoveIt Documentation: Rolling ..."
+[12]: https://docs.universal-robots.com/Universal_Robots_ROS2_Documentation/doc/ur_robot_driver/ur_robot_driver/doc/usage/move.html?utm_source=chatgpt.com "Move the robot"
+[13]: https://control.ros.org/?utm_source=chatgpt.com "Welcome to the ros2_control documentation ..."
+
+
+
+# prompt 2: 
+
+Khi tôi làm việc với write coord và get coord trong coordinate firmware thì có nhiều hiện tượng xảy ra như write coord ở 1 pose nhưng get lại ở pose tương đương, và có một số pose khi gửi đi thì có lúc chạy có lúc không nên tôi đã thử gửi đi pose đầu nếu ko thành công gửi đi pose tương đương nhưng vẫn có tình trạng robot ko thực hiện đc pose đó, pose trước phụ thuộc vào pose tiếp theo nên chạy lúc đc lúc không
+
+

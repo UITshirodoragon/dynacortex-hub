@@ -1,0 +1,7 @@
+topic,learn_depth,reason
+configuration space,core,defines joint/task/workspace
+"SO(3), SE(3)",core,all poses and TF are transforms
+PoE and FK,core,base of robot model computation
+Jacobian,core,"velocity, singularity, IK, control"
+Dynamics,medium,needed for model-based control and Pinocchio
+Planning and control,medium,needed to understand MoveIt and controllers

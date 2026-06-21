@@ -1,0 +1,20 @@
+---
+title: "Hướng dẫn sử dụng Quarto để viết tài liệu, tutorial, hướng dẫn, quy trình cùng các quy tắc, quy chuẩn trong docs này"
+description: "Đây là tài liệu ghi chú lại quy trình setup và cài đặt các thư viện, công cụ, quy trình, quy chuẩn, quy tắc để viết tài liệu, tutorial, hướng dẫn, quy trình trong docs này"
+categories: [writing-doccumentation, docs, quarto, quarto-markdown, qmd, md, markdown, docs-struction, docs-rules, implementation, setup]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Hướng dẫn sử dụng Quarto để viết tài liệu, tutorial, hướng dẫn, quy trình cùng các quy tắc, quy chuẩn trong docs này
+
+## Cấu trúc thư mục và file trong docs này
+
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)

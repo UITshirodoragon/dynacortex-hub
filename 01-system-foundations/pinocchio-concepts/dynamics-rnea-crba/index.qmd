@@ -1,0 +1,12 @@
+---
+title: "Dynamics, RNEA và CRBA"
+description: "Khái niệm Pinocchio: Dynamics, RNEA và CRBA."
+categories: [pinocchio, computation]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Dynamics, RNEA và CRBA
+
+RNEA tính inverse dynamics. CRBA tính mass matrix. Gravity terms dùng cho gravity compensation và phân tích tải.

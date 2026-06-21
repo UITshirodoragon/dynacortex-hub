@@ -1,0 +1,29 @@
+---
+title: "Cài đặt và xây dụng docker image với ROS2 Foxy và Ubuntu 20.04 cho phục vụ debug và simulation Rviz2 và Gazebo trên máy host được truyền từ Jetson AGX Xavier"
+description: "Đây là tài liệu ghi chú lại quy trình cài đặt và setup các thư viện để có thể truyền thông tin giữa Jetson AGX Xavier và Host PC thông qua mạng LAN với cổng RJ45 và dây mạng Ethernet trực tiếp tốc độ cao và xây dựng docker image với ROS2 Foxy và Ubuntu 20.04 cho phục vụ debug và simulation Rviz2 và Gazebo trên máy host được truyền từ Jetson AGX Xavier"
+categories: [jetson, jetson-agx-xavier, ros2, ethtool, networking, iperf3, LAN, ros2-dds, docker, docker-image, docker-container, ubuntu2004, ros2-foxy, ros2, rviz2, gazebo, gazebo-classic implementation, setup]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Hiểu cơ bản về Docker và Dockerfile, Image, Container
+Có thể coi thêm trong phần system foundation
+
+## Hiểu về Nvidia Container Toolk, GPU support, Nvidia Prime, Nvidia Container Runtime, OpenGL support, X11 forwarding, ROS2 DDS support trong Docker container
+
+## Cài đặt Docker trên máy host
+
+## Viết Dockerfile để build image với ROS2 Foxy và Ubuntu 20.04
+
+## Build Docker image từ Dockerfile
+
+## 
+
+## Kiểm tra mạng và cấu hình Domain
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)

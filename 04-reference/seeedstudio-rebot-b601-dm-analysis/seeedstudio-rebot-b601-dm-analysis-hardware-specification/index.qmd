@@ -1,0 +1,24 @@
+---
+title: "Phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot"
+description: "Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot"
+categories: [reference, lerobot, so100, so101, policy, controller, analysis, evaluation, inferrence, trainging, development, ecosystem, lerobot-arm, lerobot-arm-so100, lerobot-arm-so101, collecting-robot-data, dataset, deployment]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Một số phần cứng và thông số cần chuẩn bị và lưu ý
+- Dây mạng Ethernet chuẩn CAT6 hoặc CAT5 để đảm bảo tốc độ truyền tải cao nhất có thể (lên đến 1 Gbps hoặc hơn nếu cả hai thiết bị hỗ trợ).
+
+## Setup mạng với nmcli
+
+## Tải và cài đặt ethtool
+
+## Tải và cài đặt iperf3 để kiểm tra tốc độ mạng
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)

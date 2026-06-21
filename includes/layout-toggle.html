@@ -1,0 +1,71 @@
+<button
+  type="button"
+  class="layout-toggle"
+  id="layout-toggle"
+  aria-pressed="false"
+  title="Mở rộng nội dung"
+>
+  <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+  <span class="visually-hidden">Mở rộng nội dung</span>
+</button>
+
+<script>
+(() => {
+  const storageKey = "dynacortex-layout-wide";
+  const wideClass = "layout-wide";
+
+  const readSavedState = () => {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const saveState = (enabled) => {
+    try {
+      localStorage.setItem(storageKey, String(enabled));
+    } catch {
+      return;
+    }
+  };
+
+  const applyState = (enabled) => {
+    document.body.classList.toggle(wideClass, enabled);
+
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    const icon = button.querySelector("i");
+    const label = enabled ? "Thu gọn nội dung" : "Mở rộng nội dung";
+    button.setAttribute("aria-pressed", String(enabled));
+    button.setAttribute("title", label);
+
+    const hiddenLabel = button.querySelector(".visually-hidden");
+    if (hiddenLabel) {
+      hiddenLabel.textContent = label;
+    }
+
+    if (icon) {
+      icon.className = enabled ? "bi bi-arrows-angle-contract" : "bi bi-arrows-angle-expand";
+    }
+  };
+
+  applyState(readSavedState());
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener("click", () => {
+      const enabled = !document.body.classList.contains(wideClass);
+      saveState(enabled);
+      applyState(enabled);
+    });
+  });
+})();
+</script>

@@ -1,0 +1,18 @@
+---
+title: "Robot Model, URDF, SRDF"
+description: "Khái niệm MoveIt 2: Robot Model, URDF, SRDF."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Robot Model, URDF, SRDF
+
+URDF mô tả link/joint/geometry. SRDF bổ sung semantic: planning group, end-effector, named state và disabled collisions.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[Robot Model, URDF, SRDF]
+    B --> C[Output]
+```

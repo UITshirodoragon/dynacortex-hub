@@ -1,0 +1,7 @@
+item,value,unit,note
+topic,Flash Jetson AGX Xavier với Auvidea X221-AI,,document section
+jetson_module,P2888-0004,,verify before publishing
+carrier_board,Auvidea X221-AI,,verify with label/vendor
+jetpack_target,5.1.6 / r35.6.x,,runtime target
+cuda_arch_bin,7.2,,AGX Xavier OpenCV CUDA build
+rootfs_target,/dev/nvme0n1p1,,verify by findmnt /

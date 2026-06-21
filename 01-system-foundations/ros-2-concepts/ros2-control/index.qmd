@@ -1,0 +1,21 @@
+---
+title: "ros2_control"
+description: "Khái niệm ROS 2: ros2_control."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# ros2_control
+
+`ros2_control` là framework chuẩn hóa hardware interface và controller trong ROS 2.
+
+```{mermaid}
+flowchart LR
+    A[Controller Manager] --> B[Controller]
+    B --> C[Hardware Interface]
+    C --> D[Robot Hardware]
+```
+
+Nó tách command interface, state interface và controller plugin.

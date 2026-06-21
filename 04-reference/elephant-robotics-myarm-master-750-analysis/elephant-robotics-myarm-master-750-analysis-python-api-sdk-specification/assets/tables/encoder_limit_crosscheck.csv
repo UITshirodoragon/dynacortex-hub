@@ -1,0 +1,9 @@
+servo,docs_shake_before_2025_potential,docs_shake_after_2025_potential,sdk_MyArmM_potential,sdk_MyArmMControl_potential,unit
+S1,114..3981,175..3910,114..3981,137..4004,"raw encoder/potential count, dimensionless"
+S2,1200..2991,1370..3120,1200..2991,1163..2945,"raw encoder/potential count, dimensionless"
+S3,1200..2991,1370..3120,1200..2991,1035..3079,"raw encoder/potential count, dimensionless"
+S4,1024..3002,1015..2890,1024..3002,1013..3026,"raw encoder/potential count, dimensionless"
+S5,286..3788,350..3740,286..3788,248..3724,"raw encoder/potential count, dimensionless"
+S6,1013..3048,1013..3048,1013..3048,979..2994,"raw encoder/potential count, dimensionless"
+S7,307..3788,350..3740,307..3788,220..3704,"raw encoder/potential count, dimensionless"
+S8,706..2068,706..2068,706..2068,706..2048,"raw encoder/potential count, dimensionless"

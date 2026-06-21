@@ -1,0 +1,7 @@
+File,ROS2 interface,SDK usage,Đối chiếu với source pymycobot,Trạng thái
+`read_control.py`,publish `/joint_states`; timer $0.02~\mathrm{s}=50~\mathrm{Hz}$,"`MyArmM('/dev/ttyACM0')`; `set_servo_enabled(i,0)`; `get_joints_angle()`",Các method này có trong `MyArmM`; đọc độ và đổi sang rad.,Khớp nhất trong package.
+`slider_control.py`,subscribe `joint_states`,"import `MyArmM`; gọi `set_fresh_mode(1)`, `send_angles(...)`",`set_fresh_mode` và `send_angles` không có trong `MyArmM` source.,Lẫn API/legacy method.
+`simple_gui.py`,Tkinter GUI,"instantiate `MyArmM`; gọi `send_coords`, `send_angles`, `get_coords`, `get_angles`, `set_gripper_state`",Nhiều method không thuộc `MyArmM` source.,Không phải reference API chính xác.
+`teleop_keyboard.py`,keyboard loop,"`MyArmM`; gọi `set_free_mode`, `send_angles`, `get_coords`, `send_coords`",Các method này không có trong `MyArmM`.,Lẫn Coordinate/legacy naming.
+`follow_display.py`,publish joint state-like data,"`MyArmM`; gọi `release_all_servos`, `get_radians`, `get_coords`",`MyArmM` source không có các method này.,Không khớp SDK mới.
+`combined_control.py`,publish two joint-state style topics,"`MyArmM`, `MyArmC`; đọc `MyArmC.get_joints_angle()`",Demo mix C650/M750.,Không đại diện standalone M750.

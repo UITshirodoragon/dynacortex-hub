@@ -45,7 +45,7 @@ p_base = T_base_cam @ p_cam
 print(p_base)
 ```
 
-## 3. Công thức toán học
+## 3. Công thức toán học và ký hiệu toán học inline hoặc block equation. Quarto hỗ trợ MathJax, KaTeX, LaTeX, và các ký hiệu toán học phổ biến.
 
 Inline math: điểm 3D trong hệ camera có thể viết là $e = m^c$ hoặc dưới dạng vector cột: 
 

@@ -1,0 +1,22 @@
+---
+title: "TF2 và Frame Tree"
+description: "Khái niệm ROS 2: TF2 và Frame Tree."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# TF2 và Frame Tree
+
+TF2 quản lý transform giữa các coordinate frames.
+
+```{mermaid}
+flowchart TB
+    A[world] --> B[base_link]
+    B --> C[link_1]
+    C --> D[link_2]
+    D --> E[tool0]
+```
+
+TF2 là biểu diễn runtime của chuỗi transform $T_{ab}\in SE(3)$.

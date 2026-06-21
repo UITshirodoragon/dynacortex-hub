@@ -1,0 +1,18 @@
+---
+title: "Planning Pipeline và OMPL"
+description: "Khái niệm MoveIt 2: Planning Pipeline và OMPL."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Planning Pipeline và OMPL
+
+Planning pipeline nhận planning request, chạy planner như OMPL, dùng request/response adapters và tạo path hình học.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[Planning Pipeline và OMPL]
+    B --> C[Output]
+```

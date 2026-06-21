@@ -1,0 +1,25 @@
+---
+title: "Node"
+description: "Khái niệm ROS 2: Node."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Node
+
+Node là đơn vị tính toán chính trong ROS 2. Một node có thể publish topic, subscribe topic, cung cấp service, gọi service, chạy action server/client hoặc giữ parameter.
+
+```{mermaid}
+flowchart LR
+    A[Node] --> B[Publish]
+    A --> C[Subscribe]
+    A --> D[Service]
+    A --> E[Action]
+    A --> F[Parameter]
+```
+
+::: callout-note
+Trong source robot, node thường đóng vai trò driver, bridge, planner, controller hoặc visualizer.
+:::

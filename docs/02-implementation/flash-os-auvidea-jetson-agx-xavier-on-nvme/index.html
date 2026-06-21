@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nguyen Hoang Dang Khoa">
+<meta name="description" content="Đây là tài liệu ghi chú lại quy trình cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI, bao gồm flash eMMC, flash NVMe rootfs và cũng như lưu ý các lỗi thường gặp để và cách khắc phục.">
+
+<title>Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME – DynaCortex</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../03-experiments/index.html" rel="next">
+<link href="../../02-implementation/index.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-825cd8b09f6a8ada71d4eccd558aee18.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-4b9b1df4d04147674f0da2f0d64a41b3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-825cd8b09f6a8ada71d4eccd558aee18.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">DynaCortex</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../01-system-foundations/index.html"> 
+<span class="menu-text">Foundations</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../02-implementation/index.html"> 
+<span class="menu-text">Implementation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../03-experiments/index.html"> 
+<span class="menu-text">Experiments</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../04-reference/index.html"> 
+<span class="menu-text">Reference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../examples/index.html"> 
+<span class="menu-text">Examples</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../02-implementation/index.html">02. Implementation</a></li><li class="breadcrumb-item"><a href="../../02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DynaCortex</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">01. System Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../01-system-foundations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">System Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">02. Implementation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../02-implementation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Implementation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">03. Experiments</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../03-experiments/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Experiments</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">04. Reference</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reference</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng phần cứng, thông số kỹ thuật và động học của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng Python SDK và firmware API của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng ROS2 SDK/demo package của MyArm Master 750</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">05. Literature</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../05-literature/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Literature</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">06. Reports</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../06-reports/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reports</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+ <span class="menu-text">07. Inbox</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../07-inbox/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inbox</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+ <span class="menu-text">08. Notes</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../08-notes/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notes</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">09. Troubleshooting</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../09-troubleshooting/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Troubleshooting</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">QMD Syntax Examples</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#phần-cứng-cần-chuẩn-bị" id="toc-phần-cứng-cần-chuẩn-bị" class="nav-link active" data-scroll-target="#phần-cứng-cần-chuẩn-bị">Phần cứng cần chuẩn bị</a></li>
+  <li><a href="#tóm-tắt-cấu-hình-đang-dùng" id="toc-tóm-tắt-cấu-hình-đang-dùng" class="nav-link" data-scroll-target="#tóm-tắt-cấu-hình-đang-dùng">Tóm tắt cấu hình đang dùng</a></li>
+  <li><a href="#tải-và-cài-đặt-nvidia-sdk-manager-trên-máy-tính-host-ubuntu-20.04" id="toc-tải-và-cài-đặt-nvidia-sdk-manager-trên-máy-tính-host-ubuntu-20.04" class="nav-link" data-scroll-target="#tải-và-cài-đặt-nvidia-sdk-manager-trên-máy-tính-host-ubuntu-20.04">Tải và cài đặt Nvidia SDK Manager trên máy tính host Ubuntu 20.04</a></li>
+  <li><a href="#cách-đưa-jetson-agx-xavier-vào-recovery-mode" id="toc-cách-đưa-jetson-agx-xavier-vào-recovery-mode" class="nav-link" data-scroll-target="#cách-đưa-jetson-agx-xavier-vào-recovery-mode">Cách đưa Jetson AGX Xavier vào Recovery Mode</a></li>
+  <li><a href="#tải-jetpack-5.1.6-từ-sdk-manager" id="toc-tải-jetpack-5.1.6-từ-sdk-manager" class="nav-link" data-scroll-target="#tải-jetpack-5.1.6-từ-sdk-manager">Tải JetPack 5.1.6 từ SDK Manager</a></li>
+  <li><a href="#khoa-đang-cập-nhật-đến-đây" id="toc-khoa-đang-cập-nhật-đến-đây" class="nav-link" data-scroll-target="#khoa-đang-cập-nhật-đến-đây">Khoa đang cập nhật đến đây …</a></li>
+  <li><a href="#patch-firmware-auvidea-vào-linux_for_tegra" id="toc-patch-firmware-auvidea-vào-linux_for_tegra" class="nav-link" data-scroll-target="#patch-firmware-auvidea-vào-linux_for_tegra">Patch firmware Auvidea vào Linux_for_Tegra</a></li>
+  <li><a href="#flash-emmc-test-trước" id="toc-flash-emmc-test-trước" class="nav-link" data-scroll-target="#flash-emmc-test-trước">Flash eMMC test trước</a></li>
+  <li><a href="#flash-rootfs-sang-nvme" id="toc-flash-rootfs-sang-nvme" class="nav-link" data-scroll-target="#flash-rootfs-sang-nvme">Flash rootfs sang NVMe</a></li>
+  <li><a href="#kiểm-tra-sau-boot" id="toc-kiểm-tra-sau-boot" class="nav-link" data-scroll-target="#kiểm-tra-sau-boot">Kiểm tra sau boot</a></li>
+  <li><a href="#lỗi-thường-gặp" id="toc-lỗi-thường-gặp" class="nav-link" data-scroll-target="#lỗi-thường-gặp">Lỗi thường gặp</a></li>
+  <li><a href="#tài-liệu-và-nguồn-tham-khảo" id="toc-tài-liệu-và-nguồn-tham-khảo" class="nav-link" data-scroll-target="#tài-liệu-và-nguồn-tham-khảo">Tài liệu và nguồn tham khảo</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../02-implementation/index.html">02. Implementation</a></li><li class="breadcrumb-item"><a href="../../02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">jetson</div>
+    <div class="quarto-category">jetson-agx-xavier</div>
+    <div class="quarto-category">auvidea</div>
+    <div class="quarto-category">flash</div>
+    <div class="quarto-category">implementation</div>
+    <div class="quarto-category">setup</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Đây là tài liệu ghi chú lại quy trình cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI, bao gồm flash eMMC, flash NVMe rootfs và cũng như lưu ý các lỗi thường gặp để và cách khắc phục.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nguyen Hoang Dang Khoa </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">18/06/2026 14:56:36+07:00Z</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="phần-cứng-cần-chuẩn-bị" class="level2">
+<h2 class="anchored" data-anchor-id="phần-cứng-cần-chuẩn-bị">Phần cứng cần chuẩn bị</h2>
+<ul>
+<li><a href="https://developer.nvidia.com/embedded/jetson-agx-xavier-developer-kit">Jetson AGX Xavier module</a> (P2888-0004 hoặc P2888-0008)</li>
+<li><a href="https://auvidea.eu/products/x221-ai/">Custom carrier board Auvidea X221-AI</a></li>
+<li><a href="https://www.samsung.com/semiconductor/minisite/ssd/product/consumer/">SSD NVMe</a> (đọc thêm lưu ý về thông số của NVMe (gen 3 hoặc gen 4. pcle x4) trong tài liệu của Auvidea)</li>
+<li>USB-A to micro USB cable cái nào xịn xịn tí là ok USB2.0 là được.</li>
+<li>Một máy tính ngoài chạy Ubuntu bản 20.04 (này là yêu cầu bắt buộc cuẩ NVIDIA) đọc thêm matrix tương thích phần cứng và phần mềm của NVIDIA Jetson tại đây <a href="https://developer.nvidia.com/sdk-manager">NVIDIA Jetson Linux Developer Guide</a> để tránh lỗi không tương thích khi flash.</li>
+<li>Một số phụ kiện khác như cáp HDMI, chuột, bàn phím để kiểm tra sau khi flash nếu cần thiết.</li>
+</ul>
+</section>
+<section id="tóm-tắt-cấu-hình-đang-dùng" class="level2">
+<h2 class="anchored" data-anchor-id="tóm-tắt-cấu-hình-đang-dùng">Tóm tắt cấu hình đang dùng</h2>
+<p>Ở đây mình chỉ tóm tắt cấu hình mà minh đang sử dụng trong dự án này các bạn có thể coi thêm phần các thông tin cụ thể trong mục <a href="../../04-reference/index.html">reference</a>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Thành phần</th>
+<th>Giá trị</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jetson module</td>
+<td>P2888-0004 / AGX Xavier 32GB</td>
+<td>dùng bản firmware và device tree của base 2 bản 0001 và 0004 sử dụng chung bản 0008 mới dành cho industrial.</td>
+</tr>
+<tr class="even">
+<td>Carrier board</td>
+<td>Auvidea X221-AI</td>
+<td>có BSP/firmware riêng bạn tìm tại đây <a href="https://auvidea.eu/firmware/">Auvidea firmware</a></td>
+</tr>
+<tr class="odd">
+<td>Firmware vendor</td>
+<td>AGX Xavier JP 5.1.2 v2</td>
+<td>gói Auvidea mới nhất cho X221 đã kiểm tra và tải <a href="https://f000.backblazeb2.com/file/auvidea-download/images/Jetpack_5_1_2/AGX_Xavier_JP_5_1_2_v2.tar.xz">firmware X221</a> từ nhà sản xuất</td>
+</tr>
+<tr class="even">
+<td>Runtime hiện tại</td>
+<td>JetPack 5.1.6</td>
+<td>Vẫn có thể cài được nhưng đang test (Đây là bản mới nhấy maxping dành cho AGX Xavier)</td>
+</tr>
+<tr class="odd">
+<td>Rootfs</td>
+<td>NVMe</td>
+<td>eMMC vẫn giữ boot components bắt buộc để boot rồi mới đến NVMe hãy coi đọc thêm lưu ý ở tài liệu của Nvidia</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><code>P2888-0004</code> dùng <code>auvidea-agx-xavier-base</code>.</li>
+<li>Chỉ dùng <code>auvidea-agx-xavier-industrial</code> nếu module là bản Industrial bản (P2888-0008).</li>
+<li>Nếu gặp <code>bct_mb1 failed verify code 24</code>, ưu tiên kiểm tra sai board config, sai module SKU hoặc trộn BSP không tương thích hoặc sai cấu hình external và internal, củng có thể đến từ device chưa vào Recovery Mode.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="tải-và-cài-đặt-nvidia-sdk-manager-trên-máy-tính-host-ubuntu-20.04" class="level2">
+<h2 class="anchored" data-anchor-id="tải-và-cài-đặt-nvidia-sdk-manager-trên-máy-tính-host-ubuntu-20.04">Tải và cài đặt Nvidia SDK Manager trên máy tính host Ubuntu 20.04</h2>
+<p>Hãy đọc thêm tại <a href="https://developer.nvidia.com/sdk-manager">Nvidia SDK Manager</a> để tải và cài đặt SDK Manager trên máy tính host Ubuntu 20.04. Đây là công cụ chính thức của NVIDIA để flash Jetson module và cài đặt các gói phần mềm đi kèm. Xem hình <span class="citation" data-cites="nvidia-sdk-jetpack-host-compability-matrix">(<a href="#ref-nvidia-sdk-jetpack-host-compability-matrix" role="doc-biblioref"><strong>nvidia-sdk-jetpack-host-compability-matrix?</strong></a>)</span>. để biết thêm thông tin về các phiên bản Ubuntu host được hỗ trợ.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>SDK Manager chỉ phục flash các module Jetson với Carrier Board và Development Kit chính hãng. Những custom carrier board như Auvidea X221-AI thì không được hỗ trợ chính thức. Vì vậy, bạn cần tải firmware và BSP từ nhà sản xuất Auvidea và sử dụng các script flash của NVIDIA để flash module.</li>
+</ul>
+</div>
+</div>
+<div id="nvidia-sdk-jetpack-host-compability-matrix" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="./assets/images/nvidia-sdk-jetpack-host-compability-matrix.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Hình Bảng tương thích ma trận phần mềm</figcaption>
+</figure>
+</div>
+<p>Chả hiểu tại sao bên Nvidia không cung cấp bản cài đăt .deb nên phai cài đặt và tải qua mạng network bằng terminal (Crtl + Alt + T).</p>
+<p>Tải keyring từ trên mạng để cho apt-get update có thể thay bằng các phiên bản Ubuntu khác như <code>ubuntu2404</code>, <code>ubuntu2204</code>, <code>ubuntu2004</code>, <code>ubuntu1804</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Tiếp tục sử dụng lệnh tải package để tải phần kering</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dpkg <span class="at">-i</span> cuda-keyring_1.1-1_all.deb</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Rồi update và tải với apt hoặc apt-get</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get <span class="at">-y</span> install sdkmanager</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Chạy phần mềm SDK Manager bằng lệnh sau:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sdkmanager</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="cách-đưa-jetson-agx-xavier-vào-recovery-mode" class="level2">
+<h2 class="anchored" data-anchor-id="cách-đưa-jetson-agx-xavier-vào-recovery-mode">Cách đưa Jetson AGX Xavier vào Recovery Mode</h2>
+<p>Theo tài liệu của <a href="https://auvidea.eu/download/QuickStart.pdf">Auvidea Quick Start Jetson AGX Xavier - Advance flashing guide</a> Để đưa Jetson AGX Xavier vào Recovery Mode, bạn cần thực hiện các bước sau:</p>
+<ul>
+<li>Tắt nguồn Jetson AGX Xavier nếu nó đang bật.</li>
+<li>Kết nối cáp USB từ máy tính host đến cổng micro USB trên Jetson</li>
+<li>Nhấn và giữ nút Recovery trên Jetson AGX Xavier (thường là nút nhỏ nằm gần cổng USB hoặc trên board) trong khi bạn nhấn nút Power để bật nguồn hoặc gắm nguồn lại</li>
+<li>Giữ nút Recovery khoảng 10 đến 15 giây</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Bằng một cách nào đó thì bên Auvidea thì họ cũng bảo rằng board thiết kế của họ cho phép vào recovery mode chỉ bằng cách tắt máy và gắn usb vào máy host rồi bật máy lại thì máy auto về recovery mode. Này đọc được trong tài liệu của board <a href="https://auvidea.eu/download/X221_Manual_v2.0.pdf">Auvidea X221 Carrier Jetson AGX Xavier Manual</a> ở phần QA, nhưng mà cứ nhất luôn nút force recovery cho nó có niềm tin.</p>
+</div>
+</div>
+<ul>
+<li>Sau đó, bạn có thể thả nút Recovery và kiểm tra xem máy tính host đã nhận diện thiết bị Jetson AGX Xavier ở chế độ Recovery chưa bằng lệnh <code>lsusb</code> trên terminal của máy tính host.</li>
+</ul>
+<div id="lsusb-conect-jetson-at-recovery-mode" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="./assets/images/lsusb-conect-jetson-at-recovery-mode.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>Hình chạy lệnh lsusb khi mà Jetson đã vào Recovery Mode</figcaption>
+</figure>
+</div>
+<div id="determine-jetson-developer-kit" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="./assets/images/determine-jetson-developer-kit.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>Xác nhận thiết bị Jetson AGX Xavier đã được nhận diện ở chế độ Recovery</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Nếu bạn không thấy thiết bị Jetson AGX Xavier xuất hiện trong danh sách <code>lsusb</code> thì nó là dạng id 0955:7019 nhé</p>
+</div>
+</div>
+</section>
+<section id="tải-jetpack-5.1.6-từ-sdk-manager" class="level2">
+<h2 class="anchored" data-anchor-id="tải-jetpack-5.1.6-từ-sdk-manager">Tải JetPack 5.1.6 từ SDK Manager</h2>
+<p>Đăng nhập với tài khoản NVIDIA Developer của bạn trong SDK Manager</p>
+<div id="logging-nvidia-developer-account" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="./assets/images/logging-nvidia-developer-account.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>Hình Đăng nhập SDK Manager</figcaption>
+</figure>
+</div>
+<p>Giao diện ban đầu và các bạn sẽ thấy như sau</p>
+<div id="step01-configuration-nvidia-sdk-manager" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="./assets/images/step01-configuration-nvidia-sdk-manager.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>Hình Giao diện Bước một</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Product category các bạn chọn <code>Jetson</code>.</li>
+<li>System configuration các bạn chọn Target Hardware <code>Jetson AGX Xavier</code> và Host Machine cần là <code>Ubuntu 20.04</code>.</li>
+<li>SDK Version các bạn chọn <code>JetPack 5.1.6</code> (đây là bản mới nhất dành cho AGX Xavier tính đến thời điểm hiện tại).</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Không chọn DeepStream nếu ứng dụng của bạn không cần đến nó vì nó sẽ chiếm nhiều dung lượng và thời gian cài đặt. Framework này chủ yếu dùng cho các ứng dụng về video analytics và AI inference trên video stream, nhiều camera,…</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="khoa-đang-cập-nhật-đến-đây" class="level2">
+<h2 class="anchored" data-anchor-id="khoa-đang-cập-nhật-đến-đây">Khoa đang cập nhật đến đây …</h2>
+</section>
+<section id="patch-firmware-auvidea-vào-linux_for_tegra" class="level2">
+<h2 class="anchored" data-anchor-id="patch-firmware-auvidea-vào-linux_for_tegra">Patch firmware Auvidea vào Linux_for_Tegra</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="op">&lt;</span>Linux_for_Tegra<span class="op">&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rsync</span> <span class="at">-avHAX</span> <span class="op">&lt;</span>path_to_kernel_out<span class="op">&gt;</span>/ ./</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ./apply_binaries.sh</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="pp">*</span>.conf <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-Ei</span> <span class="st">'auvidea|xavier|industrial|p2888'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="flash-emmc-test-trước" class="level2">
+<h2 class="anchored" data-anchor-id="flash-emmc-test-trước">Flash eMMC test trước</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ./flash.sh auvidea-agx-xavier-base mmcblk0p1 <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">tee</span> flash_emmc.log</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="flash-rootfs-sang-nvme" class="level2">
+<h2 class="anchored" data-anchor-id="flash-rootfs-sang-nvme">Flash rootfs sang NVMe</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ./tools/kernel_flash/l4t_initrd_flash.sh   <span class="at">--external-device</span> nvme0n1p1   <span class="at">-c</span> tools/kernel_flash/flash_l4t_external.xml   <span class="at">-S</span> 100GiB   <span class="at">--showlogs</span>   <span class="at">--network</span> usb0   auvidea-agx-xavier-base internal   <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span> <span class="kw">|</span> <span class="fu">tee</span> flash_nvme.log</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="kiểm-tra-sau-boot" class="level2">
+<h2 class="anchored" data-anchor-id="kiểm-tra-sau-boot">Kiểm tra sau boot</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">findmnt</span> /</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">df</span> <span class="at">-h</span> /</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> /proc/cmdline <span class="kw">|</span> <span class="fu">tr</span> <span class="st">' '</span> <span class="st">'</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="st">'</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">'^root=|rootwait'</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ex">lsblk</span> <span class="at">-o</span> NAME,PATH,SIZE,FSTYPE,MOUNTPOINT</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> /etc/nv_tegra_release</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="lỗi-thường-gặp" class="level2">
+<h2 class="anchored" data-anchor-id="lỗi-thường-gặp">Lỗi thường gặp</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Lỗi</th>
+<th>Ý nghĩa khả dĩ</th>
+<th>Cách xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>bct_mb1 failed verify code 24</code></td>
+<td>sai board config/module SKU/BCT</td>
+<td>dùng <code>auvidea-agx-xavier-base</code> cho P2888-0004</td>
+</tr>
+<tr class="even">
+<td><code>bootloader/signed/flash.idx is not found</code></td>
+<td>lỗi dây chuyền sau generate/sign fail</td>
+<td>xem 80 dòng trước lỗi</td>
+</tr>
+<tr class="odd">
+<td>APP NVMe chỉ 30GB</td>
+<td>partition chưa mở rộng</td>
+<td><code>growpart</code> + <code>resize2fs</code></td>
+</tr>
+<tr class="even">
+<td>boot vào eMMC</td>
+<td>boot order/rootdev chưa đúng</td>
+<td>kiểm tra UEFI/<code>efibootmgr</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="tài-liệu-và-nguồn-tham-khảo" class="level2">
+<h2 class="anchored" data-anchor-id="tài-liệu-và-nguồn-tham-khảo">Tài liệu và nguồn tham khảo</h2>
+<ul>
+<li><a href="https://developer.nvidia.com/embedded/jetpack-sdk-516">NVIDIA JetPack 5.1.6 SDK</a></li>
+<li><a href="https://docs.nvidia.com/jetson/">NVIDIA Jetson Linux Developer Guide</a></li>
+<li><a href="https://docs.nvidia.com/jetson/archives/r35.4.1/DeveloperGuide/text/SD/FlashingSupport.html">NVIDIA Flashing Support</a></li>
+<li><a href="https://developer.nvidia.com/sdk-manager">NVIDIA SDK Manager</a></li>
+<li><a href="https://auvidea.eu/firmware/">Auvidea firmware</a></li>
+<li><a href="https://auvidea.eu/download/QuickStart.pdf">Auvidea Software Setup Guide <code>QuickStart.pdf</code></a></li>
+<li><a href="https://auvidea.eu/download/X221_Manual_v2.0.pdf">Auvidea X221 Carrier Jetson AGX Xavier Manual</a></li>
+<li><a href="https://auvidea.eu/product/x221-70881/">Auvidea X221-AI Jetson AGX Xavier Product Page</a></li>
+<li><a href="https://auvidea.eu/download/D70881.pdf">Auvidea X221-AI Jetson AGX Xavier Product Brief</a></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<button type="button" class="layout-toggle" id="layout-toggle" aria-pressed="false" title="Mở rộng nội dung">
+  <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+  <span class="visually-hidden">Mở rộng nội dung</span>
+</button>
+
+<script>
+(() => {
+  const storageKey = "dynacortex-layout-wide";
+  const wideClass = "layout-wide";
+
+  const readSavedState = () => {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const saveState = (enabled) => {
+    try {
+      localStorage.setItem(storageKey, String(enabled));
+    } catch {
+      return;
+    }
+  };
+
+  const applyState = (enabled) => {
+    document.body.classList.toggle(wideClass, enabled);
+
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    const icon = button.querySelector("i");
+    const label = enabled ? "Thu gọn nội dung" : "Mở rộng nội dung";
+    button.setAttribute("aria-pressed", String(enabled));
+    button.setAttribute("title", label);
+
+    const hiddenLabel = button.querySelector(".visually-hidden");
+    if (hiddenLabel) {
+      hiddenLabel.textContent = label;
+    }
+
+    if (icon) {
+      icon.className = enabled ? "bi bi-arrows-angle-contract" : "bi bi-arrows-angle-expand";
+    }
+  };
+
+  applyState(readSavedState());
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener("click", () => {
+      const enabled = !document.body.classList.contains(wideClass);
+      saveState(enabled);
+      applyState(enabled);
+    });
+  });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/uitshirodoragon\.github\.io\/dynacortex-hub\/docs\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../02-implementation/index.html" class="pagination-link" aria-label="Implementation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Implementation</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../03-experiments/index.html" class="pagination-link" aria-label="Experiments">
+        <span class="nav-page-text">Experiments</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

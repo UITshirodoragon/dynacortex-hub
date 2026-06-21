@@ -1,0 +1,32 @@
+---
+title: "Cài đặt và setup các thư viện deep learning framework và tối ưu trên phần cứngcủa Jetson AGX Xavier"
+description: "Đây là tài liệu ghi chú lại quy trình cài đặt và setup các thư viện deep learning framework và các thư viện liên quan trên Jetson AGX Xavier với JetPack 5.1.6"
+categories: [jetson, jetson-agx-xavier, pytorch, opencv, numpy, runtime, jetpack, onnx, tensorrt, cuda, numba, cupy, implementation, setup]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Tải jtop và kiểm tra các thông số phần cứng của Jetson AGX Xavier
+
+## Tải Jetpack 5.1.6 SDK với jetpack runtime và jetpack dev
+
+
+## Tải Pytorch và Torchvision được build từ source được cung cấp từ NVIDIA 
+
+## Tải và cài đặt OpenCV build với CUDA
+
+## Tải và cài đặt các thư viện python chuyên cho ML và DL như numpy, cupy, numba, onnxruntime-gpu, onnx
+
+
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [NVIDIA JetPack 5.1.6 SDK](https://developer.nvidia.com/embedded/jetpack-sdk-516)
+- [NVIDIA Jetson Linux Developer Guide](https://docs.nvidia.com/jetson/)
+- [NVIDIA Flashing Support](https://docs.nvidia.com/jetson/archives/r35.4.1/DeveloperGuide/text/SD/FlashingSupport.html)
+- [NVIDIA SDK Manager](https://developer.nvidia.com/sdk-manager)
+- [NVIDIA Forum Pytorch for Jetson](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048)

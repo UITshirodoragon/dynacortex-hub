@@ -1,0 +1,25 @@
+---
+title: "pymycobot SDK observations"
+description: "Ghi chú source-informed: pymycobot SDK observations."
+categories: [source-analysis, robotics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# pymycobot SDK observations
+
+Quan sát chính: SDK nằm gần hardware/firmware API. Nó xử lý serial command, timeout, lock và các hàm gửi/đọc lệnh.
+
+## Khái niệm rút ra
+
+| Source signal | System foundation |
+|---|---|
+| serial protocol | API boundary và command semantics |
+| send angles/coords | joint command vs task-space command |
+| deg-based API | unit conversion rad/deg |
+| get angles/coords | feedback state và state estimation |
+
+::: callout-warning
+SDK hardware không nhất thiết cung cấp FK/IK minh bạch. Vì vậy cần học Modern Robotics để tự kiểm chứng model.
+:::

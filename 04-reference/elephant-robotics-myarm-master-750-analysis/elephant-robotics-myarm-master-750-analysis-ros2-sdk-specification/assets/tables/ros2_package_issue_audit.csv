@@ -1,0 +1,7 @@
+Issue,Evidence in source,Technical impact
+Không có `MyArmMControl` trong package M750,"Import audit trong `myarm_m750` thấy `MyArmM` hoặc legacy `MyArm`, không thấy `MyArmMControl`.",ROS2 demo không phản ánh Coordinate API class hiện tại.
+Không có `ros2_control` hardware interface,"Không thấy `<ros2_control>` tag, `hardware_interface::SystemInterface`, controller YAML.",Package không phải control stack chuẩn.
+Không có MoveIt2 config đầy đủ,"Không thấy SRDF, `kinematics.yaml`, `ompl_planning.yaml`, `move_group` launch.",Không có planning/execution pipeline đầy đủ.
+API mismatch trong scripts điều khiển,`slider_control.py` gọi `send_angles`; `simple_gui.py` gọi `send_coords`; `MyArmM` không có các method này.,Có thể lỗi runtime với SDK v4.0.4/v4.0.5.
+URDF limits lệch docs/SDK,URDF joint1..6 giới hạn rad khác docs Coordinate và `robot_info.py`.,Tool đọc URDF sẽ validate khác Python SDK/firmware.
+Gripper biểu diễn khác giữa URDF và SDK,"URDF dùng prismatic `gripper`, `gripper_r`; SDK/docs có J7 angle/potential.",Không có ánh xạ một-một hiển nhiên.

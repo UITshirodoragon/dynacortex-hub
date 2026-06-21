@@ -1,0 +1,23 @@
+---
+title: "Camera calibration và tính toán intrinsics, extrinsics"
+description: "Đây là tài liệu ghi chú lại quy trình hiệu chỉnh camera và tính toán intrinsics, extrinsics của camera để phục vụ cho việc xây dựng hệ thống thị giác máy tính cho robot."
+categories: [jetson, jetson-agx-xavier, ros2, camera, camera-calibration, calibration, camera-intrinsics, camera-extrinsics, implementation, setup]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Giới thiệu về camera calibration, intrinsics, extrinsics và tầm quan trọng của chúng trong thị giác máy tính cho robot
+
+## Các phương pháp và công cụ để thực hiện camera calibration, tính toán intrinsics và extrinsics
+
+## Ứng dụng của camera calibration, intrinsics và extrinsics trong các hệ thống thị giác máy tính cho robot, ví dụ như SLAM, object detection, pose estimation, v.v.
+
+
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)

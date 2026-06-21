@@ -1,0 +1,10 @@
+source_id,source_file,role,evidence
+DOCS-PRODUCT,myarm_m750_docs_en.zip/.../2-ProductParameters.md,"Spec phần cứng, MDH, joint limits, encoder/potential limits, I/O, frame docs",Machine parameters lines 14-24; units line 94; MDH lines 275-303; limits lines 305-374
+DOCS-API,myarm_m750_docs_en.zip/.../6.1-BasedOnPythonDevelopmentAndUse/2_API.md,API docs cho Shake và Coordinate firmware,"Tài liệu API chính thức trong docs zip, đối chiếu với source pymycobot"
+PY-SDK,pymycobot.zip/pymycobot,Source Python SDK đang phân tích,"git tag v4.0.4, commit 44d7fb1, __version__=4.0.4"
+PY-MYARMM,pymycobot/pymycobot/myarmm.py,Class MyArmM cho Shake/joint-servo API,__init__ line 9 baudrate=1000000; set_joints_angle lines 23-32
+PY-MYARMMCONTROL,pymycobot/pymycobot/myarmm_control.py,Class MyArmMControl cho Coordinate API,__init__ line 176 baudrate=115200 default; _mesg line 71 forces has_reply=True; write_coords lines 294-311
+PY-ROBOTINFO,pymycobot/pymycobot/robot_info.py,Bảng limit được SDK dùng để validate tham số,MyArmM lines 440-447; MyArmMControl lines 448-457
+ROS2-M750,myarm_ros2.zip/myArm/myarm_m750,ROS2 demo package cho M750,"read_control.py, slider_control.py, simple_gui.py, teleop_keyboard.py, launch files"
+ROS2-URDF,myarm_ros2.zip/mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro,URDF/Xacro model và joint limits của demo ROS2,joint1-joint6 limits lines 146-190; gripper lines 197-210
+LOCAL-OBS,Thông tin người dùng cung cấp trong phiên này,"Hiện trạng thực nghiệm: coord firmware đã public trên myStudio và đã burn mới nhất vào 3 bộ, baudrate có thể lên 1 Mbps","Observation ngoài source zip; đánh dấu riêng, không trộn thành claim từ docs/source"

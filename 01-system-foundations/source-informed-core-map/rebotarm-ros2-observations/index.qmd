@@ -1,0 +1,26 @@
+---
+title: "reBotArmController_ROS2 observations"
+description: "Ghi chú source-informed: reBotArmController_ROS2 observations."
+categories: [source-analysis, robotics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# reBotArmController_ROS2 observations
+
+Quan sát chính: repo này có ROS 2 packages, custom messages/actions/services, MoveIt config, bringup và ros2_control related files.
+
+## Khái niệm rút ra
+
+| Source signal | System foundation |
+|---|---|
+| `rebotarm_msgs/action` | ROS 2 action model |
+| `rebotarm_msgs/srv` | service model |
+| `rebotarm_moveit_config/config/kinematics.yaml` | kinematics solver concept |
+| `ompl_planning.yaml` | planning pipeline/OMPL concept |
+| `ros2_controllers.yaml` | ros2_control/controller concept |
+
+::: callout-note
+MoveIt 2 planning output cần execution interface. Đây là lý do phải học cả planning model lẫn controller model.
+:::

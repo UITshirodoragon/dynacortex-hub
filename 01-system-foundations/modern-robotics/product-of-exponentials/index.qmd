@@ -1,0 +1,42 @@
+---
+title: "Product of Exponentials"
+description: "Lý thuyết cốt lõi về Product of Exponentials theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Product of Exponentials
+
+PoE biểu diễn FK của open-chain robot bằng tích các rigid-body exponentials:
+
+$$
+T(\theta) = e^{[S_1]\theta_1}e^{[S_2]\theta_2}\cdots e^{[S_n]\theta_n}M
+$$ {#eq-poe-space}
+
+Trong đó:
+
+| Ký hiệu | Ý nghĩa |
+|---|---|
+| $S_i$ | screw axis của joint $i$ trong space frame khi home pose |
+| $\theta_i$ | biến khớp |
+| $M$ | home configuration của end-effector |
+| $T(\theta)$ | pose end-effector hiện tại |
+
+```{mermaid}
+flowchart LR
+    S[Screw axes S_i] --> E[exp([S_i] theta_i)]
+    M[Home pose M] --> FK[PoE FK]
+    E --> FK
+    FK --> T[T(theta)]
+```
+
+## Vì sao nên học PoE trước?
+
+PoE giúp nhìn robot như một chuỗi screw motions. Cách này phù hợp với Jacobian, IK và thư viện tính toán hiện đại như Pinocchio hoặc Modern Robotics software.
+
+::: callout-tip
+Khi đọc một URDF, hãy tự hỏi: mỗi joint axis trong URDF tương ứng với screw axis nào trong PoE?
+:::

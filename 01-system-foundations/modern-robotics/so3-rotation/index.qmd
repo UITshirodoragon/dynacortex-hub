@@ -1,0 +1,43 @@
+---
+title: "Rotation Matrix và SO(3)"
+description: "Lý thuyết cốt lõi về Rotation Matrix và SO(3) theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Rotation Matrix và SO(3)
+
+$SO(3)$ là nhóm các rotation matrix hợp lệ trong không gian 3D:
+
+$$
+SO(3) = \{R \in \mathbb{R}^{3 \times 3} \mid R^T R = I,\; \det(R)=1\}
+$$ {#eq-so3-def}
+
+## Tính chất cần nhớ
+
+| Tính chất | Công thức | Ý nghĩa |
+|---|---|---|
+| Trực chuẩn | $R^T R = I$ | các trục frame vuông góc và chuẩn hóa |
+| Định thức | $\det(R)=1$ | rotation thật, không phản chiếu |
+| Nghịch đảo | $R^{-1}=R^T$ | đổi chiều transform orientation |
+| Ghép rotation | $R_{ac}=R_{ab}R_{bc}$ | chaining orientation |
+
+## Rotation cơ bản
+
+$$
+R_z(\theta) =
+\begin{bmatrix}
+\cos\theta & -\sin\theta & 0 \\
+\sin\theta & \cos\theta & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$ {#eq-rz}
+
+Ví dụ góc $\theta = 1.571~\mathrm{rad}$ tương ứng $90.000~^\circ$.
+
+::: callout-warning
+Euler/RPY dễ đọc nhưng có thể gặp singularity biểu diễn. Trong tính toán robot model nên ưu tiên rotation matrix, quaternion hoặc Lie algebra tùy ngữ cảnh.
+:::

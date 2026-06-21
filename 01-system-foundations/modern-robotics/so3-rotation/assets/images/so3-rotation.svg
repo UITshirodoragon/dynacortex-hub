@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+  <rect width="100%" height="100%" fill="#f7f7f7" stroke="#999" stroke-width="2"/>
+  <text x="40" y="65" font-size="34" font-family="Arial" font-weight="700" fill="#222">Rotation Matrix và SO(3)</text>
+  <text x="40" y="120" font-size="24" font-family="Arial" fill="#333">Core concept: Rotation Matrix và SO(3)</text>
+<text x="40" y="162" font-size="24" font-family="Arial" fill="#333">Diagram placeholder for theory page</text>
+  <text x="40" y="385" font-size="18" font-family="Arial" fill="#777">Placeholder figure for Quarto documentation v0.0.2</text>
+</svg>

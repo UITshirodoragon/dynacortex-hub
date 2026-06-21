@@ -1,0 +1,22 @@
+---
+title: "Computation Graph"
+description: "Khái niệm ROS 2: Computation Graph."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Computation Graph
+
+Computation graph là đồ thị các node và kênh giao tiếp giữa chúng.
+
+```{mermaid}
+flowchart LR
+    A[camera_node] -->|/image_raw| B[perception_node]
+    B -->|/target_pose| C[planning_node]
+    C -->|trajectory action| D[controller_node]
+    D -->|hardware command| E[hardware_node]
+```
+
+Computation graph giúp tách module robot thành các tiến trình độc lập nhưng giao tiếp qua interface chuẩn.

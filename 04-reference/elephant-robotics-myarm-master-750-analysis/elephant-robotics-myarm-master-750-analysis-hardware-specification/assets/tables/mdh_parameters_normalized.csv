@@ -1,0 +1,7 @@
+Joint,alpha_{i-1},a_{i-1},d_i,theta,offset delta_i
+$q_1$,$0.000~\mathrm{rad}$<br>$0~^\circ$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$0.174~\mathrm{m}$<br>$173.9~\mathrm{mm}$,$\theta_1$,$0.000~\mathrm{rad}$<br>$0~^\circ$
+$q_2$,$-1.571~\mathrm{rad}$<br>$-90~^\circ$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$\theta_2$,$-1.571~\mathrm{rad}$<br>$-90~^\circ$
+$q_3$,$0.000~\mathrm{rad}$<br>$0~^\circ$,$0.308~\mathrm{m}$<br>$308.315~\mathrm{mm}$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$\theta_3$,$0.000~\mathrm{rad}$<br>$0~^\circ$
+$q_4$,$-1.571~\mathrm{rad}$<br>$-90~^\circ$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$0.328~\mathrm{m}$<br>$327.91~\mathrm{mm}$,$\theta_4$,$0.000~\mathrm{rad}$<br>$0~^\circ$
+$q_5$,$1.571~\mathrm{rad}$<br>$90~^\circ$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$\theta_5$,$0.000~\mathrm{rad}$<br>$0~^\circ$
+$q_6$,$-1.571~\mathrm{rad}$<br>$-90~^\circ$,$0.000~\mathrm{m}$<br>$0~\mathrm{mm}$,$0.197~\mathrm{m}$<br>$197.1~\mathrm{mm}$,$\theta_6$,$3.142~\mathrm{rad}$<br>$180~^\circ$

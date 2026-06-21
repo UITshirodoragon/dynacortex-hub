@@ -1,0 +1,42 @@
+---
+title: "Robot Control"
+description: "Lý thuyết cốt lõi về Robot Control theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Robot Control
+
+Control biến mục tiêu chuyển động thành lệnh actuator.
+
+```{mermaid}
+flowchart LR
+    A[Desired trajectory] --> B[Controller]
+    C[Robot state feedback] --> B
+    B --> D[Command]
+    D --> E[Robot]
+```
+
+## Các lớp control
+
+| Loại control | Input | Output |
+|---|---|---|
+| Position control | $q_d$ | joint position command |
+| Velocity control | $\dot{q}_d$ | joint velocity command |
+| Torque control | $\tau_d$ | actuator torque |
+| Task-space control | $T_d$ hoặc $V_d$ | joint command qua IK/Jacobian |
+
+## Error dynamics cơ bản
+
+Một hệ bậc hai tuyến tính thường được dùng để hiểu đáp ứng:
+
+$$
+\ddot{e}+K_d\dot{e}+K_p e=0
+$$ {#eq-error-dynamics}
+
+::: callout-important
+ROS 2, MoveIt 2 hoặc Pinocchio không tự làm robot ổn định. Controller và feedback loop mới quyết định robot thực thi mượt hay không.
+:::

@@ -1,0 +1,5 @@
+branch,role,priority_v002
+Modern Robotics,mathematical and mechanical foundation,high
+ROS 2,communication and runtime model,medium
+MoveIt 2,manipulation planning model,medium
+Pinocchio,robot computation model,medium

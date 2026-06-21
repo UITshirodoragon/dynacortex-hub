@@ -1,0 +1,283 @@
+---
+title: "Hiện trạng Python SDK và firmware API của MyArm Master 750"
+description: "Phân tích MyArmM, MyArmMControl, protocol, serial, limit validation và các điểm không thống nhất giữa docs và pymycobot."
+categories: [reference, myarm, myarm-master-750, python-sdk, firmware, api, protocol, serial, analysis]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Hiện trạng Python SDK và firmware API của MyArm Master 750
+
+Trang này phản ánh source `pymycobot` liên quan đến M750: `MyArmM`, `MyArmMControl`, protocol/serial, bảng validation và các điểm không thống nhất với docs. Không đánh giá theo mong muốn kiến trúc; chỉ ghi nhận hiện trạng kỹ thuật.
+
+::: callout-important
+Đính chính hiện trạng thực nghiệm của dự án: Coordinate firmware hiện đã được nhà sản xuất công bố trên app myStudio; người dùng đã burn firmware coord mới nhất vào 3 bộ M750 và quan sát baudrate có thể truyền lên $1{,}000{,}000~\mathrm{bit/s}$. Trong source `pymycobot` đang xét, `MyArmMControl.__init__` vẫn đặt default $115{,}200~\mathrm{bit/s}$, nên quan sát 1 Mbps được đánh dấu là `LOCAL-OBS`, không phải giá trị default trong source.
+:::
+
+## 1. Source SDK đang phân tích
+
+| File | Vai trò |
+|---|---|
+| `pymycobot/myarmm.py` | Class `MyArmM`, path Shake/joint-servo API. |
+| `pymycobot/myarm_api.py` | Base API cho MyArm M/C: version/status/encoder/servo/system params. |
+| `pymycobot/myarmm_control.py` | Class `MyArmMControl`, path Coordinate API. |
+| `pymycobot/common.py` | `ProtocolCode`, packet format, encode/decode angle/coord. |
+| `pymycobot/robot_info.py` | `robot_limit` cho validation trước khi gửi lệnh. |
+| `pymycobot/error.py` | `calibration_parameters()` dùng `robot_limit` theo `class_name`. |
+
+## 2. Hai firmware path và hai class API
+
+| Cụm firmware/API | Trạng thái trong source/docs | Ý nghĩa kỹ thuật hiện tại |
+| --- | --- | --- |
+| Pico / Master Control | Docs firmware mô tả joint status, alarm, joint control, IO, system params; release notes có nhắc tối ưu communication lên 1M. | Cụm control core cấp thấp nhưng tên Basic/Pico/Master trong docs không thật sạch. |
+| Basic / Screen / Transponder | ROS2 docs hướng dẫn chọn Transponder và USB UART khi nối PC/Jetson. | Cụm UI/bridge trong demo ROS2. |
+| Atom / Tool | Docs/API có tool firmware version, tool IO, LED/button, gripper/tool interface. | Cụm đầu tay máy tách khỏi motion chain 6R. |
+| Shake firmware + `MyArmM` | Source `MyArmM` default $1{,}000{,}000~\mathrm{bit/s}$ và tập trung joint/servo/encoder/status. | Ít exposed Cartesian API; gần joint/servo layer hơn. |
+| Coordinate firmware + `MyArmMControl` | Source default $115{,}200~\mathrm{bit/s}$; LOCAL-OBS: coord firmware mới public trên myStudio và chạy được $1{,}000{,}000~\mathrm{bit/s}$ khi truyền baudrate explicit. | Có joint + Cartesian + frame + fresh mode; Python source không chứa IK/FK firmware. |
+
+_Dữ liệu nguồn: `assets/tables/firmware_modules_state.csv`._
+
+| Cụm firmware/API | Trạng thái trong source/docs | Ý nghĩa kỹ thuật hiện tại |
+| --- | --- | --- |
+| Pico / Master Control | Docs firmware mô tả joint status, alarm, joint control, IO, system params; release notes có nhắc tối ưu communication lên 1M. | Cụm control core cấp thấp nhưng tên Basic/Pico/Master trong docs không thật sạch. |
+| Basic / Screen / Transponder | ROS2 docs hướng dẫn chọn Transponder và USB UART khi nối PC/Jetson. | Cụm UI/bridge trong demo ROS2. |
+| Atom / Tool | Docs/API có tool firmware version, tool IO, LED/button, gripper/tool interface. | Cụm đầu tay máy tách khỏi motion chain 6R. |
+| Shake firmware + `MyArmM` | Source `MyArmM` default $1{,}000{,}000~\mathrm{bit/s}$ và tập trung joint/servo/encoder/status. | Ít exposed Cartesian API; gần joint/servo layer hơn. |
+| Coordinate firmware + `MyArmMControl` | Source default $115{,}200~\mathrm{bit/s}$; LOCAL-OBS: coord firmware mới public trên myStudio và chạy được $1{,}000{,}000~\mathrm{bit/s}$ khi truyền baudrate explicit. | Có joint + Cartesian + frame + fresh mode; Python source không chứa IK/FK firmware. |
+
+## 3. API catalog: miền tham số và đơn vị
+
+| Class | Method | Miền tham số chính | Protocol/behavior | Trạng thái kỹ thuật |
+| --- | --- | --- | --- | --- |
+| `MyArmM` | `__init__(port, baudrate="1000000", timeout=0.1, debug=False)` | $baudrate=1{,}000{,}000~\mathrm{bit/s}$ default | Serial open qua `MyArmAPI`. | Default 1 Mbps trong source. |
+| `MyArmM` | `set_joint_angle(joint_id, angle, speed)` | $joint\_id \in [0,254]$<br>$[0.000, 4.433]~\mathrm{rad}$<br>$[0, 254]~^\circ$ docstring angle<br>$speed \in [1,100]$ | `SEND_ANGLE = 0x21`; không ép `has_reply=True`. | Validation thật phụ thuộc `robot_info.py`. |
+| `MyArmM` | `set_joints_angle(angles, speed)` | $speed \in [0,100]$ theo docstring<br>angle list encode độ $\times 100$ | `SEND_ANGLES = 0x22`; không ép `has_reply=True`. | Protocol ID trùng `MyArmMControl.write_angles`. |
+| `MyArmM` | `set_servo_encoder(servo_id, encoder, speed)` | $servo\_id \in [0,254]$<br>$encoder \in [0,4095]$ raw count<br>$speed \in [1,100]$ | `SET_ENCODER = 0x3A`. | Điều khiển raw potential/encoder. |
+| `MyArmM` | `set_servos_encoder_drag(encoders, speeds)` | $encoders$: 8 raw counts<br>$speeds \in [-10000,10000]$ | `SET_ENCODERS_DRAG = 0x3E`. | Ý nghĩa vật lý tốc độ drag không được chuẩn hóa trong docs. |
+| `MyArmM` | `set_servo_enabled(servo_id, status)` | $servo\_id \in [0,254]$<br>$status \in \{0,1\}$ | `RELEASE_ALL_SERVOS = 0x13`. | `read_control.py` dùng để release servo trước khi RViz follow. |
+| `MyArmMControl` | `__init__(port, baudrate=115200, timeout=0.1, debug=False)` | $baudrate=115{,}200~\mathrm{bit/s}$ default<br>LOCAL-OBS: $1{,}000{,}000~\mathrm{bit/s}$ khi truyền explicit | Serial open qua `MyArmMProcessor`. | Default source chưa phản ánh observation 1 Mbps. |
+| `MyArmMControl` | `write_angles(angles, speed)` | $speed \in [1,100]$ | `SEND_ANGLES = 0x22`; `_mesg()` ép `has_reply=True`. | Cùng command ID với `MyArmM.set_joints_angle`, khác reply behavior. |
+| `MyArmMControl` | `write_coords(coords, speed, mode=None)` | $coords=[x,y,z,r_x,r_y,r_z]$<br>$x,y,z$: mm; $r$: độ<br>$speed \in [1,100]$<br>$mode \in \{0,1,2\}$ | `SEND_COORDS = 0x25`; xyz encode $\times 10$, rpy encode $\times 100$. | Cartesian call đi vào firmware blackbox. |
+| `MyArmMControl` | `set_fresh_mode(mode)` | $mode \in \{0,1\}$ | `SET_FRESH_MODE = 0x16`; source comment `TODO need test`. | Docs mô tả latest/queue, nhưng source không chứng minh timing/drop policy. |
+| `MyArmMControl` | `set_movement_type(move_type)` | $move\_type \in \{0,1\}$ | Docs/source: `1=movel`, `0=moveJ`. | Khác tham số `mode` của `write_coords`. |
+| `MyArmMControl` | `set_plan_speed` / `set_plan_acceleration` | $speed,acceleration \in [1,100]$<br>$is\_linear \in \{0,1\}$ | Plan config protocol. | Giá trị là thang nội bộ, không có đơn vị SI. |
+
+_Dữ liệu nguồn: `assets/tables/python_api_function_catalog.csv`._
+
+| Class | Method | Miền tham số chính | Protocol/behavior | Trạng thái kỹ thuật |
+| --- | --- | --- | --- | --- |
+| `MyArmM` | `__init__(port, baudrate="1000000", timeout=0.1, debug=False)` | $baudrate=1{,}000{,}000~\mathrm{bit/s}$ default | Serial open qua `MyArmAPI`. | Default 1 Mbps trong source. |
+| `MyArmM` | `set_joint_angle(joint_id, angle, speed)` | $joint\_id \in [0,254]$<br>$[0.000, 4.433]~\mathrm{rad}$<br>$[0, 254]~^\circ$ docstring angle<br>$speed \in [1,100]$ | `SEND_ANGLE = 0x21`; không ép `has_reply=True`. | Validation thật phụ thuộc `robot_info.py`. |
+| `MyArmM` | `set_joints_angle(angles, speed)` | $speed \in [0,100]$ theo docstring<br>angle list encode độ $\times 100$ | `SEND_ANGLES = 0x22`; không ép `has_reply=True`. | Protocol ID trùng `MyArmMControl.write_angles`. |
+| `MyArmM` | `set_servo_encoder(servo_id, encoder, speed)` | $servo\_id \in [0,254]$<br>$encoder \in [0,4095]$ raw count<br>$speed \in [1,100]$ | `SET_ENCODER = 0x3A`. | Điều khiển raw potential/encoder. |
+| `MyArmM` | `set_servos_encoder_drag(encoders, speeds)` | $encoders$: 8 raw counts<br>$speeds \in [-10000,10000]$ | `SET_ENCODERS_DRAG = 0x3E`. | Ý nghĩa vật lý tốc độ drag không được chuẩn hóa trong docs. |
+| `MyArmM` | `set_servo_enabled(servo_id, status)` | $servo\_id \in [0,254]$<br>$status \in \{0,1\}$ | `RELEASE_ALL_SERVOS = 0x13`. | `read_control.py` dùng để release servo trước khi RViz follow. |
+| `MyArmMControl` | `__init__(port, baudrate=115200, timeout=0.1, debug=False)` | $baudrate=115{,}200~\mathrm{bit/s}$ default<br>LOCAL-OBS: $1{,}000{,}000~\mathrm{bit/s}$ khi truyền explicit | Serial open qua `MyArmMProcessor`. | Default source chưa phản ánh observation 1 Mbps. |
+| `MyArmMControl` | `write_angles(angles, speed)` | $speed \in [1,100]$ | `SEND_ANGLES = 0x22`; `_mesg()` ép `has_reply=True`. | Cùng command ID với `MyArmM.set_joints_angle`, khác reply behavior. |
+| `MyArmMControl` | `write_coords(coords, speed, mode=None)` | $coords=[x,y,z,r_x,r_y,r_z]$<br>$x,y,z$: mm; $r$: độ<br>$speed \in [1,100]$<br>$mode \in \{0,1,2\}$ | `SEND_COORDS = 0x25`; xyz encode $\times 10$, rpy encode $\times 100$. | Cartesian call đi vào firmware blackbox. |
+| `MyArmMControl` | `set_fresh_mode(mode)` | $mode \in \{0,1\}$ | `SET_FRESH_MODE = 0x16`; source comment `TODO need test`. | Docs mô tả latest/queue, nhưng source không chứng minh timing/drop policy. |
+| `MyArmMControl` | `set_movement_type(move_type)` | $move\_type \in \{0,1\}$ | Docs/source: `1=movel`, `0=moveJ`. | Khác tham số `mode` của `write_coords`. |
+| `MyArmMControl` | `set_plan_speed` / `set_plan_acceleration` | $speed,acceleration \in [1,100]$<br>$is\_linear \in \{0,1\}$ | Plan config protocol. | Giá trị là thang nội bộ, không có đơn vị SI. |
+
+Các miền như $speed \in [1,100]$ là thang tham số user-level/SDK validation, không phải đơn vị vật lý SI. Source không cung cấp mapping chuẩn sang $\mathrm{rad/s}$, $^\circ/\mathrm{s}$, $\mathrm{m/s}$ hoặc $\mathrm{mm/s}$.
+
+## 4. Packet, protocol và phép encode đơn vị
+
+Packet không CRC trong nhóm class này có dạng:
+
+$$
+\mathbf{p} = [0xFE,0xFE,LEN,CMD,DATA_0,\ldots,DATA_n,0xFA]
+$$ {#eq-sdk-packet-v3}
+
+Angle codec trong `common.py`:
+
+$$
+s_q = \operatorname{int}(100q[^\circ]),
+\qquad
+q[^\circ] = \operatorname{round}\left(\frac{s_q}{100},3\right)
+$$ {#eq-angle-codec-v3}
+
+Coordinate codec:
+
+$$
+s_x = \operatorname{int}(10x[\mathrm{mm}]),
+\qquad
+x[\mathrm{mm}] = \operatorname{round}\left(\frac{s_x}{10},2\right)
+$$ {#eq-coordinate-codec-v3}
+
+Vì vậy vector Cartesian user-level của `write_coords` có đơn vị hỗn hợp:
+
+$$
+\mathbf{x}_{coord} = [x,y,z,r_x,r_y,r_z]^\top,
+\quad x,y,z~[\mathrm{mm}],
+\quad r_x,r_y,r_z~[^\circ]
+$$ {#eq-coord-vector-v3}
+
+Dạng chuẩn hóa cho phân tích ngoài firmware:
+
+$$
+\tilde{\mathbf{x}}_{coord}
+= [10^{-3}x,10^{-3}y,10^{-3}z,\frac{\pi}{180}r_x,\frac{\pi}{180}r_y,\frac{\pi}{180}r_z]^\top
+$$ {#eq-coord-vector-si-v3}
+
+## 5. Coordinate range trong `robot_info.py`
+
+| Thành phần | Miền `MyArmMControl` trong `robot_info.py` | Ý nghĩa |
+| --- | --- | --- |
+| $x$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục x. |
+| $y$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục y. |
+| $z$ | $[-0.351, 1.007]~\mathrm{m}$<br>$[-351.11, 1007.23]~\mathrm{mm}$ | Vị trí TCP theo trục z. |
+| $r_x$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Roll/RX user-level theo độ. |
+| $r_y$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Pitch/RY user-level theo độ. |
+| $r_z$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Yaw/RZ user-level theo độ. |
+
+_Dữ liệu nguồn: `assets/tables/coordinate_range_mymcontrol.csv`._
+
+| Thành phần | Miền `MyArmMControl` trong `robot_info.py` | Ý nghĩa |
+| --- | --- | --- |
+| $x$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục x. |
+| $y$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục y. |
+| $z$ | $[-0.351, 1.007]~\mathrm{m}$<br>$[-351.11, 1007.23]~\mathrm{mm}$ | Vị trí TCP theo trục z. |
+| $r_x$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Roll/RX user-level theo độ. |
+| $r_y$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Pitch/RY user-level theo độ. |
+| $r_z$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Yaw/RZ user-level theo độ. |
+
+Bảng này chỉ là miền `coord_min/coord_max` trong `robot_info.py`; nó không chứng minh mọi pose trong hộp tọa độ đều reachable.
+
+## 6. Protocol overlap giữa `MyArmM` và `MyArmMControl`
+
+| Operation | ProtocolCode | `MyArmM` wrapper | `MyArmMControl` wrapper | Sai khác kỹ thuật |
+| --- | --- | --- | --- | --- |
+| Read joint angles | `GET_ANGLES = 0x20` | `get_joints_angle()` inherited | `get_angles()` | Cùng command ID, tên wrapper khác, user-level trả độ. |
+| Write one joint | `SEND_ANGLE = 0x21` | `set_joint_angle()` | `write_angle()` | Cùng command ID, khác validation class và reply behavior. |
+| Write all joints | `SEND_ANGLES = 0x22` | `set_joints_angle()` | `write_angles()` | Overlap quan trọng nhất ở joint command. |
+| Read coords | `GET_COORDS = 0x23` | không exposed dưới tên `get_coords()` | `get_coords()` | Coordinate wrapper có Cartesian surface API. |
+| Write coords | `SEND_COORDS = 0x25` | không có `write_coords()`/`send_coords()` | `write_coords()` | Cartesian path thuộc Coordinate API. |
+| Stop | `STOP = 0x29` | `stop_robot()` | `stop()` | Cùng command ID, khác tên wrapper. |
+| Jog angle | `JOG_ANGLE = 0x30` | không có wrapper cùng tên | `jog_angle()` | JOG interface nằm ở Coordinate API. |
+| Set encoder | `SET_ENCODER = 0x3A` | `set_servo_encoder()` | không cùng tên | Encoder write path nổi bật hơn ở `MyArmM`. |
+
+_Dữ liệu nguồn: `assets/tables/protocol_overlap_summary.csv`._
+
+| Operation | ProtocolCode | `MyArmM` wrapper | `MyArmMControl` wrapper | Sai khác kỹ thuật |
+| --- | --- | --- | --- | --- |
+| Read joint angles | `GET_ANGLES = 0x20` | `get_joints_angle()` inherited | `get_angles()` | Cùng command ID, tên wrapper khác, user-level trả độ. |
+| Write one joint | `SEND_ANGLE = 0x21` | `set_joint_angle()` | `write_angle()` | Cùng command ID, khác validation class và reply behavior. |
+| Write all joints | `SEND_ANGLES = 0x22` | `set_joints_angle()` | `write_angles()` | Overlap quan trọng nhất ở joint command. |
+| Read coords | `GET_COORDS = 0x23` | không exposed dưới tên `get_coords()` | `get_coords()` | Coordinate wrapper có Cartesian surface API. |
+| Write coords | `SEND_COORDS = 0x25` | không có `write_coords()`/`send_coords()` | `write_coords()` | Cartesian path thuộc Coordinate API. |
+| Stop | `STOP = 0x29` | `stop_robot()` | `stop()` | Cùng command ID, khác tên wrapper. |
+| Jog angle | `JOG_ANGLE = 0x30` | không có wrapper cùng tên | `jog_angle()` | JOG interface nằm ở Coordinate API. |
+| Set encoder | `SET_ENCODER = 0x3A` | `set_servo_encoder()` | không cùng tên | Encoder write path nổi bật hơn ở `MyArmM`. |
+
+Hai class dùng chung nhiều `ProtocolCode`, nhưng không tương đương ở cấp API vì khác tên wrapper, default baudrate, bảng `robot_limit`, số joint trong `joint_id`, và reply behavior.
+
+## 7. Reply behavior
+
+Trong `MyArmM`, `set_joints_angle()` gọi:
+
+```python
+return self._mesg(ProtocolCode.SEND_ANGLES, angles, speed)
+```
+
+Không có `has_reply=True`. Trong `MyArmMControl`, `MyArmMProcessor._mesg()` ép:
+
+```python
+kwargs["has_reply"] = True
+self._write(real_command)
+with self.lock:
+    return self._read_genre_result(genre)
+```
+
+Mô hình tương ứng:
+
+$$
+\mathrm{MyArmMControl}: \mathrm{write}(\mathbf{p}_{cmd}) \rightarrow \mathrm{read}(\mathbf{p}_{reply})
+$$ {#eq-control-reply-model}
+
+$$
+\mathrm{MyArmM}: \mathrm{write}(\mathbf{p}_{cmd}) \rightarrow \varnothing \quad \text{với nhiều lệnh write}
+$$ {#eq-shake-no-reply-model}
+
+Đây là cơ sở source-level cho nhận định: nạp coord firmware rồi gọi `MyArmM` có thể chạy một số command overlap, nhưng wrapper không tương đương và không được source chứng minh là an toàn tuyệt đối.
+
+## 8. Limit validation trong `robot_info.py`
+
+| Joint | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | Docs Coordinate | SDK `MyArmM` | SDK `MyArmMControl` | ROS2 URDF/Xacro |
+| --- | --- | --- | --- | --- | --- | --- |
+| $q_1$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170, 170]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ |
+| $q_2$ | $[-1.449, 1.449]~\mathrm{rad}$<br>$[-83, 83]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.047, 1.658]~\mathrm{rad}$<br>$[-60, 95]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ |
+| $q_3$ | $[-1.571, 1.466]~\mathrm{rad}$<br>$[-90, 84]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.571, 1.309]~\mathrm{rad}$<br>$[-90, 75]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ |
+| $q_4$ | $[-2.705, 2.670]~\mathrm{rad}$<br>$[-155, 153]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_5$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ |
+| $q_6$ | $[-2.670, 2.670]~\mathrm{rad}$<br>$[-153, 153]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_7$ / gripper | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | không liệt kê | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | URDF: prismatic gripper<br>không phải góc $q_7$ |
+
+_Dữ liệu nguồn: `assets/tables/joint_limit_crosscheck_normalized.csv`._
+
+| Joint | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | Docs Coordinate | SDK `MyArmM` | SDK `MyArmMControl` | ROS2 URDF/Xacro |
+| --- | --- | --- | --- | --- | --- | --- |
+| $q_1$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170, 170]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ |
+| $q_2$ | $[-1.449, 1.449]~\mathrm{rad}$<br>$[-83, 83]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.047, 1.658]~\mathrm{rad}$<br>$[-60, 95]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ |
+| $q_3$ | $[-1.571, 1.466]~\mathrm{rad}$<br>$[-90, 84]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.571, 1.309]~\mathrm{rad}$<br>$[-90, 75]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ |
+| $q_4$ | $[-2.705, 2.670]~\mathrm{rad}$<br>$[-155, 153]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_5$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ |
+| $q_6$ | $[-2.670, 2.670]~\mathrm{rad}$<br>$[-153, 153]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
+| $q_7$ / gripper | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | không liệt kê | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | URDF: prismatic gripper<br>không phải góc $q_7$ |
+
+Bất nhất rõ ràng: `MyArmMControl.joint_id` có 6 phần tử nhưng `angles_min/max` có 7 giá trị. Đồng thời `MyArmM` có 7 `joint_id` nhưng limits ở $q_2$ đến $q_6$ hẹp hơn docs Shake mới.
+
+## 9. Encoder/potential validation
+
+| servo | docs_shake_before_2025_potential | docs_shake_after_2025_potential | sdk_MyArmM_potential | sdk_MyArmMControl_potential | unit |
+| --- | --- | --- | --- | --- | --- |
+| S1 | 114..3981 | 175..3910 | 114..3981 | 137..4004 | raw encoder/potential count, dimensionless |
+| S2 | 1200..2991 | 1370..3120 | 1200..2991 | 1163..2945 | raw encoder/potential count, dimensionless |
+| S3 | 1200..2991 | 1370..3120 | 1200..2991 | 1035..3079 | raw encoder/potential count, dimensionless |
+| S4 | 1024..3002 | 1015..2890 | 1024..3002 | 1013..3026 | raw encoder/potential count, dimensionless |
+| S5 | 286..3788 | 350..3740 | 286..3788 | 248..3724 | raw encoder/potential count, dimensionless |
+| S6 | 1013..3048 | 1013..3048 | 1013..3048 | 979..2994 | raw encoder/potential count, dimensionless |
+| S7 | 307..3788 | 350..3740 | 307..3788 | 220..3704 | raw encoder/potential count, dimensionless |
+| S8 | 706..2068 | 706..2068 | 706..2068 | 706..2048 | raw encoder/potential count, dimensionless |
+
+_Dữ liệu nguồn: `assets/tables/encoder_limit_crosscheck.csv`._
+
+Encoder/potential được biểu diễn bằng raw count. Gọi $e_j$ là raw encoder/potential của servo $j$:
+
+$$
+e_j \in [e_j^-,e_j^+] \subset \mathbb{Z}
+$$ {#eq-encoder-interval}
+
+Không có đủ dữ liệu trong source để suy ra ánh xạ tuyến tính toàn cục $q_i = a_i e_i + b_i$ vì offset, gear, zero calibration và mapping servo-joint không được mô tả đủ trong các file đang xét.
+
+## 10. Coord firmware blackbox ở mức source Python
+
+Source Python `MyArmMControl.write_coords()` chỉ encode và gửi packet:
+
+```python
+coord_list = []
+for idx in range(3):
+    coord_list.append(self._coord2int(coords[idx]))
+for angle in coords[3:]:
+    coord_list.append(self._angle2int(angle))
+return self._mesg(ProtocolCode.SEND_COORDS, coord_list, speed, mode)
+```
+
+```{mermaid}
+flowchart TD
+    A[coords: x y z mm, rx ry rz deg] --> B[encode x10 / x100]
+    B --> C[SEND_COORDS 0x25]
+    C --> D[Firmware]
+    D --> E[IK / frame transform / trajectory / queue]
+    E --> F[Servo command]
+```
+
+Các khối `IK / frame transform / trajectory / queue` không xuất hiện trong source Python. Vì vậy khi `write_coords()` thành công hoặc thất bại, source Python không cung cấp lý do hình học đầy đủ như joint-limit, singularity, branch IK, orientation conflict hoặc path planner reject.
+
+## 11. Câu hỏi: burn coord firmware rồi chạy `MyArmM` được không?
+
+Source cho thấy có overlap protocol, nhất là `SEND_ANGLES = 0x22` và `GET_ANGLES = 0x20`. Vì vậy một số lệnh `MyArmM` có thể tương tác được với firmware đang hỗ trợ cùng protocol. Nhưng source cũng cho thấy các rủi ro khách quan: khác reply behavior, khác bảng `robot_limit`, khác surface API, và `MyArmM` không expose Cartesian API `write_coords()`.
+
+Kết luận trạng thái là: **protocol có phần chung, nhưng wrapper không tương đương**. Nếu robot đang chạy coord firmware và cần phản ánh đúng Coordinate API hiện tại trong source, class khớp source là `MyArmMControl`, truyền baudrate explicit khi dùng 1 Mbps.

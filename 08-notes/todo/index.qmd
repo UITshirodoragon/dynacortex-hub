@@ -1,0 +1,38 @@
+---
+title: "Todo List"
+description: ""
+categories: [todo]
+status: standard
+---
+
+- [ ] cập nhật tài liệu foundation về động học thuật bao gồm cả biễu diện
+- [ ] thiết kế software cho cả hệ thống.
+- [ ] cập nhật một số  tài liệu về triển khai và setup ROS2
+- [ ] tiếp tục fix lỗi của Neugrasp
+- [ ] đọc thêm các các kiến trúc mới và tiếp tục khảo sát
+- [ ] phân tích API lại và firmware để biết được lỗi và khác phục nó, nhất là câu chuyện min max của từng joint
+- [ ] cài đặt lại Jetson AGX xavier trên ssd nvme để có dung lượng tốt hơn cho ROS2, roscontrol, cài MoveIt2, pytorch
+- [ ] nghiên cứu thử về JEPA và ACT các mô hình robútst và sử dụng để benchmark cơ bản với Libero và Libero plus https://github.com/huggingface/lerobot
+- [ ] Nghiên cứu 1 số software robotics arm opensource như: https://github.com/Source-Robotics,  
+- [ ] gắn camera rgb vào để stream ros
+- [ ] thử nghiệm ros DDS
+- [ ] lên kế hoạch kĩ càng về vụ benchmark động học cánh tay robot
+- [ ] setup swap ram là emmc hoặc biến nó thành bộ nhớ phụ
+- [ ] viết tài liệu cho phần implementation
+  - [ ] flash và cài đặt board jetson agx xavier với custuom carrier board đến từ Auvidea cùng các lưu ý khi flash.
+  - [ ] boot và cài đặt phần nvidia jetpack sdk, 2 phần là runtime và dev và cài full
+  - [ ] cài đặt một số thư viện đi kèm như pytorch, torchvison được build từ source
+  - [ ] cài đặt jtop và một số lưu ý đối với phiên bản jetpack
+  - [ ] cài đặt gồm có các thư viện python chuyên cho ML và DL như numpy, opencv build với cuda, cupy, numba, onnxruntime-gpu, onnx
+  - [ ] cài đặt ROS2 Foxy (bản core), ros_control và MoveIt2
+  - [ ] cài đặt và setup cho việc mạng LAN với RJ45 
+  - [ ] cài đặt và setup swap ram là emmc hoặc biến nó thành bộ nhớ phụ
+  - [ ] viết tài liệu hướng dẫn cài đặt và sử đụng, quy đinh dành cho quarto docs project.
+  - [ ] 
+- [ ] tài liệu dành thông số và thông tin phần cứng đang đuuocwj sử dụng trong phaaf reference
+  - [ ] thông tin về board core jetson agx xavier, cùng các tài liệu tham khảo đi kèm
+  - [ ] thông tin các stack framwork đang được sử dụng trong phaaf reference, cùng các tài liệu tham khảo đi kèm, version đến từ các stack chủ yếu. 
+  - [ ] thông tin về custom carrier board đến từ Auvidea, cùng các tài liệu tham khảo đi kèm
+  - [ ] thông tin về  cánh tay robot myArmM750 và phần cứng
+  - [ ] thông tin về cánh tay myArmM750 robot về phần mềm
+  - [ ] thông tin về cánh tay myArmM750 API 

@@ -1,0 +1,20 @@
+---
+title: "Parameter và Launch"
+description: "Khái niệm ROS 2: Parameter và Launch."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Parameter và Launch
+
+Parameter là cấu hình runtime của node. Launch file mô tả cách khởi động nhiều node cùng tham số, remap và namespace.
+
+```{mermaid}
+flowchart TB
+    A[launch.py] --> B[start nodes]
+    A --> C[load parameters]
+    A --> D[remap topics]
+    A --> E[set namespace]
+```

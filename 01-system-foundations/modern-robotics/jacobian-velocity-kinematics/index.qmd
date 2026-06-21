@@ -1,0 +1,38 @@
+---
+title: "Jacobian và Velocity Kinematics"
+description: "Lý thuyết cốt lõi về Jacobian và Velocity Kinematics theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Jacobian và Velocity Kinematics
+
+Jacobian ánh xạ joint velocity sang end-effector twist:
+
+$$
+V = J(q)\dot{q}
+$$ {#eq-jacobian-map}
+
+## Space và body Jacobian
+
+| Jacobian | Twist biểu diễn trong frame nào | Công thức |
+|---|---|---|
+| Space Jacobian | fixed/base frame | $V_s=J_s(q)\dot{q}$ |
+| Body Jacobian | end-effector frame | $V_b=J_b(q)\dot{q}$ |
+
+```{mermaid}
+flowchart LR
+    DQ[q_dot] --> J[J(q)]
+    J --> V[End-effector twist V]
+```
+
+## Ý nghĩa cột Jacobian
+
+Cột $i$ của $J(q)$ là twist của end-effector khi chỉ joint $i$ chuyển động với vận tốc đơn vị, còn các joint khác đứng yên.
+
+::: callout-important
+Jacobian là cầu nối giữa FK, IK, singularity, manipulability, statics và control. Nếu chỉ nhớ một công thức, hãy nhớ $V=J(q)\dot{q}$.
+:::

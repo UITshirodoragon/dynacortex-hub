@@ -1,0 +1,61 @@
+.layout-toggle {
+  align-items: center;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 6px;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
+  color: var(--bs-body-color);
+  display: inline-flex;
+  font-size: 0.95rem;
+  height: 2.25rem;
+  justify-content: center;
+  position: fixed;
+  right: 1rem;
+  top: 6.25rem;
+  width: 2.25rem;
+  z-index: 1040;
+}
+
+.layout-toggle:hover,
+.layout-toggle:focus {
+  background: var(--bs-tertiary-bg);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+.layout-toggle:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+body.layout-wide .layout-toggle {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: var(--bs-white);
+}
+
+@media (min-width: 1200px) {
+  body.layout-wide.docked .page-columns {
+    grid-template-columns:
+      [screen-start] 1.5em
+      [screen-start-inset page-start] minmax(50px, 100px)
+      [page-start-inset] 50px
+      [body-start-outset] 50px
+      [body-start] 1.5em
+      [body-content-start] minmax(500px, calc(100vw - 640px))
+      [body-content-end] 1.5em
+      [body-end] 35px
+      [body-end-outset] minmax(25px, 50px)
+      [page-end-inset] 35px
+      [page-end] minmax(1em, 1fr)
+      [screen-end-inset] 1.5em
+      [screen-end] !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .layout-toggle {
+    bottom: 1rem;
+    top: auto;
+  }
+}

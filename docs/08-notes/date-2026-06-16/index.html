@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Note ngày 16-06-2026 – DynaCortex</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-825cd8b09f6a8ada71d4eccd558aee18.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-4b9b1df4d04147674f0da2f0d64a41b3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-825cd8b09f6a8ada71d4eccd558aee18.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">DynaCortex</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../01-system-foundations/index.html"> 
+<span class="menu-text">Foundations</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../02-implementation/index.html"> 
+<span class="menu-text">Implementation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../03-experiments/index.html"> 
+<span class="menu-text">Experiments</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../04-reference/index.html"> 
+<span class="menu-text">Reference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../examples/index.html"> 
+<span class="menu-text">Examples</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Note ngày 16-06-2026</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DynaCortex</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">01. System Foundations</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../01-system-foundations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">System Foundations</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">02. Implementation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../02-implementation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Implementation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">03. Experiments</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../03-experiments/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Experiments</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">04. Reference</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reference</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng phần cứng, thông số kỹ thuật và động học của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng Python SDK và firmware API của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng ROS2 SDK/demo package của MyArm Master 750</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">05. Literature</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../05-literature/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Literature</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">06. Reports</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../06-reports/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reports</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+ <span class="menu-text">07. Inbox</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../07-inbox/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inbox</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+ <span class="menu-text">08. Notes</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../08-notes/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notes</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">09. Troubleshooting</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../09-troubleshooting/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Troubleshooting</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../examples/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">QMD Syntax Examples</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#prompt" id="toc-prompt" class="nav-link active" data-scroll-target="#prompt">prompt:</a>
+  <ul>
+  <li><a href="#kết-luận-chính" id="toc-kết-luận-chính" class="nav-link" data-scroll-target="#kết-luận-chính">Kết luận chính</a></li>
+  <li><a href="#myarm-m750-đang-thuộc-kiểu-nào" id="toc-myarm-m750-đang-thuộc-kiểu-nào" class="nav-link" data-scroll-target="#myarm-m750-đang-thuộc-kiểu-nào">1. myArm M750 đang thuộc kiểu nào?</a></li>
+  <li><a href="#các-hãng-khác-làm-như-thế-nào" id="toc-các-hãng-khác-làm-như-thế-nào" class="nav-link" data-scroll-target="#các-hãng-khác-làm-như-thế-nào">2. Các hãng khác làm như thế nào?</a></li>
+  <li><a href="#vậy-fkik-nên-nằm-ở-đâu-là-chuẩn" id="toc-vậy-fkik-nên-nằm-ở-đâu-là-chuẩn" class="nav-link" data-scroll-target="#vậy-fkik-nên-nằm-ở-đâu-là-chuẩn">3. Vậy FK/IK nên nằm ở đâu là “chuẩn”?</a>
+  <ul class="collapse">
+  <li><a href="#kiến-trúc-a-controllerfirmware-lo-fkik" id="toc-kiến-trúc-a-controllerfirmware-lo-fkik" class="nav-link" data-scroll-target="#kiến-trúc-a-controllerfirmware-lo-fkik">Kiến trúc A — Controller/Firmware lo FK/IK</a></li>
+  <li><a href="#kiến-trúc-b-applicationsdkros-lo-fkik-firmware-chỉ-chạy-joint-target" id="toc-kiến-trúc-b-applicationsdkros-lo-fkik-firmware-chỉ-chạy-joint-target" class="nav-link" data-scroll-target="#kiến-trúc-b-applicationsdkros-lo-fkik-firmware-chỉ-chạy-joint-target">Kiến trúc B — Application/SDK/ROS lo FK/IK, firmware chỉ chạy joint target</a></li>
+  <li><a href="#kiến-trúc-c-hybrid" id="toc-kiến-trúc-c-hybrid" class="nav-link" data-scroll-target="#kiến-trúc-c-hybrid">Kiến trúc C — Hybrid</a></li>
+  </ul></li>
+  <li><a href="#ros2-có-lo-fkik-không" id="toc-ros2-có-lo-fkik-không" class="nav-link" data-scroll-target="#ros2-có-lo-fkik-không">4. ROS2 có “lo FK/IK” không?</a></li>
+  <li><a href="#liên-hệ-trực-tiếp-với-bài-toán-neugrasp-myarm-của-bạn" id="toc-liên-hệ-trực-tiếp-với-bài-toán-neugrasp-myarm-của-bạn" class="nav-link" data-scroll-target="#liên-hệ-trực-tiếp-với-bài-toán-neugrasp-myarm-của-bạn">5. Liên hệ trực tiếp với bài toán NeuGrasp + MyArm của bạn</a></li>
+  <li><a href="#đề-xuất-stack-hợp-lý-cho-bạn" id="toc-đề-xuất-stack-hợp-lý-cho-bạn" class="nav-link" data-scroll-target="#đề-xuất-stack-hợp-lý-cho-bạn">6. Đề xuất stack hợp lý cho bạn</a>
+  <ul class="collapse">
+  <li><a href="#phương-án-thực-dụng-nhất" id="toc-phương-án-thực-dụng-nhất" class="nav-link" data-scroll-target="#phương-án-thực-dụng-nhất">Phương án thực dụng nhất</a></li>
+  </ul></li>
+  <li><a href="#checklist-cần-làm-với-myarm" id="toc-checklist-cần-làm-với-myarm" class="nav-link" data-scroll-target="#checklist-cần-làm-với-myarm">7. Checklist cần làm với myArm</a></li>
+  <li><a href="#chốt-ngắn" id="toc-chốt-ngắn" class="nav-link" data-scroll-target="#chốt-ngắn">Chốt ngắn</a></li>
+  </ul></li>
+  <li><a href="#prompt-2" id="toc-prompt-2" class="nav-link" data-scroll-target="#prompt-2">prompt 2:</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/08-notes/date-2026-06-16/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Note ngày 16-06-2026</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">note</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="prompt" class="level1">
+<h1>prompt:</h1>
+<p>tôi cần bạn tìm hiểu một chút về các bộ controler điều khiển robot arm, thì hiện tại myarm đang có 2 bộ firmware khác nhau hoàn toàn về câu chuyện đó là đó là shake firmware và coordinate firmware thì hiện tại tôi đang sài coordinate biết rằng tôi làm việc chủ yếu điều khiển robot qua 2 api cốt là write coords và get coords tức là FK và IK nằm trong firmware luôn nhưng có nhiều vấn đề là tôi không thể quản lý được phần này, tôi cần bạn giúp tôi tìm kiếm thử liệu các hãng robot khác các dòng robot khác họ có đưa phần FK và IK vào firmware luôn không hay họ đưa và phần SDK vẫn nằm trên tâng application ? hay FK và IK do bên ROS2 lo? hãy giúp tôi tìm các sdk, thư viện, framework điều khiển robot nổi tiểng coi họ làm như thế nào và so sánh với myarm đến từ các dòng robot phổ biến và phổ biến từ lowcost, opensource đến production seeed studio reBot Arm B601-DM, lerobot, UR, Franka, ABB, xArm, Tronssen, WidowX,….. và nhiều hãng khác</p>
+<section id="kết-luận-chính" class="level2">
+<h2 class="anchored" data-anchor-id="kết-luận-chính">Kết luận chính</h2>
+<p>Có, <strong>nhiều hãng robot đưa FK/IK vào controller/firmware</strong>, đặc biệt là robot công nghiệp/cobot như <strong>UR, ABB, Kinova, xArm</strong>. Việc myArm <code>coordinate firmware</code> cho bạn dùng <code>write_coords()</code> và <code>get_coords()</code> không phải là chuyện lạ.</p>
+<p>Nhưng khác biệt lớn là: các hãng production thường vẫn cung cấp <strong>tài liệu robot model, frame, TCP, tool offset, safety state, lỗi IK, singularity, joint limit, driver ROS/MoveIt rõ ràng hơn</strong>. Còn với myArm, phần <code>coordinate firmware</code> tiện nhưng khá “black-box”, nên khó kiểm chứng khi bạn làm grasping/camera/robot frame.</p>
+<hr>
+</section>
+<section id="myarm-m750-đang-thuộc-kiểu-nào" class="level2">
+<h2 class="anchored" data-anchor-id="myarm-m750-đang-thuộc-kiểu-nào">1. myArm M750 đang thuộc kiểu nào?</h2>
+<p>Theo tài liệu chính thức, M750 có 2 interface firmware: <strong>Shake Firmware API</strong> và <strong>Coordinate Firmware API</strong>. Coordinate API dùng class <code>MyArmMControl</code>, có <code>get_angles</code>, <code>write_angle</code>, <code>write_angles</code>, <code>get_coords</code>, <code>write_coord</code>, <code>write_coords</code> đúng như bạn đang dùng. <code>write_coords(coords, speed, mode)</code> nhận danh sách tọa độ và firmware tự xử lý phần chuyển sang chuyển động robot. (<a href="https://docs.elephantrobotics.com/docs/myarm-master_750-en/4-FunctionsAndApplications/6-SDKDevelopment/6.1-BasedOnPythonDevelopmentAndUse/2_API.html" title="API · GitBook">Elephant Robotics Documentation</a>)</p>
+<p>Diễn giải kỹ thuật:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 28%">
+<col style="width: 28%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>Bản chất</th>
+<th style="text-align: right;">FK/IK nằm ở đâu?</th>
+<th>Mức kiểm soát của bạn</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shake firmware</td>
+<td>Điều khiển joint/servo thô hơn</td>
+<td style="text-align: right;">Chủ yếu bạn làm việc theo joint/servo</td>
+<td>Cao hơn nhưng khó dùng cho Cartesian</td>
+</tr>
+<tr class="even">
+<td>Coordinate firmware</td>
+<td>Gửi pose Cartesian <code>[x,y,z,rx,ry,rz]</code></td>
+<td style="text-align: right;">Gần như nằm trong firmware/controller</td>
+<td>Dễ dùng nhưng black-box</td>
+</tr>
+</tbody>
+</table>
+<p>Vì vậy, <code>write_coords()</code> của myArm giống cách robot công nghiệp cho gửi Cartesian target, nhưng myArm chưa cho bạn nhiều công cụ để kiểm tra nghiệm IK, singularity, TCP, frame, calibration model, hoặc replay trajectory ở mức chi tiết.</p>
+<hr>
+</section>
+<section id="các-hãng-khác-làm-như-thế-nào" class="level2">
+<h2 class="anchored" data-anchor-id="các-hãng-khác-làm-như-thế-nào">2. Các hãng khác làm như thế nào?</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Robot / stack</th>
+<th>FK/IK thường nằm ở đâu?</th>
+<th>Cách điều khiển phổ biến</th>
+<th>So với myArm coordinate firmware</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Universal Robots UR</strong></td>
+<td>Trong robot controller có sẵn FK/IK. URScript có <code>get_forward_kin()</code> dùng calibrated kinematics và <code>get_inverse_kin()</code> chuyển tool pose sang joint space. (<a href="https://www.universal-robots.com/manuals/EN/HTML/SW5_19/Content/prod-scriptmanual/G5/get_forward_kin_q_current_joint_positions.htm" title="get_forward_kin(q=’current_joint_positions’, tcp=’active_tcp’)">Universal Robots</a>)</td>
+<td><code>movej</code>, <code>movel</code>, RTDE, URScript, ROS2 driver + MoveIt. <code>movel(pose)</code> nhận target pose Cartesian. (<a href="https://www.universal-robots.com/manuals/EN/HTML/SW10_6/Content/prod-scriptmanual/G5/movel_posea12v025t.htm?utm_source=chatgpt.com" title="movel(pose, a=1.2, v=0.25, t=0, r=0)">Universal Robots</a>)</td>
+<td>Rất giống myArm ở mức gửi pose, nhưng UR minh bạch hơn: có hàm IK/FK, qnear, TCP, safety, driver ROS2 tốt.</td>
+</tr>
+<tr class="even">
+<td><strong>Kinova Gen3 / Gen3 Lite</strong></td>
+<td>High-level API gửi target angular/Cartesian một lần; robot base quản lý vòng điều khiển 1 kHz, gọi robot control library để tính IK, áp protection zones, singularity management, self-collision avoidance. (<a href="https://www.kinovarobotics.com/uploads/User-Guide-Gen3-R07.pdf" title="Kinova® Gen3 Ultra lightweight robot User Guide">Kinova Robotics</a>)</td>
+<td>Kortex API, Web App, ROS/Kortex, high-level servoing hoặc low-level servoing.</td>
+<td>Gần giống myArm coordinate mode, nhưng Kinova nói rõ controller làm IK + limit + singularity + self-collision.</td>
+</tr>
+<tr class="odd">
+<td><strong>xArm / UFACTORY</strong></td>
+<td>Hybrid. SDK có API <code>set_position</code>, <code>get_position</code>, <code>get_ik/get_inverse_kinematics</code>, <code>get_fk/get_forward_kinematics</code>; robot cũng hỗ trợ TCP/Cartesian motion. (<a href="https://github.com/xarm-developer/xarm-python-sdk?utm_source=chatgpt.com" title="xArm-Python-SDK">GitHub</a>)</td>
+<td>Python SDK, C++ SDK, ROS, Modbus-TCP, MoveIt.</td>
+<td>Tương tự myArm nhưng SDK giàu hơn: có endpoint FK/IK rõ ràng hơn và ecosystem ROS tốt hơn.</td>
+</tr>
+<tr class="even">
+<td><strong>Franka Panda / FR3</strong></td>
+<td>Thiên về research low-level. <code>libfranka/pylibfranka</code> cho control 1 kHz, joint/Cartesian position/velocity/torque; model API tính FK/IK, mass matrix, Coriolis, gravity. (<a href="https://frankarobotics.github.io/libfranka/pylibfranka/latest/" title="pylibfranka Documentation — pylibfranka 0.21.2 documentation">Franka Robotics</a>)</td>
+<td>libfranka, franka_ros2, MoveIt, impedance/torque control, external planner.</td>
+<td>Ngược myArm: Franka mở nhiều phần model/control hơn, phù hợp nghiên cứu controller nhưng yêu cầu hiểu real-time/safety.</td>
+</tr>
+<tr class="odd">
+<td><strong>ABB RobotWare / RobotStudio</strong></td>
+<td>Controller/RobotWare xử lý chuyển động theo <code>robtarget</code>, configuration, <code>MoveL</code>, <code>MoveJ</code>. ABB dùng <code>confdata</code> để phân biệt các nghiệm cấu hình robot; với linear motion, controller chọn cấu hình gần nhất nếu không bật configuration supervision. (<a href="https://search.abb.com/library/Download.aspx?Action=Launch&amp;DocumentID=3HAC050947-001&amp;DocumentPartId=&amp;LanguageCode=en&amp;utm_source=chatgpt.com" title="Technical reference manual - RAPID Overview">ABB Search</a>)</td>
+<td>RAPID, RobotStudio, RobotWare, EGM, external path correction.</td>
+<td>Production hơn myArm rất nhiều: controller mạnh, nhưng proprietary. Bạn thường không tự viết IK trừ khi offline planning hoặc digital twin.</td>
+</tr>
+<tr class="even">
+<td><strong>Seeed reBot Arm B601-DM</strong></td>
+<td>Có xu hướng open-source/research: ROS2 integration, Pinocchio integration cho FK/IK và gravity compensation, LeRobot integration. (<a href="https://github.com/Seeed-Projects/reBot-DevArm" title="GitHub - Seeed-Projects/reBot-DevArm: Open Source Robotic Arm for All Developers · GitHub">GitHub</a>)</td>
+<td>MotorBridge/Python SDK, ROS2, Pinocchio, LeRobot.</td>
+<td>Ngược hướng myArm coordinate: FK/IK có thể nằm ở host bằng Pinocchio/ROS2, dễ debug hơn cho nghiên cứu.</td>
+</tr>
+<tr class="odd">
+<td><strong>Trossen / Interbotix / WidowX / ViperX</strong></td>
+<td>Thường dựa vào ROS packages, MoveIt, Gazebo; smart servos lo vòng servo, còn kinematics/planning nằm ở ROS/MoveIt. Tài liệu Interbotix nói các arm 4/5/6 DOF dùng chung ROS code và hỗ trợ MoveIt/Gazebo. (<a href="https://docs.trossenrobotics.com/interbotix_xsarms_docs/" title="Interbotix X-Series Arms — Interbotix X-Series Arms Documentation">Trossen Robotics</a>)</td>
+<td>Interbotix ROS packages, MoveIt, Python interface, DYNAMIXEL.</td>
+<td>Gần research/open-source hơn myArm coordinate. Dễ gắn MoveIt/URDF hơn, nhưng controller-level Cartesian có thể không mạnh bằng robot công nghiệp.</td>
+</tr>
+<tr class="even">
+<td><strong>LeRobot / SO-100 / SO-101</strong></td>
+<td>Không phải robot controller truyền thống. LeRobot là framework học điều khiển/dataset/policy; thường action space là joint/motor hoặc end-effector delta tùy robot wrapper. (<a href="https://github.com/huggingface/lerobot?utm_source=chatgpt.com" title="LeRobot: Making AI for Robotics more accessible with end- ...">GitHub</a>)</td>
+<td>Record data, train policy, evaluate policy; teleoperation/imitation learning.</td>
+<td>Không thay thế IK/FK firmware. Nó nằm ở tầng policy/data; phần kinematics vẫn do wrapper/robot/ROS/Pinocchio xử lý.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="vậy-fkik-nên-nằm-ở-đâu-là-chuẩn" class="level2">
+<h2 class="anchored" data-anchor-id="vậy-fkik-nên-nằm-ở-đâu-là-chuẩn">3. Vậy FK/IK nên nằm ở đâu là “chuẩn”?</h2>
+<p>Không có một chuẩn duy nhất. Có 3 kiến trúc phổ biến:</p>
+<section id="kiến-trúc-a-controllerfirmware-lo-fkik" class="level3">
+<h3 class="anchored" data-anchor-id="kiến-trúc-a-controllerfirmware-lo-fkik">Kiến trúc A — Controller/Firmware lo FK/IK</h3>
+<p>Đây là kiểu <strong>UR, ABB, Kinova, xArm, myArm coordinate firmware</strong>.</p>
+<p>Luồng:</p>
+<pre class="text"><code>Application / Python
+    gửi target Cartesian pose
+        ↓
+Robot controller / firmware
+    IK + limit + trajectory + servo + safety
+        ↓
+Motor drivers</code></pre>
+<p>Ưu điểm: dễ dùng, an toàn hơn, ít phải viết controller.</p>
+<p>Nhược điểm: khó debug, khó biết nghiệm IK nào được chọn, khó đồng bộ với mô phỏng, khó can thiệp post-processing grasp.</p>
+<p>myArm coordinate firmware của bạn đang thuộc nhóm này.</p>
+<hr>
+</section>
+<section id="kiến-trúc-b-applicationsdkros-lo-fkik-firmware-chỉ-chạy-joint-target" class="level3">
+<h3 class="anchored" data-anchor-id="kiến-trúc-b-applicationsdkros-lo-fkik-firmware-chỉ-chạy-joint-target">Kiến trúc B — Application/SDK/ROS lo FK/IK, firmware chỉ chạy joint target</h3>
+<p>Đây là kiểu <strong>Interbotix/WidowX, reBot + Pinocchio, nhiều robot DIY/research</strong>.</p>
+<p>Luồng:</p>
+<pre class="text"><code>Perception / Grasp / Planner
+    ↓
+MoveIt / Pinocchio / KDL / TRAC-IK
+    tính joint trajectory
+        ↓
+ros2_control / SDK
+    gửi joint position / velocity
+        ↓
+Motor firmware</code></pre>
+<p>MoveIt 2 là nền tảng manipulation cho ROS2, có motion planning, kinematics, perception; mặc định MoveIt dùng KDL numerical IK plugin, và có thể thay bằng TRAC-IK để ổn định hơn trong joint limits. (<a href="https://moveit.picknik.ai/?utm_source=chatgpt.com" title="MoveIt 2 Documentation — MoveIt Documentation: Rolling ...">MoveIt</a>)</p>
+<p>Ưu điểm: minh bạch, tái lập được trong simulation, debug được từng frame, rất hợp với nghiên cứu.</p>
+<p>Nhược điểm: bạn phải tự đảm bảo model URDF/DH đúng, joint limit đúng, collision đúng, controller ổn định.</p>
+<hr>
+</section>
+<section id="kiến-trúc-c-hybrid" class="level3">
+<h3 class="anchored" data-anchor-id="kiến-trúc-c-hybrid">Kiến trúc C — Hybrid</h3>
+<p>Đây là kiểu thực tế nhất trong lab:</p>
+<pre class="text"><code>Host:
+    perception, grasp estimation, frame transform, validation FK/IK, planning sơ bộ
+Robot controller:
+    execute motion, safety, servo, final trajectory</code></pre>
+<p>UR, xArm, Kinova, Franka, ABB đều có thể chạy hybrid ở các mức khác nhau. Ví dụ UR có IK/FK trong controller nhưng ROS2 driver vẫn tích hợp MoveIt để plan/execute trajectory. (<a href="https://docs.universal-robots.com/Universal_Robots_ROS2_Documentation/doc/ur_robot_driver/ur_robot_driver/doc/usage/move.html?utm_source=chatgpt.com" title="Move the robot">Universal Robots Documentation</a>)</p>
+<hr>
+</section>
+</section>
+<section id="ros2-có-lo-fkik-không" class="level2">
+<h2 class="anchored" data-anchor-id="ros2-có-lo-fkik-không">4. ROS2 có “lo FK/IK” không?</h2>
+<p>Nói chính xác: <strong>ROS2 tự nó không lo FK/IK</strong>.</p>
+<p>Các phần liên quan là:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 71%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Thành phần</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>robot_state_publisher</code> + URDF</td>
+<td>Publish TF/FK từ joint states</td>
+</tr>
+<tr class="even">
+<td>MoveIt 2</td>
+<td>Motion planning, IK plugin, collision checking, trajectory planning</td>
+</tr>
+<tr class="odd">
+<td>KDL / TRAC-IK</td>
+<td>Solver IK/FK/Jacobian</td>
+</tr>
+<tr class="even">
+<td>Pinocchio</td>
+<td>FK/IK/dynamics/gravity compensation rất mạnh cho research</td>
+</tr>
+<tr class="odd">
+<td>ros2_control</td>
+<td>Framework realtime control + hardware interface; không phải IK solver chính</td>
+</tr>
+</tbody>
+</table>
+<p><code>ros2_control</code> là framework điều khiển realtime robot trong ROS2; nó chuẩn hóa hardware interface và controller, nhưng bài toán IK thường nằm ở MoveIt/solver hoặc controller riêng phía trên. (<a href="https://control.ros.org/?utm_source=chatgpt.com" title="Welcome to the ros2_control documentation ...">control.ros.org</a>)</p>
+<hr>
+</section>
+<section id="liên-hệ-trực-tiếp-với-bài-toán-neugrasp-myarm-của-bạn" class="level2">
+<h2 class="anchored" data-anchor-id="liên-hệ-trực-tiếp-với-bài-toán-neugrasp-myarm-của-bạn">5. Liên hệ trực tiếp với bài toán NeuGrasp + MyArm của bạn</h2>
+<p>Với setup của bạn, vấn đề không phải là “myArm đặt IK trong firmware là sai”. Vấn đề là bạn đang làm <strong>vision-based grasping</strong>, nên cần kiểm soát chặt chuỗi:</p>
+<pre class="text"><code>camera frame
+→ object / grasp pose
+→ workspace frame
+→ robot base frame
+→ target TCP pose
+→ IK
+→ joint trajectory
+→ executed EE pose</code></pre>
+<p>Nếu <code>write_coords()</code> là black-box, bạn sẽ khó biết lỗi đến từ đâu:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 74%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Lỗi có thể xảy ra</th>
+<th>Vì sao khó debug với coordinate firmware</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sai camera extrinsic</td>
+<td>Robot vẫn chạy, nhưng pose target đã sai từ đầu</td>
+</tr>
+<tr class="even">
+<td>Sai TCP/tool offset</td>
+<td><code>get_coords()</code> có thể không tương ứng đúng với gripper tip thật</td>
+</tr>
+<tr class="odd">
+<td>Sai convention RPY</td>
+<td>Firmware nhận <code>rx, ry, rz</code> nhưng bạn không chắc là Euler order nào</td>
+</tr>
+<tr class="even">
+<td>IK chọn nghiệm khác</td>
+<td>Cùng một TCP pose có nhiều nghiệm joint</td>
+</tr>
+<tr class="odd">
+<td>Singularity/limit</td>
+<td>Firmware có thể tự né hoặc fail nhưng bạn không thấy rõ lý do</td>
+</tr>
+<tr class="even">
+<td>Sai z grasp khoảng 7 cm</td>
+<td>Có thể do frame/table/cube/camera/TCP, không chỉ do model grasp</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="đề-xuất-stack-hợp-lý-cho-bạn" class="level2">
+<h2 class="anchored" data-anchor-id="đề-xuất-stack-hợp-lý-cho-bạn">6. Đề xuất stack hợp lý cho bạn</h2>
+<p>Tôi khuyên bạn <strong>không bỏ coordinate firmware ngay</strong>, nhưng phải xây thêm một lớp “shadow kinematics” trên host.</p>
+<section id="phương-án-thực-dụng-nhất" class="level3">
+<h3 class="anchored" data-anchor-id="phương-án-thực-dụng-nhất">Phương án thực dụng nhất</h3>
+<pre class="text"><code>NeuGrasp / perception
+    ↓
+SE(3) transform validation
+    ↓
+Host-side FK/IK checker
+    - URDF hoặc DH tự đo
+    - Pinocchio/KDL/MoveIt
+    - check joint limits
+    - check table collision
+    - check TCP offset
+    ↓
+Nếu pose hợp lệ:
+    gửi write_coords() cho myArm coordinate firmware
+    ↓
+Sau khi chạy:
+    get_coords() + get_angles()
+    so sánh với FK host-side</code></pre>
+<p>Mục tiêu không phải thay thế firmware ngay, mà là <strong>kiểm chứng firmware</strong>.</p>
+<hr>
+</section>
+</section>
+<section id="checklist-cần-làm-với-myarm" class="level2">
+<h2 class="anchored" data-anchor-id="checklist-cần-làm-với-myarm">7. Checklist cần làm với myArm</h2>
+<p>Bạn nên tạo 5 test nhỏ:</p>
+<ol type="1">
+<li><p><strong>FK consistency test</strong> Gọi <code>get_angles()</code>, tính FK bằng model host-side, so với <code>get_coords()</code> từ firmware.</p></li>
+<li><p><strong>Round-trip IK test</strong> Lấy một pose từ <code>get_coords()</code>, gửi lại bằng <code>write_coords()</code>, kiểm tra joint/pose có giữ ổn không.</p></li>
+<li><p><strong>Grid workspace test</strong> Chạy các điểm <code>[x,y,z]</code> trên workspace, log điểm nào fail, điểm nào lệch nhiều.</p></li>
+<li><p><strong>RPY convention test</strong> Test từng trục <code>rx</code>, <code>ry</code>, <code>rz</code> riêng lẻ để xác nhận Euler order và đơn vị.</p></li>
+<li><p><strong>TCP offset test</strong> Gắn marker ở đầu gripper thật, đo sai lệch giữa TCP firmware và điểm kẹp thực tế.</p></li>
+</ol>
+<hr>
+</section>
+<section id="chốt-ngắn" class="level2">
+<h2 class="anchored" data-anchor-id="chốt-ngắn">Chốt ngắn</h2>
+<p>myArm coordinate firmware đang đi theo hướng <strong>controller-side Cartesian control</strong>, giống nhiều robot thật như UR/Kinova/xArm/ABB. Nhưng vì bạn làm nghiên cứu grasping, cách tốt nhất là coi <code>write_coords()</code> như <strong>motion execution API</strong>, không coi nó là nguồn chân lý duy nhất.</p>
+<p>Nguồn chân lý nên là:</p>
+<pre class="text"><code>URDF/DH + calibrated TCP + calibrated camera extrinsic + host-side FK/IK checker</code></pre>
+<p>Sau đó mới dùng <code>write_coords()</code> để execute. Đây là cách cân bằng giữa sự tiện của firmware và khả năng debug cần thiết cho NeuGrasp/real robot.</p>
+</section>
+</section>
+<section id="prompt-2" class="level1">
+<h1>prompt 2:</h1>
+<p>Khi tôi làm việc với write coord và get coord trong coordinate firmware thì có nhiều hiện tượng xảy ra như write coord ở 1 pose nhưng get lại ở pose tương đương, và có một số pose khi gửi đi thì có lúc chạy có lúc không nên tôi đã thử gửi đi pose đầu nếu ko thành công gửi đi pose tương đương nhưng vẫn có tình trạng robot ko thực hiện đc pose đó, pose trước phụ thuộc vào pose tiếp theo nên chạy lúc đc lúc không</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<button type="button" class="layout-toggle" id="layout-toggle" aria-pressed="false" title="Mở rộng nội dung">
+  <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+  <span class="visually-hidden">Mở rộng nội dung</span>
+</button>
+
+<script>
+(() => {
+  const storageKey = "dynacortex-layout-wide";
+  const wideClass = "layout-wide";
+
+  const readSavedState = () => {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const saveState = (enabled) => {
+    try {
+      localStorage.setItem(storageKey, String(enabled));
+    } catch {
+      return;
+    }
+  };
+
+  const applyState = (enabled) => {
+    document.body.classList.toggle(wideClass, enabled);
+
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    const icon = button.querySelector("i");
+    const label = enabled ? "Thu gọn nội dung" : "Mở rộng nội dung";
+    button.setAttribute("aria-pressed", String(enabled));
+    button.setAttribute("title", label);
+
+    const hiddenLabel = button.querySelector(".visually-hidden");
+    if (hiddenLabel) {
+      hiddenLabel.textContent = label;
+    }
+
+    if (icon) {
+      icon.className = enabled ? "bi bi-arrows-angle-contract" : "bi bi-arrows-angle-expand";
+    }
+  };
+
+  applyState(readSavedState());
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener("click", () => {
+      const enabled = !document.body.classList.contains(wideClass);
+      saveState(enabled);
+      applyState(enabled);
+    });
+  });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/uitshirodoragon\.github\.io\/dynacortex-hub\/docs\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/08-notes/date-2026-06-16/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

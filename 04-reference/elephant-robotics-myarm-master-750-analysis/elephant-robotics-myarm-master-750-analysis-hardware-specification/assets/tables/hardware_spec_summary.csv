@@ -1,0 +1,12 @@
+Nhóm,Giá trị chuẩn hóa,Ghi chú kỹ thuật
+DOF,$6+1$ joint,6 joint arm chính + 1 joint/gripper phụ theo docs.
+Reach ngang,$0.750~\mathrm{m}$<br>$750~\mathrm{mm}$,"Reach danh nghĩa, không tự chứng minh toàn bộ orientation reachable."
+Span tổng,$1.500~\mathrm{m}$<br>$1500~\mathrm{mm}$,Gần bằng 2 lần reach ngang.
+Self-weight,$3.2~\mathrm{kg}$,Theo docs zip.
+Nguồn,"$24~\mathrm{V},\;9.2~\mathrm{A}$",Nguồn DC danh nghĩa trong docs product parameters.
+Repeatability,"$[-0.001, 0.001]~\mathrm{m}$<br>$[-1, 1]~\mathrm{mm}$",Docs ghi $\pm1~\mathrm{mm}$; không phải accuracy tuyệt đối.
+Accuracy,"$[0.005, 0.008]~\mathrm{m}$<br>$[5, 8]~\mathrm{mm}$","Docs ghi $[5,8]~\mathrm{mm}$."
+Payload rated,$0.5~\mathrm{kg}$<br>$500~\mathrm{g}$,Rated payload.
+Payload peak,$1.0~\mathrm{kg}$<br>$1000~\mathrm{g}$,Peak payload; không có payload curve trong source.
+Servo count,$8$ servo,Nhiều hơn 6 joint arm vì gồm tool/gripper/extra servo.
+Communication frame rate,$>50~\mathrm{Hz}$,"Frame rate giao tiếp công bố, không phải closed-loop frequency."

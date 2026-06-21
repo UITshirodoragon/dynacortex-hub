@@ -1,0 +1,7 @@
+Thành phần,Miền `MyArmMControl` trong `robot_info.py`,Ý nghĩa
+$x$,"$[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$",Vị trí TCP theo trục x.
+$y$,"$[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$",Vị trí TCP theo trục y.
+$z$,"$[-0.351, 1.007]~\mathrm{m}$<br>$[-351.11, 1007.23]~\mathrm{mm}$",Vị trí TCP theo trục z.
+$r_x$,"$[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$",Roll/RX user-level theo độ.
+$r_y$,"$[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$",Pitch/RY user-level theo độ.
+$r_z$,"$[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$",Yaw/RZ user-level theo độ.

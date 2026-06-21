@@ -1,0 +1,23 @@
+---
+title: "Pinocchio Concepts"
+description: "Các khái niệm nền tảng của Pinocchio như computation model."
+categories: [pinocchio, dynamics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Pinocchio Concepts
+
+Pinocchio là thư viện rigid body dynamics hiệu năng cao, thường dùng để tính FK, Jacobian, inverse dynamics, mass matrix và các đạo hàm liên quan [@carpentier2019pinocchio].
+
+![Pinocchio concepts map](assets/images/pinocchio-concepts-map.svg){#fig-pinocchio-concepts-map width=90%}
+
+```{mermaid}
+flowchart LR
+    A[URDF] --> B[Model]
+    B --> C[Data]
+    C --> D[FK / Jacobian / Dynamics]
+    D --> E[Solver or Controller Computation]
+```

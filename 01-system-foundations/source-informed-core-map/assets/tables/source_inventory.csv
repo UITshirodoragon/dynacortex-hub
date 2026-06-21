@@ -1,0 +1,5 @@
+source,observed_layer,important_files_or_dirs,concepts_to_learn
+pymycobot,hardware SDK / serial API,pymycobot/myarm_api.py; demo/myArm_demo,"API boundary, rad/deg conversion, command/feedback semantics"
+myarm_ros2,ROS 2 wrapper and description,myArm/myarm_m750; mycobot_description/urdf/myarm_m750; mycobot_communication,"node, topic, service, JointState, URDF, RViz2"
+reBotArm_control_py,Python kinematics/dynamics library,kinematics; dynamics; trajectory; urdf,"Pinocchio Model/Data, FK, IK, DLS, RNEA, CRBA, trajectory"
+reBotArmController_ROS2,ROS 2 + MoveIt 2 integration,rebotarm_moveit_config; rebotarm_msgs; rebotarm_bringup,"MoveIt config, action/service/msg, ros2_control, planning pipeline"

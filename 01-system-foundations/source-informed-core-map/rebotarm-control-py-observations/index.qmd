@@ -1,0 +1,25 @@
+---
+title: "reBotArm_control_py observations"
+description: "Ghi chú source-informed: reBotArm_control_py observations."
+categories: [source-analysis, robotics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# reBotArm_control_py observations
+
+Quan sát chính: repo này chia module theo kinematics, dynamics, trajectory và sử dụng Pinocchio.
+
+## Khái niệm rút ra
+
+| Module | System foundation |
+|---|---|
+| `kinematics/forward_kinematics.py` | FK và frame placement |
+| `kinematics/inverse_kinematics.py` | IK, pose error, DLS/CLIK |
+| `dynamics/` | inverse dynamics, inertia, energy |
+| `trajectory/` | trajectory planner, CLIK tracking |
+
+::: callout-important
+Đây là ví dụ rõ ràng cho việc Modern Robotics không chỉ là lý thuyết; các khái niệm FK, IK, Jacobian, dynamics xuất hiện trực tiếp trong code.
+:::

@@ -1,0 +1,19 @@
+---
+title: "RViz2 và Gazebo"
+description: "Khái niệm ROS 2: RViz2 và Gazebo."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# RViz2 và Gazebo
+
+RViz2 là công cụ visualization cho model, TF, marker, planning scene và sensor. Gazebo là simulator vật lý/thế giới.
+
+| Tool | Vai trò |
+|---|---|
+| RViz2 | visualize robot state, TF, planned path |
+| Gazebo | simulate robot/world/sensor/physics |
+
+Hai công cụ này không thay thế controller thật, nhưng rất hữu ích để debug model và pipeline.

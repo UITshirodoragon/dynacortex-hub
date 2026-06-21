@@ -1,0 +1,45 @@
+---
+title: "Configuration Space"
+description: "Lý thuyết cốt lõi về Configuration Space theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Configuration Space
+
+**Configuration** là mô tả đầy đủ vị trí của mọi điểm trên robot. Với robot gồm các rigid links nối bởi joints, configuration thường được biểu diễn bằng vector joint:
+
+$$
+q = [q_1, q_2, \dots, q_n]^T
+$$ {#eq-config-vector}
+
+## C-space là gì?
+
+**Configuration space** hay **C-space** là tập tất cả cấu hình hợp lệ của robot:
+
+$$
+\mathcal{C} = \{q \mid q_i \in [q_i^-,q_i^+],\; i=1,\dots,n\}
+$$ {#eq-cspace-box}
+
+```{mermaid}
+flowchart LR
+    A[Joint variables q] --> B[Configuration Space C]
+    B --> C[Robot physical pose]
+    B --> D[Constraints and limits]
+```
+
+## Điều cần học kỹ
+
+| Khái niệm | Cần hiểu | Lý do |
+|---|---|---|
+| DOF | số biến độc lập tối thiểu | xác định bậc tự do robot |
+| Joint limit | miền hợp lệ của từng khớp | ràng buộc solver và planner |
+| Redundancy | nhiều $q$ cho cùng một pose | ảnh hưởng IK và planning |
+| Constraint | ràng buộc hình học/khớp | ảnh hưởng workspace |
+
+::: callout-note
+C-space không phải hình ảnh robot trong không gian 3D. C-space là không gian của biến cấu hình. Với robot 6-DOF, một điểm trong C-space là một vector $q \in \mathbb{R}^6$.
+:::

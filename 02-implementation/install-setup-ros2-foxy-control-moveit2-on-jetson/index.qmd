@@ -1,0 +1,25 @@
+---
+title: "Cài đặt và setup các thư viện ROS2 foxy và MoveIt2 và tối ưu trên phần cứng của Jetson AGX Xavier"
+description: "Đây là tài liệu ghi chú lại quy trình cài đặt và setup các thư viện ROS2 foxy và MoveIt2 cơ bản và cốt lõi nhất trên Jetson AGX Xavier nhằm tôi ưu dung lượng bộ nhớ"
+categories: [jetson, jetson-agx-xavier, ros2, moveit2, ros2-control, ros2-tf, tf2, implementation, setup]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Tải và cài đặt ROS2 Foxy cùng các gói cơ bản nhất, tối giản nhất
+
+## Tải và cài đặt MoveIt2 (hình như còn có vụ build từ source)
+
+## Tải và cài đặt Pinocchio
+
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)
+- [Github MoveIt2](https://github.com/moveit/moveit2)
+- [MoveIt2 Doccumentation](https://moveit.picknik.ai/main/doc/tutorials/tutorials.html)
+- 

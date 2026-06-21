@@ -1,0 +1,25 @@
+---
+title: "myarm_ros2 observations"
+description: "Ghi chú source-informed: myarm_ros2 observations."
+categories: [source-analysis, robotics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# myarm_ros2 observations
+
+Quan sát chính: repo ROS 2 có package robot, launch, RViz config, URDF description và communication node.
+
+## Khái niệm rút ra
+
+| Source signal | System foundation |
+|---|---|
+| `JointState` subscriber | topic/message model |
+| service set/get angles/coords | service model |
+| URDF folder | kinematic model and frame tree |
+| RViz config | visualization and TF debugging |
+
+::: callout-note
+Một node ROS 2 có thể chỉ là wrapper mỏng quanh SDK. Điều này khác với một controller layer có FK/IK/Jacobian riêng.
+:::

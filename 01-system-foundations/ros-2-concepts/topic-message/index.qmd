@@ -1,0 +1,22 @@
+---
+title: "Topic và Message"
+description: "Khái niệm ROS 2: Topic và Message."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Topic và Message
+
+Topic dùng cho dữ liệu streaming nhiều lần. Message định nghĩa schema dữ liệu.
+
+| Topic ví dụ | Message type | Ý nghĩa |
+|---|---|---|
+| `/joint_states` | `sensor_msgs/msg/JointState` | trạng thái khớp |
+| `/tf` | `tf2_msgs/msg/TFMessage` | transform động |
+| `/camera/image_raw` | `sensor_msgs/msg/Image` | ảnh camera |
+
+::: callout-warning
+Topic không phù hợp cho request-response có xác nhận kết quả. Khi cần kết quả, dùng service hoặc action.
+:::

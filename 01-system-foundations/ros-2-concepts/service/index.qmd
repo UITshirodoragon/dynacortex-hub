@@ -1,0 +1,22 @@
+---
+title: "Service"
+description: "Khái niệm ROS 2: Service."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Service
+
+Service là mô hình request-response.
+
+```{mermaid}
+sequenceDiagram
+    participant C as Client
+    participant S as Service Server
+    C->>S: request
+    S-->>C: response
+```
+
+Service phù hợp cho lệnh rời rạc: reset, enable, set zero, get status. Không nên dùng service cho control loop tần số cao.

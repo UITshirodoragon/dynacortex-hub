@@ -1,0 +1,18 @@
+---
+title: "Kinematics Solver"
+description: "Khái niệm MoveIt 2: Kinematics Solver."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Kinematics Solver
+
+Kinematics solver giải FK/IK cho planning group. Solver timeout, seed state và joint limits ảnh hưởng trực tiếp đến tỷ lệ thành công của planning.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[Kinematics Solver]
+    B --> C[Output]
+```

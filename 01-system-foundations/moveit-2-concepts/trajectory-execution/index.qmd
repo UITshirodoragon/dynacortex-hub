@@ -1,0 +1,18 @@
+---
+title: "Trajectory và Execution"
+description: "Khái niệm MoveIt 2: Trajectory và Execution."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Trajectory và Execution
+
+Kết quả planning cần time parameterization để thành robot trajectory, sau đó gửi đến execution interface/controller.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[Trajectory và Execution]
+    B --> C[Output]
+```

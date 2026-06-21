@@ -6,9 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Nền tảng toán, kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống.">
+<meta name="author" content="Nguyen Hoang Dang Khoa">
+<meta name="description" content="Bản đồ tài liệu nền tảng cho toán robot, ROS 2, MoveIt 2 và Pinocchio.">
 
-<title>System Foundations – DynaCortex</title>
+<title>01. System Foundations – DynaCortex</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -34,6 +35,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../01-system-foundations/modern-robotics/index.html" rel="next">
+<link href="../index.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -76,8 +79,13 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<meta name="mermaid-theme" content="neutral">
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
+<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
@@ -280,26 +288,6 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Reference</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../05-literature/index.html"> 
-<span class="menu-text">Literature</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../06-reports/index.html"> 
-<span class="menu-text">Reports</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../07-inbox/index.html"> 
-<span class="menu-text">Inbox</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../08-notes/index.html"> 
-<span class="menu-text">Notes</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="../09-troubleshooting/index.html"> 
-<span class="menu-text">Troubleshooting</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="../examples/index.html"> 
 <span class="menu-text">Examples</span></a>
   </li>  
@@ -315,7 +303,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">01. System Foundations</a></li><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">System Foundations</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">01. System Foundations</a></li><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">01. System Foundations</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -353,37 +341,428 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../01-system-foundations/index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">System Foundations</span></a>
+ <span class="menu-text">01. System Foundations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Modern Robotics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modern Robotics Core</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/notation-units/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Quy ước ký hiệu và đơn vị</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/configuration-space/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Configuration Space</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/task-space-workspace/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Task Space và Workspace</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/rigid-body-motion/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rigid-Body Motion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/so3-rotation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rotation Matrix và SO(3)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/se3-transform/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Homogeneous Transform và SE(3)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/exponential-coordinates/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Exponential Coordinates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/twists-screws/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Twist và Screw Axis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/wrenches-statics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Wrench và Statics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/forward-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Forward Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/product-of-exponentials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Product of Exponentials</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/dh-mdh/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">D-H và Modified D-H</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/urdf-as-kinematic-model/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">URDF dưới góc nhìn động học</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/jacobian-velocity-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Jacobian và Velocity Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/singularity-manipulability/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Singularity và Manipulability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/inverse-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inverse Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/dynamics-open-chains/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamics of Open Chains</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/trajectory-generation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Trajectory Generation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/motion-planning/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Motion Planning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/modern-robotics/robot-control/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Robot Control</span></a>
   </div>
 </li>
       </ul>
   </li>
-        <li class="sidebar-item sidebar-item-section">
+          <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
- <span class="menu-text">02. Implementation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">ROS 2 Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ROS 2 Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/ros2-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ROS 2 là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/computation-graph/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computation Graph</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/node/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Node</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/topic-message/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Topic và Message</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/service/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Service</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/action/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Action</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/parameter-launch/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parameter và Launch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/tf2-frame-tree/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TF2 và Frame Tree</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/dds-qos/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DDS và QoS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/executor-callback/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Executor và Callback</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/ros2-control/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ros2_control</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/ros-2-concepts/rviz2-gazebo/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RViz2 và Gazebo</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">MoveIt 2 Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MoveIt 2 Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/moveit2-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MoveIt 2 là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/robot-model-urdf-srdf/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Robot Model, URDF, SRDF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/planning-group-state/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Group và Robot State</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/planning-scene-collision/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Scene và Collision Checking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/kinematics-solver/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematics Solver</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/planning-pipeline-ompl/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Pipeline và OMPL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/moveit-2-concepts/trajectory-execution/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Trajectory và Execution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Pinocchio Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pinocchio Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/pinocchio-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pinocchio là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/model-data-geometry/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model, Data và Geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/joint-frame-placement/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint, Frame và Placement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/fk-jacobian/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FK và Jacobian</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/dynamics-rnea-crba/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamics, RNEA và CRBA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/pinocchio-concepts/solver-support/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solver Support</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Source-informed Core Map</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/source-informed-core-map/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Source-informed Core Map</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/source-informed-core-map/pymycobot-sdk-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pymycobot SDK observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/source-informed-core-map/myarm-ros2-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">myarm_ros2 observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/source-informed-core-map/rebotarm-control-py-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reBotArm_control_py observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/source-informed-core-map/rebotarm-ros2-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reBotArmController_ROS2 observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../01-system-foundations/source-informed-core-map/theory-to-source-traceability/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Theory to Source Traceability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">02. Implementation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../02-implementation/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Implementation</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
  <span class="menu-text">03. Experiments</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../03-experiments/index.html" class="sidebar-item-text sidebar-link">
@@ -394,30 +773,65 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
  <span class="menu-text">04. Reference</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../04-reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reference</span></a>
   </div>
 </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04-reference/elephant-robotics-myarm-master-750-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng phần cứng, thông số kỹ thuật và động học của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng Python SDK và firmware API của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng ROS2 SDK/demo package của MyArm Master 750</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
  <span class="menu-text">05. Literature</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../05-literature/index.html" class="sidebar-item-text sidebar-link">
@@ -428,13 +842,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
  <span class="menu-text">06. Reports</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../06-reports/index.html" class="sidebar-item-text sidebar-link">
@@ -445,13 +859,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
  <span class="menu-text">07. Inbox</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../07-inbox/index.html" class="sidebar-item-text sidebar-link">
@@ -462,13 +876,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
  <span class="menu-text">08. Notes</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../08-notes/index.html" class="sidebar-item-text sidebar-link">
@@ -479,13 +893,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
  <span class="menu-text">09. Troubleshooting</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../09-troubleshooting/index.html" class="sidebar-item-text sidebar-link">
@@ -505,33 +919,53 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#system-foundations" id="toc-system-foundations" class="nav-link active" data-scroll-target="#system-foundations">01. System Foundations</a>
+  <ul>
+  <li><a href="#cấu-trúc-chính" id="toc-cấu-trúc-chính" class="nav-link" data-scroll-target="#cấu-trúc-chính">Cấu trúc chính</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/01-system-foundations/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">01. System Foundations</a></li><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">System Foundations</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">01. System Foundations</a></li><li class="breadcrumb-item"><a href="../01-system-foundations/index.html">01. System Foundations</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">System Foundations</h1>
+<h1 class="title">01. System Foundations</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">math</div>
-    <div class="quarto-category">system</div>
-    <div class="quarto-category">foundation</div>
+    <div class="quarto-category">system-foundations</div>
+    <div class="quarto-category">robotics</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    Nền tảng toán, kỹ thuật, cơ sở lý thuyết, tổng quan hệ thống.
+    Bản đồ tài liệu nền tảng cho toán robot, ROS 2, MoveIt 2 và Pinocchio.
   </div>
 </div>
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nguyen Hoang Dang Khoa </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">22/06/2026 00:06:59+07:00Z</p>
+    </div>
+  </div>
   
     
   </div>
@@ -541,11 +975,159 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Nội dung đang được cập nhật …</p>
+<section id="system-foundations" class="level1">
+<h1>01. System Foundations</h1>
+<p>Trang này là entry-point cho các tài liệu nền tảng. Phạm vi hiện tại chưa đi vào hệ thống robot cụ thể, mà chỉ xây dựng <strong>khung khái niệm</strong> cần học.</p>
+<div id="fig-system-foundations-map" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-system-foundations-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/images/system-foundations-map.svg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-system-foundations-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: System foundations map
+</figcaption>
+</figure>
+</div>
+<p>Xem <a href="#fig-system-foundations-map" class="quarto-xref">Figure&nbsp;1</a> để định vị bốn nhánh kiến thức.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    MR[Modern Robotics] --&gt; ROS[ROS 2]
+    MR --&gt; MoveIt[MoveIt 2]
+    MR --&gt; Pinocchio[Pinocchio]
+    ROS --&gt; MoveIt
+    Pinocchio --&gt; MoveIt
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="cấu-trúc-chính" class="level2">
+<h2 class="anchored" data-anchor-id="cấu-trúc-chính">Cấu trúc chính</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Nhánh</th>
+<th>Vai trò</th>
+<th>Cần ưu tiên</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Modern Robotics</td>
+<td>Nền toán, cơ học, kinematics, dynamics, planning, control</td>
+<td>Cao</td>
+</tr>
+<tr class="even">
+<td>ROS 2</td>
+<td>Communication graph, runtime, TF, DDS, ros2_control</td>
+<td>Trung bình</td>
+</tr>
+<tr class="odd">
+<td>MoveIt 2</td>
+<td>Robot model, planning scene, solver, trajectory</td>
+<td>Trung bình</td>
+</tr>
+<tr class="even">
+<td>Pinocchio</td>
+<td>Computation model cho FK, Jacobian, dynamics</td>
+<td>Trung bình</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Trong bản <code>v0.0.2</code>, phần <strong>Modern Robotics</strong> là phần được viết dày nhất. Các phần còn lại là nền khái niệm để đọc tài liệu framework và source robot.</p>
+</div>
+</div>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
+<button type="button" class="layout-toggle" id="layout-toggle" aria-pressed="false" title="Mở rộng nội dung">
+  <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+  <span class="visually-hidden">Mở rộng nội dung</span>
+</button>
+
+<script>
+(() => {
+  const storageKey = "dynacortex-layout-wide";
+  const wideClass = "layout-wide";
+
+  const readSavedState = () => {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const saveState = (enabled) => {
+    try {
+      localStorage.setItem(storageKey, String(enabled));
+    } catch {
+      return;
+    }
+  };
+
+  const applyState = (enabled) => {
+    document.body.classList.toggle(wideClass, enabled);
+
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    const icon = button.querySelector("i");
+    const label = enabled ? "Thu gọn nội dung" : "Mở rộng nội dung";
+    button.setAttribute("aria-pressed", String(enabled));
+    button.setAttribute("title", label);
+
+    const hiddenLabel = button.querySelector(".visually-hidden");
+    if (hiddenLabel) {
+      hiddenLabel.textContent = label;
+    }
+
+    if (icon) {
+      icon.className = enabled ? "bi bi-arrows-angle-contract" : "bi bi-arrows-angle-expand";
+    }
+  };
+
+  applyState(readSavedState());
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener("click", () => {
+      const enabled = !document.body.classList.contains(wideClass);
+      saveState(enabled);
+      applyState(enabled);
+    });
+  });
+})();
+</script>
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     // Ensure there is a toggle, if there isn't float one in the top right
@@ -961,10 +1543,22 @@ ul.task-list li input[type="checkbox"] {
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../index.html" class="pagination-link" aria-label="DynaCortex">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">DynaCortex</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../01-system-foundations/modern-robotics/index.html" class="pagination-link" aria-label="Modern Robotics Core">
+        <span class="nav-page-text">Modern Robotics Core</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
 </div> <!-- /content -->
 
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/01-system-foundations/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/01-system-foundations/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="../site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

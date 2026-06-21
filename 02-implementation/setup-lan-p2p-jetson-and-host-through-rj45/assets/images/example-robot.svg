@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360">
+  <rect width="960" height="360" rx="24" fill="#f7f7f7" stroke="#222" stroke-width="3"/>
+  <text x="48" y="72" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#111">RobotNetwork</text>
+  <text x="48" y="118" font-family="Arial, sans-serif" font-size="24" fill="#333">Flash Jetson AGX Xavier với Auvidea X221-AI</text>
+  <g transform="translate(610,70)" fill="none" stroke="#111" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="55" cy="210" r="28" fill="#fff"/>
+    <path d="M55 182 L95 120 L165 90"/>
+    <circle cx="95" cy="120" r="16" fill="#fff"/>
+    <circle cx="165" cy="90" r="16" fill="#fff"/>
+    <path d="M165 90 L230 52"/>
+    <path d="M230 52 L260 35 M230 52 L265 65"/>
+  </g>
+  <text x="48" y="310" font-family="Arial, sans-serif" font-size="18" fill="#555">Draft scaffold · Jetson AGX Xavier · Auvidea X221 · ROS2/ML/DL</text>
+</svg>

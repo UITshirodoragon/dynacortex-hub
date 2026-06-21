@@ -1,0 +1,23 @@
+---
+title: "Action"
+description: "Khái niệm ROS 2: Action."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Action
+
+Action dùng cho tác vụ dài, có goal, feedback và result.
+
+```{mermaid}
+sequenceDiagram
+    participant C as Action Client
+    participant S as Action Server
+    C->>S: goal
+    S-->>C: feedback...
+    S-->>C: result
+```
+
+Trajectory execution thường dùng action vì cần gửi goal, theo dõi feedback và nhận result.

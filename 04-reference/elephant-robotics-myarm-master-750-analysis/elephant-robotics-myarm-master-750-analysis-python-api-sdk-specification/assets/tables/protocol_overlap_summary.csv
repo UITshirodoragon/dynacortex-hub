@@ -1,0 +1,9 @@
+Operation,ProtocolCode,`MyArmM` wrapper,`MyArmMControl` wrapper,Sai khác kỹ thuật
+Read joint angles,`GET_ANGLES = 0x20`,`get_joints_angle()` inherited,`get_angles()`,"Cùng command ID, tên wrapper khác, user-level trả độ."
+Write one joint,`SEND_ANGLE = 0x21`,`set_joint_angle()`,`write_angle()`,"Cùng command ID, khác validation class và reply behavior."
+Write all joints,`SEND_ANGLES = 0x22`,`set_joints_angle()`,`write_angles()`,Overlap quan trọng nhất ở joint command.
+Read coords,`GET_COORDS = 0x23`,không exposed dưới tên `get_coords()`,`get_coords()`,Coordinate wrapper có Cartesian surface API.
+Write coords,`SEND_COORDS = 0x25`,không có `write_coords()`/`send_coords()`,`write_coords()`,Cartesian path thuộc Coordinate API.
+Stop,`STOP = 0x29`,`stop_robot()`,`stop()`,"Cùng command ID, khác tên wrapper."
+Jog angle,`JOG_ANGLE = 0x30`,không có wrapper cùng tên,`jog_angle()`,JOG interface nằm ở Coordinate API.
+Set encoder,`SET_ENCODER = 0x3A`,`set_servo_encoder()`,không cùng tên,Encoder write path nổi bật hơn ở `MyArmM`.

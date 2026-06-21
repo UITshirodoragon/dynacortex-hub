@@ -1,0 +1,47 @@
+---
+title: "Phân tích và đánh giá cánh tay robot reBot B601-DM của Seeed Studio"
+description: "Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot reBot B601-DM của Seeed Studio"
+categories: [reference, seeedstudio, rebot-b601-dm, controller, analysis, python-sdk, ros2-sdk, api, python, kinematics, dynamics, specification, information, deployment]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## Phân tích phần cứng cuả cánh tay robot reBot B601-DM của Seeed Studio
+- thông số kỹ thuật 
+  - cơ khí
+  - tải
+  - độ chính xác repeatablility và accuaracy
+  - servo
+  - giao tiếp
+  - nguồn
+  - các công i/o
+  - các bộ xử lý mcu phụ trách cho từng phần của cánh tay robot
+- Động học 
+  - bảng MDH (đối chiếu với Urdf, xacro, mô hình 3d, trong python sdk và ros2)
+  - giới hạn các khớp joint limits (đối chiếu trực tiếp với Python SDK và ROS2 SDK, urdf, xacro, mô hình 3d)
+  - giá trị encoder (từ trong docs và python SDK, urdf, xacro, mô hình 3d)
+  - calib
+- Cần cảnh báo về việc đối chiếu và không rõ ràng về thông số kỹ thuật, động học, giới hạn các khớp joint limits, encoder calib,... giữa docs, python sdk, urdf, xacro, mô hình 3d, cũng như là các lỗi, thiếu sót của nhà sản xuất trong việc cung cấp thông tin và tài liệu cho cánh tay robot MyArm Master 750 của Elephant Robotics.
+
+## Phân tích phần mềm và SDK của cánh tay robot reBot B601-DM của Seeed Studio, bao gồm Python SDK và tầng điều khiển của python SDK
+
+cần tập trung!
+- phân tích rõ ràng kiến trúc thiết kế tổng thể hoạt động chi tiết của python sdk
+- Họ dùng mô tả hardware như thế nào, các config, urdf, xacro, mô hình 3d, joint limits, encoder, calib,... để điều khiển cánh tay robot reBot B601-DM của Seeed Studio
+- 
+
+
+## Phân tích ROS2 SDK của cánh tay robot reBot B601-DM của Seeed Studio, bao gồm các gói ROS2, node, topic, service, action, và các công cụ phát triển ROS2 có sẵn, rviz2 simulation cho cánh tay robot reBot B601-DM của Seeed Studio
+
+cần tập trung!
+
+## Phân tích ví dụ của demo cánh tay robot
+
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)

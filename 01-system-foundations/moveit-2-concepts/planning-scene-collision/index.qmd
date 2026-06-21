@@ -1,0 +1,18 @@
+---
+title: "Planning Scene và Collision Checking"
+description: "Khái niệm MoveIt 2: Planning Scene và Collision Checking."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Planning Scene và Collision Checking
+
+Planning scene chứa robot state, collision model và world objects. Collision checking kiểm tra self-collision và environment collision.
+
+```{mermaid}
+flowchart LR
+    A[Input] --> B[Planning Scene và Collision Checking]
+    B --> C[Output]
+```

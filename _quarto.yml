@@ -28,16 +28,84 @@ website:
   sidebar:
     style: docked
     search: true
+    collapse-level: 1
     contents:
       - index.qmd
       
       - section: "01. System Foundations"
         contents:
           - 01-system-foundations/index.qmd
+          - section: "Modern Robotics"
+            contents:
+              - 01-system-foundations/modern-robotics/index.qmd
+              - 01-system-foundations/modern-robotics/notation-units/index.qmd
+              - 01-system-foundations/modern-robotics/configuration-space/index.qmd
+              - 01-system-foundations/modern-robotics/task-space-workspace/index.qmd
+              - 01-system-foundations/modern-robotics/rigid-body-motion/index.qmd
+              - 01-system-foundations/modern-robotics/so3-rotation/index.qmd
+              - 01-system-foundations/modern-robotics/se3-transform/index.qmd
+              - 01-system-foundations/modern-robotics/exponential-coordinates/index.qmd
+              - 01-system-foundations/modern-robotics/twists-screws/index.qmd
+              - 01-system-foundations/modern-robotics/wrenches-statics/index.qmd
+              - 01-system-foundations/modern-robotics/forward-kinematics/index.qmd
+              - 01-system-foundations/modern-robotics/product-of-exponentials/index.qmd
+              - 01-system-foundations/modern-robotics/dh-mdh/index.qmd
+              - 01-system-foundations/modern-robotics/urdf-as-kinematic-model/index.qmd
+              - 01-system-foundations/modern-robotics/jacobian-velocity-kinematics/index.qmd
+              - 01-system-foundations/modern-robotics/singularity-manipulability/index.qmd
+              - 01-system-foundations/modern-robotics/inverse-kinematics/index.qmd
+              - 01-system-foundations/modern-robotics/dynamics-open-chains/index.qmd
+              - 01-system-foundations/modern-robotics/trajectory-generation/index.qmd
+              - 01-system-foundations/modern-robotics/motion-planning/index.qmd
+              - 01-system-foundations/modern-robotics/robot-control/index.qmd
+          - section: "ROS 2 Concepts"
+            contents:
+              - 01-system-foundations/ros-2-concepts/index.qmd
+              - 01-system-foundations/ros-2-concepts/ros2-overview/index.qmd
+              - 01-system-foundations/ros-2-concepts/computation-graph/index.qmd
+              - 01-system-foundations/ros-2-concepts/node/index.qmd
+              - 01-system-foundations/ros-2-concepts/topic-message/index.qmd
+              - 01-system-foundations/ros-2-concepts/service/index.qmd
+              - 01-system-foundations/ros-2-concepts/action/index.qmd
+              - 01-system-foundations/ros-2-concepts/parameter-launch/index.qmd
+              - 01-system-foundations/ros-2-concepts/tf2-frame-tree/index.qmd
+              - 01-system-foundations/ros-2-concepts/dds-qos/index.qmd
+              - 01-system-foundations/ros-2-concepts/executor-callback/index.qmd
+              - 01-system-foundations/ros-2-concepts/ros2-control/index.qmd
+              - 01-system-foundations/ros-2-concepts/rviz2-gazebo/index.qmd
+          - section: "MoveIt 2 Concepts"
+            contents:
+              - 01-system-foundations/moveit-2-concepts/index.qmd
+              - 01-system-foundations/moveit-2-concepts/moveit2-overview/index.qmd
+              - 01-system-foundations/moveit-2-concepts/robot-model-urdf-srdf/index.qmd
+              - 01-system-foundations/moveit-2-concepts/planning-group-state/index.qmd
+              - 01-system-foundations/moveit-2-concepts/planning-scene-collision/index.qmd
+              - 01-system-foundations/moveit-2-concepts/kinematics-solver/index.qmd
+              - 01-system-foundations/moveit-2-concepts/planning-pipeline-ompl/index.qmd
+              - 01-system-foundations/moveit-2-concepts/trajectory-execution/index.qmd
+          - section: "Pinocchio Concepts"
+            contents:
+              - 01-system-foundations/pinocchio-concepts/index.qmd
+              - 01-system-foundations/pinocchio-concepts/pinocchio-overview/index.qmd
+              - 01-system-foundations/pinocchio-concepts/model-data-geometry/index.qmd
+              - 01-system-foundations/pinocchio-concepts/joint-frame-placement/index.qmd
+              - 01-system-foundations/pinocchio-concepts/fk-jacobian/index.qmd
+              - 01-system-foundations/pinocchio-concepts/dynamics-rnea-crba/index.qmd
+              - 01-system-foundations/pinocchio-concepts/solver-support/index.qmd
+          - section: "Source-informed Core Map"
+            contents:
+              - 01-system-foundations/source-informed-core-map/index.qmd
+              - 01-system-foundations/source-informed-core-map/pymycobot-sdk-observations/index.qmd
+              - 01-system-foundations/source-informed-core-map/myarm-ros2-observations/index.qmd
+              - 01-system-foundations/source-informed-core-map/rebotarm-control-py-observations/index.qmd
+              - 01-system-foundations/source-informed-core-map/rebotarm-ros2-observations/index.qmd
+              - 01-system-foundations/source-informed-core-map/theory-to-source-traceability/index.qmd
+          
           
       - section: "02. Implementation"
         contents:
           - 02-implementation/index.qmd
+          - 02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.qmd
           
 
       - section: "03. Experiments"
@@ -48,7 +116,13 @@ website:
       - section: "04. Reference"
         contents:
           - 04-reference/index.qmd
-      
+
+          - section: "Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics"
+            contents:
+            - 04-reference/elephant-robotics-myarm-master-750-analysis/index.qmd
+            - 04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-hardware-specification/index.qmd
+            - 04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.qmd
+            - 04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.qmd
 
       - section: "05. Literature"
         contents:
@@ -77,13 +151,15 @@ website:
 
 format:
   html:
+    css: styles.css
+    include-after-body: includes/layout-toggle.html
     theme: 
       light: flatly
       dark: darkly
     mermaid:
       theme: neutral
     toc: true
-    toc-depth: 3
+    toc-depth: 4
     code-copy: true
     code-fold: false
     number-sections: false

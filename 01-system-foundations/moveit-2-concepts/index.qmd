@@ -1,0 +1,24 @@
+---
+title: "MoveIt 2 Concepts"
+description: "Các khái niệm nền tảng của MoveIt 2 như planning model."
+categories: [moveit-2, planning]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# MoveIt 2 Concepts
+
+MoveIt 2 là manipulation planning framework. Nó không phải low-level motor driver, mà là lớp robot model, planning scene, solver và trajectory pipeline [@moveit2docs].
+
+![MoveIt 2 concepts map](assets/images/moveit2-concepts-map.svg){#fig-moveit2-concepts-map width=90%}
+
+```{mermaid}
+flowchart LR
+    A[Goal] --> B[Robot Model]
+    C[Planning Scene] --> D[Planning Pipeline]
+    B --> D
+    D --> E[Robot Trajectory]
+    E --> F[Execution Interface]
+```

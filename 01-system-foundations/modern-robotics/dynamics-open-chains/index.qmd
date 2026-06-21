@@ -1,0 +1,37 @@
+---
+title: "Dynamics of Open Chains"
+description: "Lý thuyết cốt lõi về Dynamics of Open Chains theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Dynamics of Open Chains
+
+Dynamics xét quan hệ giữa chuyển động và lực/torque gây ra chuyển động.
+
+## Phương trình robot arm
+
+$$
+M(q)\ddot{q}+C(q,\dot{q})\dot{q}+g(q)=\tau
+$$ {#eq-robot-dynamics}
+
+| Thành phần | Ý nghĩa |
+|---|---|
+| $M(q)$ | mass/inertia matrix |
+| $C(q,\dot{q})\dot{q}$ | Coriolis/centrifugal terms |
+| $g(q)$ | gravity terms |
+| $\tau$ | joint torque/force |
+
+## Inverse dynamics và forward dynamics
+
+| Bài toán | Input | Output |
+|---|---|---|
+| Inverse dynamics | $q,\dot{q},\ddot{q}$ | $\tau$ |
+| Forward dynamics | $q,\dot{q},\tau$ | $\ddot{q}$ |
+
+::: callout-note
+Với position-controlled robot, dynamics vẫn hữu ích để hiểu gravity compensation, giới hạn tải, acceleration limit và hành vi khi tracking trajectory.
+:::

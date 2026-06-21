@@ -1,0 +1,12 @@
+---
+title: "Solver Support"
+description: "Khái niệm Pinocchio: Solver Support."
+categories: [pinocchio, computation]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Solver Support
+
+Pinocchio cung cấp các primitive tính toán nhanh để xây IK, optimization, tracking và control loop.

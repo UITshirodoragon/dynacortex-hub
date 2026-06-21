@@ -1,0 +1,51 @@
+---
+title: "Exponential Coordinates"
+description: "Lý thuyết cốt lõi về Exponential Coordinates theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Exponential Coordinates
+
+Exponential coordinates là cách biểu diễn rotation hoặc rigid-body motion bằng trục và biên độ chuyển động.
+
+## Rotation exponential
+
+Với unit axis $\hat{\omega}$ và góc $\theta$:
+
+$$
+R = e^{[\hat{\omega}]\theta}
+$$ {#eq-rot-exp}
+
+Trong đó $[\hat{\omega}]$ là skew-symmetric matrix:
+
+$$
+[\omega] =
+\begin{bmatrix}
+0 & -\omega_3 & \omega_2 \\
+\omega_3 & 0 & -\omega_1 \\
+-\omega_2 & \omega_1 & 0
+\end{bmatrix}
+$$ {#eq-skew}
+
+## Rigid-body exponential
+
+Với screw axis $S$ và joint displacement $\theta$:
+
+$$
+T = e^{[S]\theta}
+$$ {#eq-se3-exp}
+
+```{mermaid}
+flowchart LR
+    A[Screw axis S] --> B[Matrix representation [S]]
+    B --> C[exp([S] theta)]
+    C --> D[Rigid-body transform T]
+```
+
+::: callout-tip
+Exponential coordinates là cầu nối trực tiếp sang Product of Exponentials và Jacobian dạng screw axis.
+:::

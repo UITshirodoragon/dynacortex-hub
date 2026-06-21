@@ -1,0 +1,12 @@
+---
+title: "FK và Jacobian"
+description: "Khái niệm Pinocchio: FK và Jacobian."
+categories: [pinocchio, computation]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# FK và Jacobian
+
+Pinocchio có thể tính forward kinematics, update frame placements và frame Jacobian. Đây là nền cho IK và control.

@@ -1,0 +1,13 @@
+Class,Method,Miền tham số chính,Protocol/behavior,Trạng thái kỹ thuật
+`MyArmM`,"`__init__(port, baudrate=""1000000"", timeout=0.1, debug=False)`","$baudrate=1{,}000{,}000~\mathrm{bit/s}$ default",Serial open qua `MyArmAPI`.,Default 1 Mbps trong source.
+`MyArmM`,"`set_joint_angle(joint_id, angle, speed)`","$joint\_id \in [0,254]$<br>$[0.000, 4.433]~\mathrm{rad}$<br>$[0, 254]~^\circ$ docstring angle<br>$speed \in [1,100]$",`SEND_ANGLE = 0x21`; không ép `has_reply=True`.,Validation thật phụ thuộc `robot_info.py`.
+`MyArmM`,"`set_joints_angle(angles, speed)`","$speed \in [0,100]$ theo docstring<br>angle list encode độ $\times 100$",`SEND_ANGLES = 0x22`; không ép `has_reply=True`.,Protocol ID trùng `MyArmMControl.write_angles`.
+`MyArmM`,"`set_servo_encoder(servo_id, encoder, speed)`","$servo\_id \in [0,254]$<br>$encoder \in [0,4095]$ raw count<br>$speed \in [1,100]$",`SET_ENCODER = 0x3A`.,Điều khiển raw potential/encoder.
+`MyArmM`,"`set_servos_encoder_drag(encoders, speeds)`","$encoders$: 8 raw counts<br>$speeds \in [-10000,10000]$",`SET_ENCODERS_DRAG = 0x3E`.,Ý nghĩa vật lý tốc độ drag không được chuẩn hóa trong docs.
+`MyArmM`,"`set_servo_enabled(servo_id, status)`","$servo\_id \in [0,254]$<br>$status \in \{0,1\}$",`RELEASE_ALL_SERVOS = 0x13`.,`read_control.py` dùng để release servo trước khi RViz follow.
+`MyArmMControl`,"`__init__(port, baudrate=115200, timeout=0.1, debug=False)`","$baudrate=115{,}200~\mathrm{bit/s}$ default<br>LOCAL-OBS: $1{,}000{,}000~\mathrm{bit/s}$ khi truyền explicit",Serial open qua `MyArmMProcessor`.,Default source chưa phản ánh observation 1 Mbps.
+`MyArmMControl`,"`write_angles(angles, speed)`","$speed \in [1,100]$",`SEND_ANGLES = 0x22`; `_mesg()` ép `has_reply=True`.,"Cùng command ID với `MyArmM.set_joints_angle`, khác reply behavior."
+`MyArmMControl`,"`write_coords(coords, speed, mode=None)`","$coords=[x,y,z,r_x,r_y,r_z]$<br>$x,y,z$: mm; $r$: độ<br>$speed \in [1,100]$<br>$mode \in \{0,1,2\}$","`SEND_COORDS = 0x25`; xyz encode $\times 10$, rpy encode $\times 100$.",Cartesian call đi vào firmware blackbox.
+`MyArmMControl`,`set_fresh_mode(mode)`,"$mode \in \{0,1\}$",`SET_FRESH_MODE = 0x16`; source comment `TODO need test`.,"Docs mô tả latest/queue, nhưng source không chứng minh timing/drop policy."
+`MyArmMControl`,`set_movement_type(move_type)`,"$move\_type \in \{0,1\}$","Docs/source: `1=movel`, `0=moveJ`.",Khác tham số `mode` của `write_coords`.
+`MyArmMControl`,`set_plan_speed` / `set_plan_acceleration`,"$speed,acceleration \in [1,100]$<br>$is\_linear \in \{0,1\}$",Plan config protocol.,"Giá trị là thang nội bộ, không có đơn vị SI."

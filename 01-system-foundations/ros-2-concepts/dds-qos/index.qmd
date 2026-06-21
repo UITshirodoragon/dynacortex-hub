@@ -1,0 +1,20 @@
+---
+title: "DDS và QoS"
+description: "Khái niệm ROS 2: DDS và QoS."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# DDS và QoS
+
+DDS là middleware truyền thông nền của ROS 2. QoS điều khiển cách truyền dữ liệu: reliability, durability, history, depth.
+
+| QoS idea | Ý nghĩa |
+|---|---|
+| reliability | best effort hoặc reliable |
+| history/depth | giữ bao nhiêu message |
+| durability | message có cần giữ lại cho subscriber mới không |
+
+Sensor streaming thường khác command/control về QoS.

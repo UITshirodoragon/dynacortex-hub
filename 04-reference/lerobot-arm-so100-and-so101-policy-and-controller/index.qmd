@@ -1,0 +1,17 @@
+---
+title: "Phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot"
+description: "Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot"
+categories: [reference, lerobot, so100, so101, policy, controller, analysis, evaluation, inferrence, trainging, development, ecosystem, lerobot-arm, lerobot-arm-so100, lerobot-arm-so101, collecting-robot-data, dataset, deployment]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+
+
+
+
+## Tài liệu và nguồn tham khảo
+
+- [ROS2 Foxy Fitzroy](https://docs.ros.org/en/foxy)

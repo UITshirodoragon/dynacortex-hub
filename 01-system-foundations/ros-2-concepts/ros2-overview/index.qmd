@@ -1,0 +1,21 @@
+---
+title: "ROS 2 là gì"
+description: "Khái niệm ROS 2: ROS 2 là gì."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# ROS 2 là gì?
+
+ROS 2 là middleware cho robot software, không phải firmware và không phải một controller duy nhất.
+
+```{mermaid}
+flowchart TB
+    A[Robot Application] --> B[ROS 2 Middleware]
+    B --> C[Operating System]
+    C --> D[Hardware / Driver]
+```
+
+ROS 2 cung cấp communication graph, tools, package ecosystem và integration methodology.

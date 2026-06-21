@@ -1,0 +1,39 @@
+---
+title: "Motion Planning"
+description: "Lý thuyết cốt lõi về Motion Planning theo Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# Motion Planning
+
+Motion planning tìm đường đi từ start đến goal thỏa ràng buộc hình học và collision.
+
+$$
+q_{start} \rightarrow q_{goal}
+$$ {#eq-planning-basic}
+
+```{mermaid}
+flowchart LR
+    A[Start q] --> B[Planner]
+    C[Goal q or pose] --> B
+    D[Obstacles and collision model] --> B
+    B --> E[Collision-free path]
+```
+
+## Các khái niệm cần học
+
+| Khái niệm | Ý nghĩa |
+|---|---|
+| C-space obstacle | vùng cấu hình gây va chạm |
+| Collision checking | kiểm tra va chạm robot/world |
+| Sampling-based planning | tìm đường bằng lấy mẫu |
+| RRT/PRM | nhóm planner phổ biến |
+| Path smoothing | làm đường mượt hơn sau planning |
+
+::: callout-note
+MoveIt 2 dùng planning pipeline và planner như OMPL để giải bài toán motion planning trong robot manipulation.
+:::

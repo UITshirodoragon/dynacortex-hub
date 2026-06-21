@@ -1,0 +1,9 @@
+Joint URDF,Type,Miền giá trị,Ghi chú đơn vị
+joint1,revolute,"$[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$",URDF và JointState dùng rad.
+joint2,revolute,"$[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$",URDF và JointState dùng rad.
+joint3,revolute,"$[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$",URDF và JointState dùng rad.
+joint4,revolute,"$[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$",URDF và JointState dùng rad.
+joint5,revolute,"$[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$",URDF và JointState dùng rad.
+joint6,revolute,"$[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$",URDF và JointState dùng rad.
+gripper,prismatic,"$[0.000, 0.035]~\mathrm{m}$<br>$[0.0, 34.5]~\mathrm{mm}$",URDF dùng m; tương ứng 34.5 mm.
+gripper_r,prismatic,"$[0.000, 0.060]~\mathrm{m}$<br>$[0.0, 60.0]~\mathrm{mm}$",URDF dùng m; tương ứng 60.0 mm.

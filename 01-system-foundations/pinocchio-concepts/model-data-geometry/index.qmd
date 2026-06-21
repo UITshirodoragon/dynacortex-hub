@@ -1,0 +1,12 @@
+---
+title: "Model, Data và Geometry"
+description: "Khái niệm Pinocchio: Model, Data và Geometry."
+categories: [pinocchio, computation]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Model, Data và Geometry
+
+`Model` chứa cấu trúc robot; `Data` là bộ nhớ/cache kết quả tính toán; `GeometryModel` chứa geometry phục vụ collision/visual tùy pipeline.

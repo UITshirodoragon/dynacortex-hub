@@ -1,0 +1,51 @@
+---
+title: "Quy ước ký hiệu và đơn vị"
+description: "Trang này chuẩn hóa ký hiệu dùng cho toàn bộ phần Modern Robotics."
+categories: [modern-robotics, theory]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+
+## Ký hiệu cốt lõi
+
+| Ký hiệu | Ý nghĩa | Ghi chú |
+|---|---|---|
+| $\mathbf{q}$ | vector cấu hình khớp | $q \in \mathbb{R}^n$ |
+| $\dot{q}$ | joint velocity | đơn vị rad/s hoặc m/s |
+| $\ddot{q}$ | joint acceleration | đơn vị rad/s² hoặc m/s² |
+| $R$ | rotation matrix (ma trận quay) | $R \in SO(3)$ |
+| $p$ | translation vector (vector tịnh tiến) | $p \in \mathbb{R}^3$ |
+| $T$ | homogeneous transform (ma trận biến đổi thuần nhất) | $T \in SE(3)$ |
+| $V$ | twist/spatial velocity | $V \in \mathbb{R}^6$ |
+| $J(q)$ | Jacobian | ánh xạ $\dot{q}$ sang $V$ |
+| $\tau$ | joint torque/force | actuator input |
+
+## Quy ước đơn vị
+
+| Đại lượng | Đơn vị trong tính toán | Cách hiển thị trong bảng |
+|---|---|---|
+| Góc | rad | $1.571~\mathrm{rad}$<br>$90.000~^\circ$ |
+| Chiều dài | m | $0.100~\mathrm{m}$<br>$100.000~\mathrm{mm}$ |
+| Tần số | Hz | $50~\mathrm{Hz}$ |
+| Thời gian | s hoặc ms | $0.020~\mathrm{s}$<br>$20.000~\mathrm{ms}$ |
+
+::: callout-warning
+Trong ROS, phần lớn joint angle dùng **rad**. Nhiều SDK robot lại nhận **deg**. Sai chuyển đổi rad/deg là nguyên nhân rất thường gặp làm robot chạy sai biên độ.
+:::
+
+## Miền giá trị
+
+Miền joint luôn viết bằng dấu ngoặc vuông:
+
+$$
+q_i \in [q_i^-, q_i^+]
+$$ {#eq-joint-range}
+
+Với một khớp quay ví dụ:
+
+| Joint | Limit |
+|---|---|
+| $q_1$ | $[-2.880,2.880]~\mathrm{rad}$<br>$[-165.011,165.011]~^\circ$ |

@@ -1,0 +1,28 @@
+---
+title: "Theory to Source Traceability"
+description: "Ghi chú source-informed: Theory to Source Traceability."
+categories: [source-analysis, robotics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Theory to Source Traceability
+
+Bảng này nối các khái niệm lý thuyết với dấu vết source thường gặp.
+
+| Lý thuyết | Dấu vết source | Câu hỏi kiểm chứng |
+|---|---|---|
+| $SE(3)$ | frame placement, homogeneous matrix | pose đang ở frame nào? |
+| FK | `forwardKinematics`, URDF tree | FK từ library có khớp công thức không? |
+| Jacobian | `computeFrameJacobian` | frame Jacobian là LOCAL hay WORLD? |
+| IK | DLS/CLIK solver | error metric dùng position hay log6? |
+| Dynamics | RNEA/CRBA | torque có gồm gravity không? |
+| Trajectory | time parameterization | velocity/acceleration limit đã áp chưa? |
+| ROS topic | publisher/subscriber | message type là gì? |
+| ROS action | goal/feedback/result | tác vụ có kéo dài không? |
+| MoveIt solver | `kinematics.yaml` | timeout/attempts/seed ảnh hưởng gì? |
+
+::: callout-tip
+Khi đọc một repo robot mới, hãy tạo bảng traceability trước khi đọc chi tiết từng file. Bảng này giúp biết nên học lý thuyết nào trước.
+:::

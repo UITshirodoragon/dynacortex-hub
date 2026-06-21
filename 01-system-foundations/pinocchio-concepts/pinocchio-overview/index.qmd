@@ -1,0 +1,12 @@
+---
+title: "Pinocchio là gì"
+description: "Khái niệm Pinocchio: Pinocchio là gì."
+categories: [pinocchio, computation]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Pinocchio là gì?
+
+Pinocchio là computation library cho rigid body model. Nó không quản lý ROS graph và không phải planner hoàn chỉnh như MoveIt 2.

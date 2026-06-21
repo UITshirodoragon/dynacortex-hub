@@ -1,0 +1,20 @@
+---
+title: "Executor và Callback"
+description: "Khái niệm ROS 2: Executor và Callback."
+categories: [ros-2, concepts]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+# Executor và Callback
+
+Executor chịu trách nhiệm lấy event từ ROS 2 wait set và chạy callback.
+
+```{mermaid}
+flowchart LR
+    A[Timer/Sub/Service event] --> B[Executor]
+    B --> C[Callback]
+```
+
+Hiểu executor giúp lý giải latency, callback starvation và cách tách callback group.

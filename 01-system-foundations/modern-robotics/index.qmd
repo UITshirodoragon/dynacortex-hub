@@ -1,0 +1,36 @@
+---
+title: "Modern Robotics Core"
+description: "Phần này chắt lọc các kiến thức cần học từ *Modern Robotics* . Trọng tâm không phải đọc hết sách, mà là lấy đúng các khái niệm cần cho robot arm, ROS 2, MoveIt 2 và Pinocchio."
+categories: [modern-robotics, kinematics, dynamics]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+
+```{mermaid}
+flowchart TB
+    A[Configuration Space] --> B[Rigid-Body Motion]
+    B --> C[$\text_{SO(3)}$ and $\text_{SE(3)}$]
+    C --> D[Twist and Screw Axis]
+    D --> E[Forward Kinematics]
+    E --> F[Jacobian]
+    F --> G[Singularity and Manipulability]
+    F --> H[Inverse Kinematics]
+    H --> I[Trajectory Generation]
+    I --> J[Motion Planning]
+    C --> K[Dynamics]
+    K --> L[Robot Control]
+```
+
+
+## Cách đọc source robot để học Modern Robotics
+
+Các repo robot đã đọc cho thấy các khái niệm Modern Robotics không đứng riêng lẻ:
+
+- `reBotArm_control_py` có module `kinematics`, `dynamics`, `trajectory` và dùng Pinocchio cho FK/IK/dynamics.
+- `reBotArmController_ROS2` có MoveIt config, `kinematics.yaml`, `ompl_planning.yaml`, action/service/msg và bringup.
+- `myarm_ros2` cho thấy ROS 2 node/topic/service và việc chuyển đổi `JointState` từ rad sang deg trước khi gọi SDK.
+- `pymycobot` cho thấy hardware API/serial protocol là biên thấp hơn, không phải lớp toán học FK/IK minh bạch.
+
