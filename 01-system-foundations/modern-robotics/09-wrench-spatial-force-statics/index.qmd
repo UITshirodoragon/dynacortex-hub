@@ -1,0 +1,42 @@
+---
+title: "09. Wrench, Spatial Force và Statics"
+description: "Mô tả lực/moment 6D và quan hệ với Jacobian."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 09. Wrench, Spatial Force và Statics
+
+![09. Wrench, Spatial Force và Statics](assets/images/09-wrench-spatial-force-statics.svg){#fig-09-wrench-spatial-force-statics width=85%}
+
+Wrench là vector 6 chiều gom moment và lực:
+
+$$
+F =
+\begin{bmatrix}
+m \\
+f
+\end{bmatrix}
+$$ {#eq-wrench-vector}
+
+Trong statics, Jacobian liên hệ wrench ở end-effector với torque/force ở joint:
+
+$$
+\tau = J^T(q)F
+$$ {#eq-jacobian-transpose-statics}
+
+## Ý nghĩa thực dụng
+
+| Tình huống | Wrench/Jacobian giúp hiểu gì? |
+|---|---|
+| Tool đẩy vào vật | lực ở tool sinh torque ở joint |
+| Gắp vật nặng | gravity/payload tạo moment trên khớp |
+| Near singularity | lực nhỏ ở tool có thể cần torque lớn |
+| Force control | điều khiển wrench thay vì chỉ pose |
+
+::: callout-warning
+Một robot position-control đơn giản có thể không đo torque thật, nhưng quan hệ $\tau = J^TF$ vẫn quan trọng để hiểu tải, vùng nguy hiểm và lựa chọn pose làm việc.
+:::

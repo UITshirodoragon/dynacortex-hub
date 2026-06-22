@@ -1,0 +1,51 @@
+---
+title: "15. Singularity và Manipulability"
+description: "Đánh giá cấu hình dễ điều khiển hay nguy hiểm."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 15. Singularity và Manipulability
+
+![15. Singularity và Manipulability](assets/images/15-singularity-manipulability.svg){#fig-15-singularity-manipulability width=85%}
+
+Singularity là cấu hình mà Jacobian mất rank. Khi đó robot mất khả năng tạo vận tốc theo một hoặc nhiều hướng trong task space.
+
+$$
+\operatorname{rank}(J(q)) < \min(6,n)
+$$ {#eq-singularity-rank}
+
+## Triệu chứng thực dụng
+
+| Triệu chứng | Nguyên nhân có thể |
+|---|---|
+| IK nhảy nghiệm | gần singularity hoặc seed xấu |
+| joint velocity rất lớn | $J$ gần suy biến |
+| robot chậm lại trong MoveIt Servo | singularity scaling |
+| path nhìn ngắn nhưng joint chạy nhiều | cấu hình gần biên/singularity |
+
+## Manipulability
+
+Một chỉ số phổ biến là:
+
+$$
+w(q) = \sqrt{\det(J(q)J^T(q))}
+$$ {#eq-manipulability}
+
+Chỉ số này không phải thước đo hoàn hảo, nhưng hữu ích để phát hiện vùng làm việc kém.
+
+```{mermaid}
+flowchart LR
+    A[q] --> B[Compute J(q)]
+    B --> C[rank / condition number]
+    C --> D{safe?}
+    D -->|yes| E[use normally]
+    D -->|no| F[slow down / replan / change seed]
+```
+
+::: callout-tip
+Benchmark ổn định động học nên log thêm condition number hoặc manipulability, không chỉ log lỗi pose.
+:::

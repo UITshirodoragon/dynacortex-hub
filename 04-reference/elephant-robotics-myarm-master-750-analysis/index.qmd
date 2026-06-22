@@ -1,4 +1,5 @@
 ---
+subtitle: "Bản v0.0.8 - Technical state document"
 title: "Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics"
 description: "Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot MyArm Master 750 của Elephant Robotics"
 categories: [reference, lerobot, myarm, myarm-master-750, python-sdk, ros2-sdk, api, python, kinematics, dynamics, specification, information, controller, analysis, deployment]
@@ -17,9 +18,9 @@ author: "Nguyen Hoang Dang Khoa"
 | source_file | role | evidence |
 | --- | --- | --- |
 | myarm_m750_docs_en/.../2-ProductParameters.md | Spec phần cứng, MDH, joint limits, encoder/potential limits, I/O, frame docs | Machine parameters lines 14-24; units line 94; MDH lines 275-303; limits lines 305-374 |
- myarm_m750_docs_en/.../6.1-BasedOnPythonDevelopmentAndUse/2_API.md | API docs cho Shake và Coordinate firmware | Tài liệu API chính thức trong docs zip, đối chiếu với source pymycobot |
+| myarm_m750_docs_en/.../6.1-BasedOnPythonDevelopmentAndUse/2_API.md | API docs cho Shake và Coordinate firmware | Tài liệu API chính thức trong docs zip, đối chiếu với source pymycobot |
 | pymycobot/pymycobot | Source Python SDK đang phân tích | git tag v4.0.4, commit 44d7fb1, __version__=4.0.4 |
- pymycobot/pymycobot/myarmm.py | Class MyArmM cho Shake/joint-servo API | __init__ line 9 baudrate=1000000; set_joints_angle lines 23-32 |
+| pymycobot/pymycobot/myarmm.py | Class MyArmM cho Shake/joint-servo API | __init__ line 9 baudrate=1000000; set_joints_angle lines 23-32 |
 | pymycobot/pymycobot/myarmm_control.py | Class MyArmMControl cho Coordinate API | __init__ line 176 baudrate=115200 default; _mesg line 71 forces has_reply=True; write_coords lines 294-311 |
 | pymycobot/pymycobot/robot_info.py | Bảng limit được SDK dùng để validate tham số | MyArmM lines 440-447; MyArmMControl lines 448-457 |
 | myarm_ros2/myArm/myarm_m750 | ROS2 demo package cho M750 | read_control.py, slider_control.py, simple_gui.py, teleop_keyboard.py, launch files |

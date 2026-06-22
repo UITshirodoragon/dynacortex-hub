@@ -1,7 +1,7 @@
 ---
 title: "Hiện trạng Python SDK và firmware API của MyArm Master 750"
-description: "Phân tích MyArmM, MyArmMControl, protocol, serial, limit validation và các điểm không thống nhất giữa docs và pymycobot."
-categories: [reference, myarm, myarm-master-750, python-sdk, firmware, api, protocol, serial, analysis]
+description: "Phân tích kỹ thuật source pymycobot cho MyArm Master 750, tập trung vào MyArmM, MyArmMControl, protocol, validation, serial và khác biệt Shake/Coordinate firmware API."
+categories: [reference, myarm, myarm-master-750, python-sdk, firmware, api, pymycobot, protocol, analysis]
 status: standard
 date: last-modified
 date-format: DD/MM/YYYY HH:mm:ssZ[Z]
@@ -10,274 +10,1438 @@ author: "Nguyen Hoang Dang Khoa"
 
 # Hiện trạng Python SDK và firmware API của MyArm Master 750
 
-Trang này phản ánh source `pymycobot` liên quan đến M750: `MyArmM`, `MyArmMControl`, protocol/serial, bảng validation và các điểm không thống nhất với docs. Không đánh giá theo mong muốn kiến trúc; chỉ ghi nhận hiện trạng kỹ thuật.
+Trang này chỉ phản ánh **hiện trạng source** trong `pymycobot.zip` đang xét. Trọng tâm không phải đề xuất kiến trúc mới, mà là đọc trực tiếp các file Python liên quan đến MyArm Master 750 để xác định: module nào tham gia, class nào đại diện cho firmware API nào, method nào gọi protocol nào, tham số được validate ở đâu, giá trị trả về được decode như thế nào, và các điểm không thống nhất giữa docs/source/firmware quan sát thực tế.
 
 ::: callout-important
-Đính chính hiện trạng thực nghiệm của dự án: Coordinate firmware hiện đã được nhà sản xuất công bố trên app myStudio; người dùng đã burn firmware coord mới nhất vào 3 bộ M750 và quan sát baudrate có thể truyền lên $1{,}000{,}000~\mathrm{bit/s}$. Trong source `pymycobot` đang xét, `MyArmMControl.__init__` vẫn đặt default $115{,}200~\mathrm{bit/s}$, nên quan sát 1 Mbps được đánh dấu là `LOCAL-OBS`, không phải giá trị default trong source.
+Trong tài liệu này, mọi miền giá trị được viết theo dạng $[a,b]$. Góc luôn ghi rõ $\mathrm{rad}$ và $^\circ$ khi có chuyển đổi. Tọa độ Cartesian của API firmware dùng $\mathrm{mm}$ ở mức Python API, trong khi URDF/ROS2 dùng $\mathrm{m}$ và $\mathrm{rad}$.
 :::
 
-## 1. Source SDK đang phân tích
+## 1. Phạm vi source được đối chiếu
 
-| File | Vai trò |
-|---|---|
-| `pymycobot/myarmm.py` | Class `MyArmM`, path Shake/joint-servo API. |
-| `pymycobot/myarm_api.py` | Base API cho MyArm M/C: version/status/encoder/servo/system params. |
-| `pymycobot/myarmm_control.py` | Class `MyArmMControl`, path Coordinate API. |
-| `pymycobot/common.py` | `ProtocolCode`, packet format, encode/decode angle/coord. |
-| `pymycobot/robot_info.py` | `robot_limit` cho validation trước khi gửi lệnh. |
-| `pymycobot/error.py` | `calibration_parameters()` dùng `robot_limit` theo `class_name`. |
+| Thành phần | Source evidence | Vai trò |
+|---|---|---|
+| Public import | `pymycobot/__init__.py:L39-L46` | Export `MyArmM`, `MyArmC`, `MyArmMControl`; `__version__ = "4.0.4"` ở `L107`. |
+| Shake / joint-servo API | `pymycobot/myarmm.py:L7-L159` | Class `MyArmM`, kế thừa `MyArmAPI`, default baudrate `1000000`. |
+| Shared MyArm API | `pymycobot/myarm_api.py:L22-L521` | Serial processor `MyArmMCProcessor` và shared methods `MyArmAPI`. |
+| Coordinate API | `pymycobot/myarmm_control.py:L47-L919` | `MyArmMProcessor` và `MyArmMControl`, mặc định source là `baudrate=115200` nhưng constructor nhận baudrate. |
+| Protocol codec | `pymycobot/common.py:L128-L531`, `L534-L625` | `ProtocolCode`, frame format, angle/coord encode/decode. |
+| Validation | `pymycobot/error.py:L2296-L2467` | Branch validate riêng cho `MyArmM`, `MyArmC`, `MyArmMControl`. |
+| Robot limits | `pymycobot/robot_info.py:L440-L457` | `robot_limit["MyArmM"]` và `robot_limit["MyArmMControl"]`. |
 
-## 2. Hai firmware path và hai class API
+Thông tin thực nghiệm của dự án: hiện tại bạn đã burn **Coordinate firmware mới từ myStudio** vào 3 bộ M750 và quan sát thấy baudrate có thể dùng tới $1{,}000{,}000~\mathrm{baud}$. Đây là observation của dự án, không phải dòng claim được suy ra từ `pymycobot.zip`. Trong source, default của `MyArmMControl.__init__` vẫn là `115200` tại `myarmm_control.py:L176-L177`; vì constructor có tham số `baudrate`, người dùng có thể truyền `baudrate=1000000`.
 
-| Cụm firmware/API | Trạng thái trong source/docs | Ý nghĩa kỹ thuật hiện tại |
-| --- | --- | --- |
-| Pico / Master Control | Docs firmware mô tả joint status, alarm, joint control, IO, system params; release notes có nhắc tối ưu communication lên 1M. | Cụm control core cấp thấp nhưng tên Basic/Pico/Master trong docs không thật sạch. |
-| Basic / Screen / Transponder | ROS2 docs hướng dẫn chọn Transponder và USB UART khi nối PC/Jetson. | Cụm UI/bridge trong demo ROS2. |
-| Atom / Tool | Docs/API có tool firmware version, tool IO, LED/button, gripper/tool interface. | Cụm đầu tay máy tách khỏi motion chain 6R. |
-| Shake firmware + `MyArmM` | Source `MyArmM` default $1{,}000{,}000~\mathrm{bit/s}$ và tập trung joint/servo/encoder/status. | Ít exposed Cartesian API; gần joint/servo layer hơn. |
-| Coordinate firmware + `MyArmMControl` | Source default $115{,}200~\mathrm{bit/s}$; LOCAL-OBS: coord firmware mới public trên myStudio và chạy được $1{,}000{,}000~\mathrm{bit/s}$ khi truyền baudrate explicit. | Có joint + Cartesian + frame + fresh mode; Python source không chứa IK/FK firmware. |
+## 2. Bản đồ module và class
 
-_Dữ liệu nguồn: `assets/tables/firmware_modules_state.csv`._
-
-| Cụm firmware/API | Trạng thái trong source/docs | Ý nghĩa kỹ thuật hiện tại |
-| --- | --- | --- |
-| Pico / Master Control | Docs firmware mô tả joint status, alarm, joint control, IO, system params; release notes có nhắc tối ưu communication lên 1M. | Cụm control core cấp thấp nhưng tên Basic/Pico/Master trong docs không thật sạch. |
-| Basic / Screen / Transponder | ROS2 docs hướng dẫn chọn Transponder và USB UART khi nối PC/Jetson. | Cụm UI/bridge trong demo ROS2. |
-| Atom / Tool | Docs/API có tool firmware version, tool IO, LED/button, gripper/tool interface. | Cụm đầu tay máy tách khỏi motion chain 6R. |
-| Shake firmware + `MyArmM` | Source `MyArmM` default $1{,}000{,}000~\mathrm{bit/s}$ và tập trung joint/servo/encoder/status. | Ít exposed Cartesian API; gần joint/servo layer hơn. |
-| Coordinate firmware + `MyArmMControl` | Source default $115{,}200~\mathrm{bit/s}$; LOCAL-OBS: coord firmware mới public trên myStudio và chạy được $1{,}000{,}000~\mathrm{bit/s}$ khi truyền baudrate explicit. | Có joint + Cartesian + frame + fresh mode; Python source không chứa IK/FK firmware. |
-
-## 3. API catalog: miền tham số và đơn vị
-
-| Class | Method | Miền tham số chính | Protocol/behavior | Trạng thái kỹ thuật |
-| --- | --- | --- | --- | --- |
-| `MyArmM` | `__init__(port, baudrate="1000000", timeout=0.1, debug=False)` | $baudrate=1{,}000{,}000~\mathrm{bit/s}$ default | Serial open qua `MyArmAPI`. | Default 1 Mbps trong source. |
-| `MyArmM` | `set_joint_angle(joint_id, angle, speed)` | $joint\_id \in [0,254]$<br>$[0.000, 4.433]~\mathrm{rad}$<br>$[0, 254]~^\circ$ docstring angle<br>$speed \in [1,100]$ | `SEND_ANGLE = 0x21`; không ép `has_reply=True`. | Validation thật phụ thuộc `robot_info.py`. |
-| `MyArmM` | `set_joints_angle(angles, speed)` | $speed \in [0,100]$ theo docstring<br>angle list encode độ $\times 100$ | `SEND_ANGLES = 0x22`; không ép `has_reply=True`. | Protocol ID trùng `MyArmMControl.write_angles`. |
-| `MyArmM` | `set_servo_encoder(servo_id, encoder, speed)` | $servo\_id \in [0,254]$<br>$encoder \in [0,4095]$ raw count<br>$speed \in [1,100]$ | `SET_ENCODER = 0x3A`. | Điều khiển raw potential/encoder. |
-| `MyArmM` | `set_servos_encoder_drag(encoders, speeds)` | $encoders$: 8 raw counts<br>$speeds \in [-10000,10000]$ | `SET_ENCODERS_DRAG = 0x3E`. | Ý nghĩa vật lý tốc độ drag không được chuẩn hóa trong docs. |
-| `MyArmM` | `set_servo_enabled(servo_id, status)` | $servo\_id \in [0,254]$<br>$status \in \{0,1\}$ | `RELEASE_ALL_SERVOS = 0x13`. | `read_control.py` dùng để release servo trước khi RViz follow. |
-| `MyArmMControl` | `__init__(port, baudrate=115200, timeout=0.1, debug=False)` | $baudrate=115{,}200~\mathrm{bit/s}$ default<br>LOCAL-OBS: $1{,}000{,}000~\mathrm{bit/s}$ khi truyền explicit | Serial open qua `MyArmMProcessor`. | Default source chưa phản ánh observation 1 Mbps. |
-| `MyArmMControl` | `write_angles(angles, speed)` | $speed \in [1,100]$ | `SEND_ANGLES = 0x22`; `_mesg()` ép `has_reply=True`. | Cùng command ID với `MyArmM.set_joints_angle`, khác reply behavior. |
-| `MyArmMControl` | `write_coords(coords, speed, mode=None)` | $coords=[x,y,z,r_x,r_y,r_z]$<br>$x,y,z$: mm; $r$: độ<br>$speed \in [1,100]$<br>$mode \in \{0,1,2\}$ | `SEND_COORDS = 0x25`; xyz encode $\times 10$, rpy encode $\times 100$. | Cartesian call đi vào firmware blackbox. |
-| `MyArmMControl` | `set_fresh_mode(mode)` | $mode \in \{0,1\}$ | `SET_FRESH_MODE = 0x16`; source comment `TODO need test`. | Docs mô tả latest/queue, nhưng source không chứng minh timing/drop policy. |
-| `MyArmMControl` | `set_movement_type(move_type)` | $move\_type \in \{0,1\}$ | Docs/source: `1=movel`, `0=moveJ`. | Khác tham số `mode` của `write_coords`. |
-| `MyArmMControl` | `set_plan_speed` / `set_plan_acceleration` | $speed,acceleration \in [1,100]$<br>$is\_linear \in \{0,1\}$ | Plan config protocol. | Giá trị là thang nội bộ, không có đơn vị SI. |
-
-_Dữ liệu nguồn: `assets/tables/python_api_function_catalog.csv`._
-
-| Class | Method | Miền tham số chính | Protocol/behavior | Trạng thái kỹ thuật |
-| --- | --- | --- | --- | --- |
-| `MyArmM` | `__init__(port, baudrate="1000000", timeout=0.1, debug=False)` | $baudrate=1{,}000{,}000~\mathrm{bit/s}$ default | Serial open qua `MyArmAPI`. | Default 1 Mbps trong source. |
-| `MyArmM` | `set_joint_angle(joint_id, angle, speed)` | $joint\_id \in [0,254]$<br>$[0.000, 4.433]~\mathrm{rad}$<br>$[0, 254]~^\circ$ docstring angle<br>$speed \in [1,100]$ | `SEND_ANGLE = 0x21`; không ép `has_reply=True`. | Validation thật phụ thuộc `robot_info.py`. |
-| `MyArmM` | `set_joints_angle(angles, speed)` | $speed \in [0,100]$ theo docstring<br>angle list encode độ $\times 100$ | `SEND_ANGLES = 0x22`; không ép `has_reply=True`. | Protocol ID trùng `MyArmMControl.write_angles`. |
-| `MyArmM` | `set_servo_encoder(servo_id, encoder, speed)` | $servo\_id \in [0,254]$<br>$encoder \in [0,4095]$ raw count<br>$speed \in [1,100]$ | `SET_ENCODER = 0x3A`. | Điều khiển raw potential/encoder. |
-| `MyArmM` | `set_servos_encoder_drag(encoders, speeds)` | $encoders$: 8 raw counts<br>$speeds \in [-10000,10000]$ | `SET_ENCODERS_DRAG = 0x3E`. | Ý nghĩa vật lý tốc độ drag không được chuẩn hóa trong docs. |
-| `MyArmM` | `set_servo_enabled(servo_id, status)` | $servo\_id \in [0,254]$<br>$status \in \{0,1\}$ | `RELEASE_ALL_SERVOS = 0x13`. | `read_control.py` dùng để release servo trước khi RViz follow. |
-| `MyArmMControl` | `__init__(port, baudrate=115200, timeout=0.1, debug=False)` | $baudrate=115{,}200~\mathrm{bit/s}$ default<br>LOCAL-OBS: $1{,}000{,}000~\mathrm{bit/s}$ khi truyền explicit | Serial open qua `MyArmMProcessor`. | Default source chưa phản ánh observation 1 Mbps. |
-| `MyArmMControl` | `write_angles(angles, speed)` | $speed \in [1,100]$ | `SEND_ANGLES = 0x22`; `_mesg()` ép `has_reply=True`. | Cùng command ID với `MyArmM.set_joints_angle`, khác reply behavior. |
-| `MyArmMControl` | `write_coords(coords, speed, mode=None)` | $coords=[x,y,z,r_x,r_y,r_z]$<br>$x,y,z$: mm; $r$: độ<br>$speed \in [1,100]$<br>$mode \in \{0,1,2\}$ | `SEND_COORDS = 0x25`; xyz encode $\times 10$, rpy encode $\times 100$. | Cartesian call đi vào firmware blackbox. |
-| `MyArmMControl` | `set_fresh_mode(mode)` | $mode \in \{0,1\}$ | `SET_FRESH_MODE = 0x16`; source comment `TODO need test`. | Docs mô tả latest/queue, nhưng source không chứng minh timing/drop policy. |
-| `MyArmMControl` | `set_movement_type(move_type)` | $move\_type \in \{0,1\}$ | Docs/source: `1=movel`, `0=moveJ`. | Khác tham số `mode` của `write_coords`. |
-| `MyArmMControl` | `set_plan_speed` / `set_plan_acceleration` | $speed,acceleration \in [1,100]$<br>$is\_linear \in \{0,1\}$ | Plan config protocol. | Giá trị là thang nội bộ, không có đơn vị SI. |
-
-Các miền như $speed \in [1,100]$ là thang tham số user-level/SDK validation, không phải đơn vị vật lý SI. Source không cung cấp mapping chuẩn sang $\mathrm{rad/s}$, $^\circ/\mathrm{s}$, $\mathrm{m/s}$ hoặc $\mathrm{mm/s}$.
-
-## 4. Packet, protocol và phép encode đơn vị
-
-Packet không CRC trong nhóm class này có dạng:
-
-$$
-\mathbf{p} = [0xFE,0xFE,LEN,CMD,DATA_0,\ldots,DATA_n,0xFA]
-$$ {#eq-sdk-packet-v3}
-
-Angle codec trong `common.py`:
-
-$$
-s_q = \operatorname{int}(100q[^\circ]),
-\qquad
-q[^\circ] = \operatorname{round}\left(\frac{s_q}{100},3\right)
-$$ {#eq-angle-codec-v3}
-
-Coordinate codec:
-
-$$
-s_x = \operatorname{int}(10x[\mathrm{mm}]),
-\qquad
-x[\mathrm{mm}] = \operatorname{round}\left(\frac{s_x}{10},2\right)
-$$ {#eq-coordinate-codec-v3}
-
-Vì vậy vector Cartesian user-level của `write_coords` có đơn vị hỗn hợp:
-
-$$
-\mathbf{x}_{coord} = [x,y,z,r_x,r_y,r_z]^\top,
-\quad x,y,z~[\mathrm{mm}],
-\quad r_x,r_y,r_z~[^\circ]
-$$ {#eq-coord-vector-v3}
-
-Dạng chuẩn hóa cho phân tích ngoài firmware:
-
-$$
-\tilde{\mathbf{x}}_{coord}
-= [10^{-3}x,10^{-3}y,10^{-3}z,\frac{\pi}{180}r_x,\frac{\pi}{180}r_y,\frac{\pi}{180}r_z]^\top
-$$ {#eq-coord-vector-si-v3}
-
-## 5. Coordinate range trong `robot_info.py`
-
-| Thành phần | Miền `MyArmMControl` trong `robot_info.py` | Ý nghĩa |
-| --- | --- | --- |
-| $x$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục x. |
-| $y$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục y. |
-| $z$ | $[-0.351, 1.007]~\mathrm{m}$<br>$[-351.11, 1007.23]~\mathrm{mm}$ | Vị trí TCP theo trục z. |
-| $r_x$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Roll/RX user-level theo độ. |
-| $r_y$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Pitch/RY user-level theo độ. |
-| $r_z$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Yaw/RZ user-level theo độ. |
-
-_Dữ liệu nguồn: `assets/tables/coordinate_range_mymcontrol.csv`._
-
-| Thành phần | Miền `MyArmMControl` trong `robot_info.py` | Ý nghĩa |
-| --- | --- | --- |
-| $x$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục x. |
-| $y$ | $[-0.833, 0.833]~\mathrm{m}$<br>$[-833.325, 833.325]~\mathrm{mm}$ | Vị trí TCP theo trục y. |
-| $z$ | $[-0.351, 1.007]~\mathrm{m}$<br>$[-351.11, 1007.23]~\mathrm{mm}$ | Vị trí TCP theo trục z. |
-| $r_x$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Roll/RX user-level theo độ. |
-| $r_y$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Pitch/RY user-level theo độ. |
-| $r_z$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | Yaw/RZ user-level theo độ. |
-
-Bảng này chỉ là miền `coord_min/coord_max` trong `robot_info.py`; nó không chứng minh mọi pose trong hộp tọa độ đều reachable.
-
-## 6. Protocol overlap giữa `MyArmM` và `MyArmMControl`
-
-| Operation | ProtocolCode | `MyArmM` wrapper | `MyArmMControl` wrapper | Sai khác kỹ thuật |
-| --- | --- | --- | --- | --- |
-| Read joint angles | `GET_ANGLES = 0x20` | `get_joints_angle()` inherited | `get_angles()` | Cùng command ID, tên wrapper khác, user-level trả độ. |
-| Write one joint | `SEND_ANGLE = 0x21` | `set_joint_angle()` | `write_angle()` | Cùng command ID, khác validation class và reply behavior. |
-| Write all joints | `SEND_ANGLES = 0x22` | `set_joints_angle()` | `write_angles()` | Overlap quan trọng nhất ở joint command. |
-| Read coords | `GET_COORDS = 0x23` | không exposed dưới tên `get_coords()` | `get_coords()` | Coordinate wrapper có Cartesian surface API. |
-| Write coords | `SEND_COORDS = 0x25` | không có `write_coords()`/`send_coords()` | `write_coords()` | Cartesian path thuộc Coordinate API. |
-| Stop | `STOP = 0x29` | `stop_robot()` | `stop()` | Cùng command ID, khác tên wrapper. |
-| Jog angle | `JOG_ANGLE = 0x30` | không có wrapper cùng tên | `jog_angle()` | JOG interface nằm ở Coordinate API. |
-| Set encoder | `SET_ENCODER = 0x3A` | `set_servo_encoder()` | không cùng tên | Encoder write path nổi bật hơn ở `MyArmM`. |
-
-_Dữ liệu nguồn: `assets/tables/protocol_overlap_summary.csv`._
-
-| Operation | ProtocolCode | `MyArmM` wrapper | `MyArmMControl` wrapper | Sai khác kỹ thuật |
-| --- | --- | --- | --- | --- |
-| Read joint angles | `GET_ANGLES = 0x20` | `get_joints_angle()` inherited | `get_angles()` | Cùng command ID, tên wrapper khác, user-level trả độ. |
-| Write one joint | `SEND_ANGLE = 0x21` | `set_joint_angle()` | `write_angle()` | Cùng command ID, khác validation class và reply behavior. |
-| Write all joints | `SEND_ANGLES = 0x22` | `set_joints_angle()` | `write_angles()` | Overlap quan trọng nhất ở joint command. |
-| Read coords | `GET_COORDS = 0x23` | không exposed dưới tên `get_coords()` | `get_coords()` | Coordinate wrapper có Cartesian surface API. |
-| Write coords | `SEND_COORDS = 0x25` | không có `write_coords()`/`send_coords()` | `write_coords()` | Cartesian path thuộc Coordinate API. |
-| Stop | `STOP = 0x29` | `stop_robot()` | `stop()` | Cùng command ID, khác tên wrapper. |
-| Jog angle | `JOG_ANGLE = 0x30` | không có wrapper cùng tên | `jog_angle()` | JOG interface nằm ở Coordinate API. |
-| Set encoder | `SET_ENCODER = 0x3A` | `set_servo_encoder()` | không cùng tên | Encoder write path nổi bật hơn ở `MyArmM`. |
-
-Hai class dùng chung nhiều `ProtocolCode`, nhưng không tương đương ở cấp API vì khác tên wrapper, default baudrate, bảng `robot_limit`, số joint trong `joint_id`, và reply behavior.
-
-## 7. Reply behavior
-
-Trong `MyArmM`, `set_joints_angle()` gọi:
-
-```python
-return self._mesg(ProtocolCode.SEND_ANGLES, angles, speed)
+```text
+pymycobot
+├── __init__.py
+│   ├── from pymycobot.myarmm import MyArmM
+│   └── from pymycobot.myarmm_control import MyArmMControl
+├── myarmm.py
+│   └── class MyArmM(MyArmAPI)
+├── myarm_api.py
+│   ├── setup_serial_connect(...)
+│   ├── class MyArmMCProcessor(DataProcessor)
+│   └── class MyArmAPI(MyArmMCProcessor)
+├── myarmm_control.py
+│   ├── class RobotProtocolCode
+│   ├── class MyArmMProcessor(DataProcessor)
+│   └── class MyArmMControl(MyArmMProcessor)
+├── common.py
+│   ├── class ProtocolCode
+│   └── class DataProcessor
+├── error.py
+│   └── calibration_parameters(...)
+└── robot_info.py
+    └── RobotLimit.robot_limit
 ```
 
-Không có `has_reply=True`. Trong `MyArmMControl`, `MyArmMProcessor._mesg()` ép:
+Hai class chính cho M750 không cùng wrapper:
+
+| Firmware/API | Python class | File | Default baudrate trong source | Ý nghĩa source-level |
+|---|---|---|---|---|
+| Shake / joint-servo API | `MyArmM` | `myarmm.py` | $1{,}000{,}000~\mathrm{baud}$ | Joint/servo-level API, có shared diagnostics qua `MyArmAPI`. |
+| Coordinate API | `MyArmMControl` | `myarmm_control.py` | $115{,}200~\mathrm{baud}$ | Cartesian/joint API có frame, MoveJ/MoveL flag, planner speed/acceleration và nhiều method blocking-reply. |
+
+## 3. Protocol và đơn vị ở tầng codec
+
+`DataProcessor._mesg()` tạo frame lệnh theo dạng:
+
+$$
+\mathrm{frame} = [0xFE, 0xFE, L, c, d_1, d_2, \ldots, d_n, 0xFA]
+$$ {#eq-pymycobot-frame}
+
+Trong đó $c$ là command/genre, $d_i$ là data byte, và với robot không dùng CRC thì source đặt:
+
+$$
+L = n + 2
+$$ {#eq-pymycobot-frame-len}
+
+Điều này tương ứng với `common.py:L568-L582`: `LEN = len(command_data) + 2`, sau đó append `HEADER`, `HEADER`, `LEN`, `genre`, `data`, `FOOTER`.
+
+Các phép encode/decode quan trọng nằm ở `common.py:L612-L625`:
+
+$$
+\theta_\mathrm{int} = \lfloor 100\theta_{^\circ}\rfloor,
+\qquad
+x_\mathrm{int} = \lfloor 10x_\mathrm{mm}\rfloor
+$$ {#eq-pymycobot-codec-encode}
+
+$$
+\theta_{^\circ}=\frac{\theta_\mathrm{int}}{100},
+\qquad
+x_\mathrm{mm}=\frac{x_\mathrm{int}}{10}
+$$ {#eq-pymycobot-codec-decode}
+
+Đổi sang radian để đối chiếu ROS2/URDF:
+
+$$
+\theta_\mathrm{rad}=\frac{\pi}{180}\theta_{^\circ}
+$$ {#eq-deg-to-rad}
 
 ```python
-kwargs["has_reply"] = True
-self._write(real_command)
+# Source: pymycobot/common.py:L612-L625
+def _angle2int(self, angle):
+    return int(angle * 100)
+
+def _coord2int(self, coord):
+    return int(coord * 10)
+
+def _int2angle(self, _int):
+    return round(_int / 100.0, 3)
+
+def _int2coord(self, _int):
+    return round(_int / 10.0, 2)
+```
+
+::: callout-note
+Ở Python SDK, angle arguments được hiểu là degree $^\circ$ ở bề mặt API, còn ROS2 `JointState.position` và URDF limits dùng radian $\mathrm{rad}$. Cartesian coordinate trong `MyArmMControl` dùng $\mathrm{mm}$ ở ba phần tử đầu; URDF dùng $\mathrm{m}$.
+:::
+
+## 4. Validation: `robot_info.py` và `error.py`
+
+`calibration_parameters()` dùng `RobotLimit.robot_limit` để kiểm tra tham số trước khi đóng gói frame. Branch cho M750 nằm tại `error.py:L2296-L2467`. Đoạn này chọn exception theo class name:
+
+```python
+# Source: pymycobot/error.py:L2296-L2308
+elif class_name in ["MyArmM", "MyArmC", "MyArmMControl"]:
+    if class_name == "MyArmM":
+        Error = MyArmMDataException
+    elif class_name == "MyArmC":
+        Error = MyArmCDataException
+    elif class_name == "MyArmMControl":
+        Error = MyArmMControlException
+    ...
+    limit_info = robot_limit[class_name]
+```
+
+Các rule quan trọng:
+
+| Parameter | Source | Rule source-level | Ý nghĩa kỹ thuật |
+|---|---|---|---|
+| `joint_id`, `servo_id`, `coord_id` | `error.py:L2311-L2312` | Phải nằm trong list tương ứng của `robot_info.py`. | Class khác nhau có list khác nhau; `MyArmMControl` có `joint_id=[1..6]`, `MyArmM` có `joint_id=[1..7]`. |
+| `angle` | `error.py:L2313-L2318` | Check theo `angles_min/max[joint_id-1]`. | Gửi một joint đơn bị chặn trước nếu ngoài limit SDK. |
+| `angles` | `error.py:L2319-L2331` | Length phải bằng `len(limit_info["joint_id"])`; từng phần tử check min/max. | Với source v4.0.4, `MyArmM` đòi 7 angle, `MyArmMControl` đòi 6 angle. |
+| `coord` | `error.py:L2332-L2337` | Check theo `coord_min/max[coord_id-1]`. | Chỉ có ý nghĩa với class có `coord_id`/`coord_min` như `MyArmMControl`. |
+| `coords` | `error.py:L2338-L2346` | Length đúng 6; check từng phần tử theo `coord_min/max`. | Cartesian API surface dùng vector $[x,y,z,r_x,r_y,r_z]$. |
+| `encoder` | `error.py:L2347-L2352` | Check theo `encoders_min/max[servo_id-1]`. | Encoder/potential là raw count, không phải rad/deg. |
+| `encoders` | `error.py:L2353-L2365` | Length đúng 8; check từng servo; thêm điều kiện servo 2 và 3 đảo nhau quanh 2048. | Source có rule cứng: `(2048-e2)+(2048-e3)==0`. |
+| `speed` | `error.py:L2366-L2369` | $[1,100]$. | Speed ở SDK là thang firmware, không phải $\mathrm{rad/s}$ hay $\mathrm{mm/s}$. |
+| `direction`, `mode`, `pin_signal`, `is_linear`, `move_type`, `rftype`, `status` | `error.py:L2396-L2400` | Thuộc $\{0,1\}$. | Dùng cho mode/fresh/movement/frame/IO. |
+| `end_direction` | `error.py:L2401-L2403` | Thuộc $\{1,2,3\}$. | Dùng cho `jog_rpy`. |
+| `gripper_flag` | `error.py:L2404-L2406` | Thuộc $\{0,1,254\}$. | `0=open`, `1=close`, `254=release` theo docstring. |
+| `gripper_value` | `error.py:L2407-L2409` | $[0,100]$. | Unit là firmware percentage/value, không phải mét. |
+| `rgb` | `error.py:L2416-L2419` | Mỗi kênh $[0,255]$. | LED RGB. |
+| `drag_speeds` | `error.py:L2446-L2455` | Length bằng encoders; mỗi speed phải thuộc $(-10000,1000)$. | Source docstring lại ghi $[-10000,10000]$ ở `myarmm.py:L73-L74`, đây là một điểm lệch nội bộ. |
+
+### 4.1. Bảng limit trong `robot_info.py`
+
+| Class | Trường | Giá trị source |
+|---|---|---|
+| `MyArmM` | `joint_id` | $[1,2,3,4,5,6,7]$ |
+| `MyArmM` | `servo_id` | $[1,2,3,4,5,6,7,8]$ |
+| `MyArmM` | `angles_min` | $[-165,-60,-90,-150,-91,-150,-118]~^\circ$ |
+| `MyArmM` | `angles_max` | $[165,95,75,150,88,150,2]~^\circ$ |
+| `MyArmM` | `encoders_min` | $[114,1200,1200,1024,286,1013,307,706]$ raw count |
+| `MyArmM` | `encoders_max` | $[3981,2991,2991,3002,3788,3048,3788,2068]$ raw count |
+| `MyArmMControl` | `joint_id` | $[1,2,3,4,5,6]$ |
+| `MyArmMControl` | `servo_id` | $[1,2,3,4,5,6,7,8]$ |
+| `MyArmMControl` | `coord_id` | $[1,2,3,4,5,6]$ |
+| `MyArmMControl` | `coord_min` | $[-833.325,-833.325,-351.11,-180,-180,-180]$ where first 3 are $\mathrm{mm}$, last 3 are $^\circ$ |
+| `MyArmMControl` | `coord_max` | $[833.325,833.325,1007.225,180,180,180]$ where first 3 are $\mathrm{mm}$, last 3 are $^\circ$ |
+| `MyArmMControl` | `angles_min` | $[-165,-80,-100,-160,-90,-180,-118]~^\circ$ |
+| `MyArmMControl` | `angles_max` | $[165,100,80,160,120,180,2]~^\circ$ |
+| `MyArmMControl` | `encoders_min` | $[137,1163,1035,1013,248,979,220,706]$ raw count |
+| `MyArmMControl` | `encoders_max` | $[4004,2945,3079,3026,3724,2994,3704,2048]$ raw count |
+
+Dữ liệu chi tiết nằm trong `assets/tables/pymycobot_robot_info_limits_v006.csv`.
+
+## 5. `MyArmM`: Shake / joint-servo API
+
+`MyArmM` kế thừa `MyArmAPI`. Constructor nằm tại `myarmm.py:L9-L10`:
+
+```python
+# Source: pymycobot/myarmm.py:L7-L10
+class MyArmM(MyArmAPI):
+    def __init__(self, port, baudrate="1000000", timeout=0.1, debug=False):
+        super(MyArmM, self).__init__(port, baudrate, timeout,debug)
+```
+
+### 5.1. Semantics của `_mesg()` với `MyArmM`
+
+`MyArmM` dùng `MyArmMCProcessor._mesg()` trong `myarm_api.py:L95-L178`. Nếu method không truyền `has_reply=True`, source chỉ write frame rồi return `None`:
+
+```python
+# Source: pymycobot/myarm_api.py:L106-L116
+real_command, has_reply, _async = super(MyArmMCProcessor, self)._mesg(genre, *args, **kwargs)
 with self.lock:
-    return self._read_genre_result(genre)
+    self._write(self._flatten(real_command))
+
+    if not has_reply:
+        ...
+        return None
+
+    data = self._read(genre)
+    res = self._process_received(data, genre, arm=8)
 ```
 
-Mô hình tương ứng:
+Vì vậy `set_joints_angle()` là fire-and-forget ở source-level, còn `get_joints_angle()`, `is_robot_moving()`, `get_joints_max()`... có reply vì method truyền `has_reply=True`.
 
-$$
-\mathrm{MyArmMControl}: \mathrm{write}(\mathbf{p}_{cmd}) \rightarrow \mathrm{read}(\mathbf{p}_{reply})
-$$ {#eq-control-reply-model}
+### 5.2. Method riêng trong `myarmm.py` — format rút gọn dễ đọc
 
-$$
-\mathrm{MyArmM}: \mathrm{write}(\mathbf{p}_{cmd}) \rightarrow \varnothing \quad \text{với nhiều lệnh write}
-$$ {#eq-shake-no-reply-model}
+Các method dưới đây là API riêng của `MyArmM`, tức lớp dùng cho Shake/joint-servo API. Format được rút gọn theo đúng các trường cần đọc: ý nghĩa kỹ thuật, protocol/code, validation, encode/decode và return/reply. Catalog CSV vẫn được giữ ở `assets/tables/myarmm_method_catalog_v008.csv` để tra cứu bằng script.
 
-Đây là cơ sở source-level cho nhận định: nạp coord firmware rồi gọi `MyArmM` có thể chạy một số command overlap, nhưng wrapper không tương đương và không được source chứng minh là an toàn tuyệt đối.
+::: callout-note
+Với `MyArmM`, những method không truyền `has_reply=True` đi qua `MyArmMCProcessor._mesg()` theo kiểu ghi frame xuống serial rồi trả về `None`. Vì vậy phần `Return/reply` cần đọc cùng dòng source của method, không chỉ đọc tên protocol.
+:::
 
-## 8. Limit validation trong `robot_info.py`
+#### Khởi tạo và motion-level
 
-| Joint | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | Docs Coordinate | SDK `MyArmM` | SDK `MyArmMControl` | ROS2 URDF/Xacro |
-| --- | --- | --- | --- | --- | --- | --- |
-| $q_1$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170, 170]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ |
-| $q_2$ | $[-1.449, 1.449]~\mathrm{rad}$<br>$[-83, 83]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.047, 1.658]~\mathrm{rad}$<br>$[-60, 95]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ |
-| $q_3$ | $[-1.571, 1.466]~\mathrm{rad}$<br>$[-90, 84]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.571, 1.309]~\mathrm{rad}$<br>$[-90, 75]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ |
-| $q_4$ | $[-2.705, 2.670]~\mathrm{rad}$<br>$[-155, 153]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
-| $q_5$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ |
-| $q_6$ | $[-2.670, 2.670]~\mathrm{rad}$<br>$[-153, 153]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
-| $q_7$ / gripper | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | không liệt kê | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | URDF: prismatic gripper<br>không phải góc $q_7$ |
+- **`__init__(port, baudrate='1000000', timeout=0.1, debug=False)`** — source: `pymycobot/myarmm.py:L9-L10`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
 
-_Dữ liệu nguồn: `assets/tables/joint_limit_crosscheck_normalized.csv`._
+- **`set_joint_angle(joint_id, angle, speed)`** — source: `pymycobot/myarmm.py:L12-L21`.
+  - **Ý nghĩa:** Sets the individual joints to move to the target angle; Tham số:  joint_id (int) : [0,254]; angle (int) : [0,254]; speed (int) : [1,100]
+  - **Protocol/code:** ProtocolCode.SEND_ANGLE (0x21).
+  - **Validation:** joint_id=joint_id, angle=angle, speed=speed.
+  - **Encode/decode:** `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
 
-| Joint | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | Docs Coordinate | SDK `MyArmM` | SDK `MyArmMControl` | ROS2 URDF/Xacro |
-| --- | --- | --- | --- | --- | --- | --- |
-| $q_1$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170, 170]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-2.880, 2.880]~\mathrm{rad}$<br>$[-165, 165]~^\circ$ | $[-3.037, 2.915]~\mathrm{rad}$<br>$[-173.996, 167]~^\circ$ |
-| $q_2$ | $[-1.449, 1.449]~\mathrm{rad}$<br>$[-83, 83]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.047, 1.658]~\mathrm{rad}$<br>$[-60, 95]~^\circ$ | $[-1.396, 1.745]~\mathrm{rad}$<br>$[-80, 100]~^\circ$ | $[-1.606, 1.623]~\mathrm{rad}$<br>$[-92, 93.003]~^\circ$ |
-| $q_3$ | $[-1.571, 1.466]~\mathrm{rad}$<br>$[-90, 84]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.571, 1.309]~\mathrm{rad}$<br>$[-90, 75]~^\circ$ | $[-1.745, 1.396]~\mathrm{rad}$<br>$[-100, 80]~^\circ$ | $[-1.440, 1.650]~\mathrm{rad}$<br>$[-82.512, 94.549]~^\circ$ |
-| $q_4$ | $[-2.705, 2.670]~\mathrm{rad}$<br>$[-155, 153]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-2.793, 2.793]~\mathrm{rad}$<br>$[-160, 160]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
-| $q_5$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.588, 1.536]~\mathrm{rad}$<br>$[-91, 88]~^\circ$ | $[-1.571, 2.094]~\mathrm{rad}$<br>$[-90, 120]~^\circ$ | $[-1.675, 1.553]~\mathrm{rad}$<br>$[-95.999, 88.998]~^\circ$ |
-| $q_6$ | $[-2.670, 2.670]~\mathrm{rad}$<br>$[-153, 153]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.618, 2.618]~\mathrm{rad}$<br>$[-150, 150]~^\circ$ | $[-3.142, 3.142]~\mathrm{rad}$<br>$[-180, 180]~^\circ$ | $[-2.967, 2.967]~\mathrm{rad}$<br>$[-170.002, 170.002]~^\circ$ |
-| $q_7$ / gripper | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | không liệt kê | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | $[-2.059, 0.035]~\mathrm{rad}$<br>$[-118, 2]~^\circ$ | URDF: prismatic gripper<br>không phải góc $q_7$ |
+- **`set_joints_angle(angles, speed)`** — source: `pymycobot/myarmm.py:L23-L32`.
+  - **Ý nghĩa:** Sets all joints to move to the target angle; Tham số:  angles (list[int]): [0,254]; speed (int): [0,100]
+  - **Protocol/code:** ProtocolCode.SEND_ANGLES (0x22).
+  - **Validation:** angles=angles, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SEND_ANGLES, angles, speed)`.
 
-Bất nhất rõ ràng: `MyArmMControl.joint_id` có 6 phần tử nhưng `angles_min/max` có 7 giá trị. Đồng thời `MyArmM` có 7 `joint_id` nhưng limits ở $q_2$ đến $q_6$ hẹp hơn docs Shake mới.
+- **`is_robot_moving(self)`** — source: `pymycobot/myarmm.py:L34-L41`.
+  - **Ý nghĩa:** See if the robot is moving; Trả về:  1: moving; 0: not moving
+  - **Protocol/code:** ProtocolCode.IS_MOVING (0x2B).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_MOVING, has_reply=True)`.
 
-## 9. Encoder/potential validation
+- **`stop_robot(self)`** — source: `pymycobot/myarmm.py:L43-L45`.
+  - **Ý nghĩa:** The robot stops moving
+  - **Protocol/code:** ProtocolCode.STOP (0x29).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
 
-| servo | docs_shake_before_2025_potential | docs_shake_after_2025_potential | sdk_MyArmM_potential | sdk_MyArmMControl_potential | unit |
-| --- | --- | --- | --- | --- | --- |
-| S1 | 114..3981 | 175..3910 | 114..3981 | 137..4004 | raw encoder/potential count, dimensionless |
-| S2 | 1200..2991 | 1370..3120 | 1200..2991 | 1163..2945 | raw encoder/potential count, dimensionless |
-| S3 | 1200..2991 | 1370..3120 | 1200..2991 | 1035..3079 | raw encoder/potential count, dimensionless |
-| S4 | 1024..3002 | 1015..2890 | 1024..3002 | 1013..3026 | raw encoder/potential count, dimensionless |
-| S5 | 286..3788 | 350..3740 | 286..3788 | 248..3724 | raw encoder/potential count, dimensionless |
-| S6 | 1013..3048 | 1013..3048 | 1013..3048 | 979..2994 | raw encoder/potential count, dimensionless |
-| S7 | 307..3788 | 350..3740 | 307..3788 | 220..3704 | raw encoder/potential count, dimensionless |
-| S8 | 706..2068 | 706..2068 | 706..2068 | 706..2048 | raw encoder/potential count, dimensionless |
 
-_Dữ liệu nguồn: `assets/tables/encoder_limit_crosscheck.csv`._
+#### Encoder/potential và drag command
 
-Encoder/potential được biểu diễn bằng raw count. Gọi $e_j$ là raw encoder/potential của servo $j$:
+- **`set_servo_encoder(servo_id, encoder, speed)`** — source: `pymycobot/myarmm.py:L47-L57`.
+  - **Ý nghĩa:** Sets the individual motor motion to the target encoder potential value; Tham số:  servo_id: (int) [0,254]; encoder: (int) [0,4095]; speed: (int) [1,100]
+  - **Protocol/code:** ProtocolCode.SET_ENCODER (0x3A).
+  - **Validation:** servo_id=servo_id, encoder=encoder, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
 
-$$
-e_j \in [e_j^-,e_j^+] \subset \mathbb{Z}
-$$ {#eq-encoder-interval}
+- **`set_servos_encoder(positions, speed)`** — source: `pymycobot/myarmm.py:L59-L67`.
+  - **Ý nghĩa:** Set the encoder potential value for multiple motors moving to the target; Tham số:  positions (list[int * 8]): [0,4095]:  speed (int): [1,100]:
+  - **Protocol/code:** ProtocolCode.SET_ENCODERS (0x3C).
+  - **Validation:** encoders=positions, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
 
-Không có đủ dữ liệu trong source để suy ra ánh xạ tuyến tính toàn cục $q_i = a_i e_i + b_i$ vì offset, gear, zero calibration và mapping servo-joint không được mô tả đủ trong các file đang xét.
+- **`set_servos_encoder_drag(encoders, speeds)`** — source: `pymycobot/myarmm.py:L69-L77`.
+  - **Ý nghĩa:** Set multiple servo motors with a specified speed to the target encoder potential value; Tham số:  encoders (list[int * 8]): [0,4095]:  speeds (list[int * 8]): [-10000,10000]:
+  - **Protocol/code:** ProtocolCode.SET_ENCODERS_DRAG (0x3E).
+  - **Validation:** encoders=encoders, drag_speeds=speeds.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
 
-## 10. Coord firmware blackbox ở mức source Python
 
-Source Python `MyArmMControl.write_coords()` chỉ encode và gửi packet:
+#### Nguồn, torque và IO phụ trợ
+
+- **`set_assist_out_io_state(io_number, status=1)`** — source: `pymycobot/myarmm.py:L79-L88`.
+  - **Ý nghĩa:** Set the auxiliary pin status; Tham số:  io_number: [1,6]; status: 0;1; 0: low; 1: high. default: 1
+  - **Protocol/code:** ProtocolCode.SET_AUXILIARY_PIN_STATUS (0xA0).
+  - **Validation:** assist_io_number=io_number, status=status.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_assist_in_io_state(io_number)`** — source: `pymycobot/myarmm.py:L90-L101`.
+  - **Ý nghĩa:** Get the auxiliary pin status; Tham số:  io_number (int): [1,6]; Trả về:  0 or 1. 1: high 0: low
+  - **Protocol/code:** ProtocolCode.GET_AUXILIARY_PIN_STATUS (0xA1).
+  - **Validation:** assist_io_number=io_number.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_AUXILIARY_PIN_STATUS, io_number, has_reply=True)`.
+
+- **`get_robot_power_status(self)`** — source: `pymycobot/myarmm.py:L103-L108`.
+  - **Ý nghĩa:** Get the robot power status; Trả về:  power_status (int): 0: power off, 1: power on
+  - **Protocol/code:** ProtocolCode.IS_POWER_ON (0x12).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_POWER_ON, has_reply=True)`.
+
+- **`set_robot_power_on(self)`** — source: `pymycobot/myarmm.py:L110-L112`.
+  - **Ý nghĩa:** Set the robot to power on
+  - **Protocol/code:** ProtocolCode.POWER_ON (0x10).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.POWER_ON, has_reply=True)`.
+
+- **`set_robot_power_off(self)`** — source: `pymycobot/myarmm.py:L114-L116`.
+  - **Ý nghĩa:** Set the robot to power off
+  - **Protocol/code:** ProtocolCode.POWER_OFF (0x11).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.POWER_OFF, has_reply=True)`.
+
+- **`clear_robot_err(self)`** — source: `pymycobot/myarmm.py:L118-L120`.
+  - **Ý nghĩa:** Clear the robot abnormality Ignore the error joint and continue to move
+  - **Protocol/code:** ProtocolCode.CLEAR_ROBOT_ERROR (0x16).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`set_servo_enabled(servo_id, status)`** — source: `pymycobot/myarmm.py:L122-L131`.
+  - **Ý nghĩa:** Set the servo motor torque switch; Tham số:  servo_id (int): 0-254 254-all; status: 0;1; 1-focus; 0-release
+  - **Protocol/code:** ProtocolCode.RELEASE_ALL_SERVOS (0x13).
+  - **Validation:** status=status, servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+
+#### Limit/query và trạng thái tool
+
+- **`get_joints_max(self)`** — source: `pymycobot/myarmm.py:L133-L135`.
+  - **Ý nghĩa:** Read the maximum angle of all joints
+  - **Protocol/code:** ProtocolCode.GET_JOINT_MAX_ANGLE (0x4B).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_JOINT_MAX_ANGLE, has_reply=True)`.
+
+- **`get_joints_min(self)`** — source: `pymycobot/myarmm.py:L137-L139`.
+  - **Ý nghĩa:** Read the minimum angle of all joints
+  - **Protocol/code:** ProtocolCode.GET_JOINT_MIN_ANGLE (0x4A).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_JOINT_MIN_ANGLE, has_reply=True)`.
+
+- **`is_tool_btn_clicked(self)`** — source: `pymycobot/myarmm.py:L141-L147`.
+  - **Ý nghĩa:** get the end button status; Trả về:  int: 0;1, 1: press, 0: no press
+  - **Protocol/code:** ProtocolCode.GET_ATOM_PRESS_STATUS (0x6B).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ATOM_PRESS_STATUS, has_reply=True)`.
+
+- **`clear_recv_queue(self)`** — source: `pymycobot/myarmm.py:L149-L151`.
+  - **Ý nghĩa:** Clear the queue for receiving commands
+  - **Protocol/code:** ProtocolCode.CLEAR_RECV_QUEUE (0x19).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`is_sd_insert(self)`** — source: `pymycobot/myarmm.py:L153-L159`.
+  - **Ý nghĩa:** Check if the SD card is inserted; Trả về:  int: 0;1, 1: insert, 0: no insert
+  - **Protocol/code:** ProtocolCode.IS_SD_INSERT (0xC4).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_SD_INSERT, has_reply=True)`.
+
+### 5.3. Shared methods kế thừa từ `MyArmAPI` — format rút gọn dễ đọc
+
+`MyArmAPI` là tầng dùng chung cho `MyArmM` và `MyArmC`. Khi runtime object là `MyArmM`, validation vẫn lấy `class_name=self.__class__.__name__`, vì vậy các limit/servo id/joint id được tra từ `robot_info["MyArmM"]`. Catalog CSV nằm ở `assets/tables/myarmapi_method_catalog_v008.csv`.
+
+#### Processor/serial nội bộ
+
+- **`__init__(port, baudrate=115200, timeout=0.1, debug=False)`** — source: `pymycobot/myarm_api.py:L23-L34`.
+  - **Ý nghĩa:** Tham số:  port : port string; baudrate : baud rate string, default '115200'; timeout : default 0.1; debug : whether show debug info
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`_read_command_buffer(timeout=0.1)`** — source: `pymycobot/myarm_api.py:L47-L67`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `commands`.
+
+- **`_read(genre)`** — source: `pymycobot/myarm_api.py:L69-L87`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `command_buffer`.
+
+- **`_write(command)`** — source: `pymycobot/myarm_api.py:L89-L93`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`_mesg(genre, *args, **kwargs)`** — source: `pymycobot/myarm_api.py:L95-L178`.
+  - **Ý nghĩa:** Tham số:  genre: command type (Command); *args: other data.; It is converted to octal by default.; If the data needs to be encapsulated into hexadecimal,; the array is used to include them. (Data cannot be nested)
+  - **Protocol/code:** genre.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** `_int2angle`: integer $\mapsto ^\circ$; `_int2coord`: integer $\mapsto \mathrm{mm}$.
+  - **Return/reply:** `None; result; res; res[0]; [self._int2angle(angle) for angle in res]; r; [self._int2coord(angle) for angle in res]; self._int2coord(res[0])`.
+
+
+#### Firmware version, error check và queue
+
+- **`get_robot_modified_version(self)`** — source: `pymycobot/myarm_api.py:L183-L189`.
+  - **Ý nghĩa:** Get the bot correction version number; Trả về:  version (int): the bot correction version number
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_MODIFIED_VERSION (0x01).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_MODIFIED_VERSION, has_reply=True)`.
+
+- **`get_robot_firmware_version(self)`** — source: `pymycobot/myarm_api.py:L191-L197`.
+  - **Ý nghĩa:** Obtaining the Robot Firmware Version (Major and Minor Versions); Trả về:  version (int): the robot firmware
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_FIRMWARE_VERSION (0x02).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_FIRMWARE_VERSION, has_reply=True)`.
+
+- **`get_robot_tool_modified_version(self)`** — source: `pymycobot/myarm_api.py:L199-L201`.
+  - **Ý nghĩa:** Get the remediation version of the bot tool
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_ATOM_MODIFIED_VERSION (0x04).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_ATOM_MODIFIED_VERSION, has_reply=True)`.
+
+- **`get_robot_tool_firmware_version(self)`** — source: `pymycobot/myarm_api.py:L203-L205`.
+  - **Ý nghĩa:** Get the Robot Tool Firmware Version (End Atom)
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_TOOL_FIRMWARE_VERSION (0x09).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_TOOL_FIRMWARE_VERSION, has_reply=True)`.
+
+- **`set_robot_err_check_state(status)`** — source: `pymycobot/myarm_api.py:L207-L214`.
+  - **Ý nghĩa:** Set Error Detection Status You can turn off error detection, but do not turn it off unless necessary; Tham số:  status (int): 1 open; o close
+  - **Protocol/code:** ProtocolCode.SET_ROBOT_ERROR_CHECK_STATE (0x06).
+  - **Validation:** status=status.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_robot_err_check_state(self)`** — source: `pymycobot/myarm_api.py:L216-L218`.
+  - **Ý nghĩa:** Read error detection status
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_ERROR_CHECK_STATE (0x07).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_ERROR_CHECK_STATE, has_reply=True)`.
+
+- **`get_robot_error_status(self)`** — source: `pymycobot/myarm_api.py:L220-L227`.
+  - **Ý nghĩa:** Get the bot error status; Trả về:  No error: [0,0,0,0,0,0,0,0]; assuming that error 1 and 3 are reported in section 1, it should return: [[1,3],0,0,0,0,0,0,0]
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_ERROR_STATUS (0x15).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_ERROR_STATUS, has_reply=True, timeout=90)`.
+
+- **`get_recv_queue_max_len(self)`** — source: `pymycobot/myarm_api.py:L229-L231`.
+  - **Ý nghĩa:** The total length of the read command queue, the default length is 100
+  - **Protocol/code:** ProtocolCode.GET_RECV_QUEUE_SIZE (0x17).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_RECV_QUEUE_SIZE, has_reply=True)`.
+
+- **`set_recv_queue_max_len(max_len)`** — source: `pymycobot/myarm_api.py:L233-L236`.
+  - **Ý nghĩa:** Set the total length of the receiving command queue
+  - **Protocol/code:** ProtocolCode.SET_RECV_QUEUE_SIZE (0x18).
+  - **Validation:** maximum_queue_length=max_len.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_recv_queue_len(self)`** — source: `pymycobot/myarm_api.py:L238-L240`.
+  - **Ý nghĩa:** The current length of the read receive queue
+  - **Protocol/code:** ProtocolCode.GET_RECV_QUEUE_LENGTH (0x08).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_RECV_QUEUE_LENGTH, has_reply=True)`.
+
+- **`clear_recv_queue(self)`** — source: `pymycobot/myarm_api.py:L242-L244`.
+  - **Ý nghĩa:** Clear the read receive queue
+  - **Protocol/code:** ProtocolCode.CLEAR_RECV_QUEUE (0x19).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.CLEAR_RECV_QUEUE)`.
+
+
+#### Joint/coordinate read và zero calibration
+
+- **`get_joint_angle(joint_id)`** — source: `pymycobot/myarm_api.py:L246-L257`.
+  - **Ý nghĩa:** Obtain the current angle of the specified joint, when the obtained angle is 200,; it means that the joint has no communication; Tham số:  joint_id (int): [0,254]; Trả về:  angle (int)
+  - **Protocol/code:** ProtocolCode.COBOTX_GET_ANGLE (0x1C).
+  - **Validation:** joint_id=joint_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.COBOTX_GET_ANGLE, joint_id, has_reply=True)`.
+
+- **`get_joints_angle(self)`** — source: `pymycobot/myarm_api.py:L259-L266`.
+  - **Ý nghĩa:** Obtain the current angle of all joints, if one of the angles is 200��,; it means that the joint has no communication; Trả về:  angles list(int): [0,254]
+  - **Protocol/code:** ProtocolCode.GET_ANGLES (0x20).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ANGLES, has_reply=True)`.
+
+- **`get_joints_coord(self)`** — source: `pymycobot/myarm_api.py:L268-L273`.
+  - **Ý nghĩa:** Get the coordinates; Trả về:  list[float] * 6: joints angle
+  - **Protocol/code:** ProtocolCode.GET_JOINTS_COORD (0x23).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_JOINTS_COORD, has_reply=True)`.
+
+- **`set_servo_calibrate(servo_id)`** — source: `pymycobot/myarm_api.py:L275-L282`.
+  - **Ý nghĩa:** Sets the zero position of the specified servo motor; Tham số:  servo_id (int): [0,254]
+  - **Protocol/code:** ProtocolCode.SET_SERVO_CALIBRATION (0x54).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+
+#### Encoder và diagnostics của 8 servo
+
+- **`get_servo_encoder(servo_id)`** — source: `pymycobot/myarm_api.py:L284-L294`.
+  - **Ý nghĩa:** Gets the current encoder potential value for the specified servo motor; Tham số:  servo_id (int): [0,254]; Trả về:  encoder (int): 0-4095
+  - **Protocol/code:** ProtocolCode.GET_ENCODER (0x3B).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ENCODER, servo_id, has_reply=True)`.
+
+- **`get_servos_encoder_drag(self)`** — source: `pymycobot/myarm_api.py:L296-L302`.
+  - **Ý nghĩa:** Reads the current encoder value and operating speed of all servo motors; Trả về:  encoders (list[int * 8]): 0-4095; speeds (list[int * 8]): 0-4095
+  - **Protocol/code:** ProtocolCode.GET_SERVOS_ENCODER_DRAG (0xEF).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVOS_ENCODER_DRAG, has_reply=True)`.
+
+- **`is_all_servos_enabled(self)`** — source: `pymycobot/myarm_api.py:L304-L311`.
+  - **Ý nghĩa:** Get the connection status of multiple servo motors; Trả về:  status: list[int*8] 0: The connection failed 1: The connection is successful
+  - **Protocol/code:** ProtocolCode.IS_ALL_SERVO_ENABLE (0x51).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_ALL_SERVO_ENABLE, has_reply=True)`.
+
+- **`get_servos_temp(self)`** — source: `pymycobot/myarm_api.py:L313-L315`.
+  - **Ý nghĩa:** Obtain the temperature of multiple servo motors
+  - **Protocol/code:** ProtocolCode.GET_SERVO_TEMPS (0xE5).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_TEMPS, has_reply=True)`.
+
+- **`get_servos_voltage(self)`** — source: `pymycobot/myarm_api.py:L317-L319`.
+  - **Ý nghĩa:** Get the voltage of multiple servo motors
+  - **Protocol/code:** ProtocolCode.GET_SERVO_VOLTAGES (0xE3).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_VOLTAGES, has_reply=True)`.
+
+- **`get_servos_current(self)`** — source: `pymycobot/myarm_api.py:L321-L323`.
+  - **Ý nghĩa:** Obtain the current of multiple servo motors
+  - **Protocol/code:** ProtocolCode.GET_SERVO_CURRENTS (0xE2).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_CURRENTS, has_reply=True)`.
+
+- **`get_servos_status(self)`** — source: `pymycobot/myarm_api.py:L325-L327`.
+  - **Ý nghĩa:** Get all the statuses of multiple servo motors
+  - **Protocol/code:** ProtocolCode.GET_SERVO_STATUS (0xE4).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_STATUS, has_reply=True)`.
+
+- **`get_servos_protect_current(self)`** — source: `pymycobot/myarm_api.py:L329-L331`.
+  - **Ý nghĩa:** Obtain multiple servo motor protection currents
+  - **Protocol/code:** ProtocolCode.GET_SERVO_LASTPDI (0xE6).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_LASTPDI, has_reply=True)`.
+
+- **`get_servos_encoder(self)`** — source: `pymycobot/myarm_api.py:L333-L335`.
+  - **Ý nghĩa:** Obtain the current encoder potential values for multiple servo motors
+  - **Protocol/code:** ProtocolCode.GET_ENCODERS (0x3D).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ENCODERS, has_reply=True)`.
+
+- **`get_servos_speed(self)`** — source: `pymycobot/myarm_api.py:L337-L339`.
+  - **Ý nghĩa:** Gets the current movement speed of multiple servo motors
+  - **Protocol/code:** ProtocolCode.GET_SERVO_SPEED (0xE1).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_SPEED, has_reply=True)`.
+
+
+#### Tham số servo low-level
+
+- **`set_servo_p(servo_id, data)`** — source: `pymycobot/myarm_api.py:L341-L350`.
+  - **Ý nghĩa:** Sets the proportionality factor of the position loop P of the specified servo motor; Tham số:  servo_id (int): [0,8]; data (int): 0-254
+  - **Protocol/code:** ProtocolCode.SET_SERVO_P (0x70).
+  - **Validation:** servo_id=servo_id, P=data.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_servo_p(servo_id)`** — source: `pymycobot/myarm_api.py:L352-L359`.
+  - **Ý nghĩa:** Reads the position loop P scale factor of the specified servo motor; Tham số:  servo_id (int): [0,8]
+  - **Protocol/code:** ProtocolCode.GET_SERVO_P (0xE7).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_P, servo_id, has_reply=True)`.
+
+- **`set_servo_d(servo_id, data)`** — source: `pymycobot/myarm_api.py:L361-L369`.
+  - **Ý nghĩa:** Sets the proportional factor for the position ring D of the specified servo motor; Tham số:  servo_id (int): [0,8]; data (int): 0-254
+  - **Protocol/code:** ProtocolCode.MERCURY_DRAG_TECH_EXECUTE (0x71).
+  - **Validation:** servo_id=servo_id, D=data.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_servo_d(servo_id)`** — source: `pymycobot/myarm_api.py:L371-L378`.
+  - **Ý nghĩa:** Reads the position ring D scale factor for the specified servo motor; Tham số:  servo_id (int): [0,8]
+  - **Protocol/code:** ProtocolCode.GET_SERVO_D (0xE8).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_D, servo_id, has_reply=True, timeout=0.1)`.
+
+- **`set_servo_i(servo_id, data)`** — source: `pymycobot/myarm_api.py:L380-L388`.
+  - **Ý nghĩa:** Set the proportional factor of the position ring I of the specified servo motor; Tham số:  servo_id (int): [0,8]; data (int): [0,254]
+  - **Protocol/code:** ProtocolCode.MERCURY_DRAG_TECH_PAUSE (0x72).
+  - **Validation:** servo_id=servo_id, I=data.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_servo_i(servo_id)`** — source: `pymycobot/myarm_api.py:L390-L393`.
+  - **Ý nghĩa:** Reads the position loop I scale factor of the specified servo motor
+  - **Protocol/code:** ProtocolCode.GET_ERROR_DETECT_MODE (0xE9).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ERROR_DETECT_MODE, servo_id, has_reply=True)`.
+
+- **`set_servo_cw(servo_id, data)`** — source: `pymycobot/myarm_api.py:L395-L403`.
+  - **Ý nghĩa:** Sets the clockwise insensitivity zone of the encoder for the specified servo motor; Tham số:  servo_id (int): [0,8]; data (int): [0,32]
+  - **Protocol/code:** ProtocolCode.SET_SERVO_MOTOR_CLOCKWISE (0x73).
+  - **Validation:** servo_id=servo_id, cw=data.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_servo_cw(servo_id)`** — source: `pymycobot/myarm_api.py:L405-L412`.
+  - **Ý nghĩa:** Reads the clockwise insensitive area of the encoder for the specified servo motor; Tham số:  servo_id (int): [0,254]
+  - **Protocol/code:** ProtocolCode.GET_SERVO_MOTOR_CLOCKWISE (0xEA).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_MOTOR_CLOCKWISE, servo_id, has_reply=True)`.
+
+- **`set_servo_cww(servo_id, data)`** — source: `pymycobot/myarm_api.py:L414-L422`.
+  - **Ý nghĩa:** Sets the counterclockwise insensitive zone of the encoder for the specified servo motor; Tham số:  servo_id (int): [0,254]; data (int): [0,32]
+  - **Protocol/code:** ProtocolCode.SET_SERVO_MOTOR_COUNTER_CLOCKWISE (0x74).
+  - **Validation:** servo_id=servo_id, cww=data.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_SERVO_MOTOR_COUNTER_CLOCKWISE, servo_id, data)`.
+
+- **`get_servo_cww(servo_id)`** — source: `pymycobot/myarm_api.py:L424-L431`.
+  - **Ý nghĩa:** Reads the counterclockwise insensitive area of the encoder of the specified servo motor; Tham số:  servo_id (int): [0,254]
+  - **Protocol/code:** ProtocolCode.GET_SERVO_MOTOR_COUNTER_CLOCKWISE (0xEB).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_MOTOR_COUNTER_CLOCKWISE, servo_id, has_reply=True)`.
+
+- **`set_servo_system_data(servo_id, addr, data, mode)`** — source: `pymycobot/myarm_api.py:L433-L443`.
+  - **Ý nghĩa:** Set the system parameters for the specified servo motor; Tham số:  servo_id (int): [0,254]:  addr (int):  data (int): [0,4096]; mode (int): 1 - data 1byte. 2 - data 2byte
+  - **Protocol/code:** ProtocolCode.SET_SERVO_MOTOR_CONFIG (0x52).
+  - **Validation:** servo_id=servo_id, servo_addr=addr, servo_mode=mode, servo_data=data.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_servo_system_data(servo_id, addr, mode)`** — source: `pymycobot/myarm_api.py:L445-L454`.
+  - **Ý nghĩa:** Read the system parameters of the specified servo motor; Tham số:  servo_id (int): [0,254]; addr (int):  mode (int): 1 - data 1byte. 2 - data 2byte
+  - **Protocol/code:** ProtocolCode.GET_SERVO_MOTOR_CONFIG (0x53).
+  - **Validation:** servo_id=servo_id, servo_data=addr, servo_mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_MOTOR_CONFIG, servo_id, addr, mode, has_reply=True)`.
+
+- **`restore_servo_system_param(servo_id)`** — source: `pymycobot/myarm_api.py:L514-L521`.
+  - **Ý nghĩa:** Restore servo motor system parameters; Tham số:  servo_id: [0,255]
+  - **Protocol/code:** ProtocolCode.RESTORE_SERVO_SYSTEM_PARAM (0x0A).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.RESTORE_SERVO_SYSTEM_PARAM, servo_id)`.
+
+
+#### Base IO, tool IO và LED
+
+- **`set_master_out_io_state(pin_number, status=1)`** — source: `pymycobot/myarm_api.py:L456-L465`.
+  - **Ý nghĩa:** Set the host I;O pin status; Tham số:  pin_number: M750(1 -6), C650(1-2); status: 0;1; 0: low; 1: high. default: 1
+  - **Protocol/code:** ProtocolCode.SET_MASTER_PIN_STATUS (0x65).
+  - **Validation:** pin_number=pin_number, status=status.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_master_in_io_state(pin_number)`** — source: `pymycobot/myarm_api.py:L467-L477`.
+  - **Ý nghĩa:** get the host I;O pin status; Tham số:  pin_number (int): M750(1 -6), C650(1-2); Trả về:  0 or 1. 1: high 0: low
+  - **Protocol/code:** ProtocolCode.GET_MASTER_PIN_STATUS (0x66).
+  - **Validation:** pin_number=pin_number.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_MASTER_PIN_STATUS, pin_number, has_reply=True)`.
+
+- **`set_tool_out_io_state(pin, status=1)`** — source: `pymycobot/myarm_api.py:L479-L487`.
+  - **Ý nghĩa:** Set the Atom pin status; Tham số:  pin (int): [1,2]; status: 0 or 1; 0: low; 1: high. default: 1
+  - **Protocol/code:** ProtocolCode.SET_ATOM_PIN_STATUS (0x61).
+  - **Validation:** tool_pin_number=pin, status=status.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng; với `MyArmM` thường là fire-and-forget nếu không truyền `has_reply=True`.
+
+- **`get_tool_in_io_state(pin)`** — source: `pymycobot/myarm_api.py:L489-L500`.
+  - **Ý nghĩa:** Get the Atom pin status; Tham số:  pin (int): pin; Trả về:  0 or 1. 1: high 0: low
+  - **Protocol/code:** ProtocolCode.GET_ATOM_PIN_STATUS (0x62).
+  - **Validation:** tool_pin_number=pin.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ATOM_PIN_STATUS, pin, has_reply=True)`.
+
+- **`set_tool_led_color(r, g, b)`** — source: `pymycobot/myarm_api.py:L502-L512`.
+  - **Ý nghĩa:** Set the Atom LED color; Tham số:  r: 0-255; g: 0-255; b: 0-255
+  - **Protocol/code:** ProtocolCode.GET_ATOM_LED_COLOR (0x6A).
+  - **Validation:** color=(r, g, b).
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ATOM_LED_COLOR, r, g, b)`.
+
+## 6. `MyArmMControl`: Coordinate firmware API
+
+`MyArmMControl` nằm tại `myarmm_control.py:L174-L919`. Constructor source-level:
 
 ```python
-coord_list = []
-for idx in range(3):
-    coord_list.append(self._coord2int(coords[idx]))
-for angle in coords[3:]:
-    coord_list.append(self._angle2int(angle))
-return self._mesg(ProtocolCode.SEND_COORDS, coord_list, speed, mode)
+# Source: pymycobot/myarmm_control.py:L174-L177
+class MyArmMControl(MyArmMProcessor):
+    def __init__(self, port, baudrate=115200, timeout=0.1, debug=False):
+        super(MyArmMControl, self).__init__(port, baudrate, timeout, debug)
 ```
 
-```{mermaid}
-flowchart TD
-    A[coords: x y z mm, rx ry rz deg] --> B[encode x10 / x100]
-    B --> C[SEND_COORDS 0x25]
-    C --> D[Firmware]
-    D --> E[IK / frame transform / trajectory / queue]
-    E --> F[Servo command]
+### 6.1. Khác biệt lớn nhất: `MyArmMControl._mesg()` ép mọi lệnh có reply
+
+`MyArmMProcessor._mesg()` đặt `kwargs["has_reply"] = True` ở `myarmm_control.py:L70-L77`. Nghĩa là cả command set và command get đều đi qua write-then-read:
+
+```python
+# Source: pymycobot/myarmm_control.py:L70-L77
+def _mesg(self, genre, *args, **kwargs):
+    kwargs["has_reply"] = True
+    real_command, has_reply, _ = super(MyArmMProcessor, self)._mesg(genre, *args, **kwargs)
+    real_command = self._flatten(real_command)
+    self._write(real_command)
+
+    with self.lock:
+        return self._read_genre_result(genre)
 ```
 
-Các khối `IK / frame transform / trajectory / queue` không xuất hiện trong source Python. Vì vậy khi `write_coords()` thành công hoặc thất bại, source Python không cung cấp lý do hình học đầy đủ như joint-limit, singularity, branch IK, orientation conflict hoặc path planner reject.
+Về mặt source, đây là khác biệt cơ bản với `MyArmM`: `MyArmMControl` đọc response cho mọi command. Khi phân tích lỗi runtime, cần xét thêm khả năng latency hoặc stale reply ở serial buffer, chứ không chỉ xét baudrate.
 
-## 11. Câu hỏi: burn coord firmware rồi chạy `MyArmM` được không?
+### 6.2. Decode return trong `_read_genre_result()`
 
-Source cho thấy có overlap protocol, nhất là `SEND_ANGLES = 0x22` và `GET_ANGLES = 0x20`. Vì vậy một số lệnh `MyArmM` có thể tương tác được với firmware đang hỗ trợ cùng protocol. Nhưng source cũng cho thấy các rủi ro khách quan: khác reply behavior, khác bảng `robot_limit`, khác surface API, và `MyArmM` không expose Cartesian API `write_coords()`.
+`_read_genre_result()` nằm tại `myarmm_control.py:L79-L171`. Các branch quan trọng:
 
-Kết luận trạng thái là: **protocol có phần chung, nhưng wrapper không tương đương**. Nếu robot đang chạy coord firmware và cần phản ánh đúng Coordinate API hiện tại trong source, class khớp source là `MyArmMControl`, truyền baudrate explicit khi dùng 1 Mbps.
+| Genre group | Source | Return decode |
+|---|---|---|
+| `GET_ROBOT_STATUS` | `L89-L100` | Tách từng 16-bit word; nếu word khác 0 thì đổi sang list bit lỗi. |
+| single-value genres | `L106-L141` | `return self._process_single(res)`. Bao gồm `IS_POWER_ON`, `IS_MOVING`, `GET_ENCODER`, `GET_FRESH_MODE`, `STOP`, `IS_TOOL_BTN_CLICKED`... |
+| `GET_ANGLES` | `L142-L143` | Mỗi raw int decode thành angle $^\circ$ bằng `_int2angle`. |
+| `GET_COORDS`, `GET_TOOL_REFERENCE`, `GET_WORLD_REFERENCE` | `L144-L150` | Ba phần tử đầu decode $\mathrm{mm}$ bằng `_int2coord`; ba phần tử sau decode $^\circ$ bằng `_int2angle`. |
+| `GET_SERVO_VOLTAGES` | `L151-L152` | Dùng `_int2coord`; source không đổi tên unit rõ ở đây. |
+| `GET_JOINT_MAX_ANGLE`, `GET_JOINT_MIN_ANGLE` | `L153-L154` | `return self._int2coord(res[0])`; source dùng `_int2coord` dù tên là angle. Đây là điểm cần đánh dấu. |
+| `GET_BASIC_VERSION`, `SOFTWARE_VERSION`, `GET_ATOM_VERSION` | `L155-L157` | Version decode bằng `_int2coord`. |
+| `GET_ANGLES_COORDS` | `L158-L167` | 6 angle đầu $^\circ$, 3 coord sau $\mathrm{mm}$, phần còn lại angle $^\circ$. |
+| return ACK frame | `L168-L169` | Nếu `__is_return(genre, data)` thì trả `_process_single(res)`. |
+
+### 6.3. Coordinate vector và đơn vị
+
+Bề mặt API dùng:
+
+$$
+X = [x,y,z,r_x,r_y,r_z]^\top
+$$ {#eq-coord-vector}
+
+Trong đó:
+
+$$
+x,y,z~[\mathrm{mm}],\qquad r_x,r_y,r_z~[^\circ]
+$$ {#eq-coord-vector-units}
+
+`write_coords()` encode như sau:
+
+```python
+# Source: pymycobot/myarmm_control.py:L294-L311
+def write_coords(self, coords, speed, mode=None):
+    self.calibration_parameters(coords=coords, speed=speed)
+    coord_list = []
+    for idx in range(3):
+        coord_list.append(self._coord2int(coords[idx]))
+    for angle in coords[3:]:
+        coord_list.append(self._angle2int(angle))
+    if mode is not None:
+        return self._mesg(ProtocolCode.SEND_COORDS, coord_list, speed, mode)
+    else:
+        return self._mesg(ProtocolCode.SEND_COORDS, coord_list, speed)
+```
+
+`mode` ở đây chỉ là payload bổ sung của `SEND_COORDS`; source không giải thích chi tiết hơn trong function body. `set_movement_type(move_type)` là method khác, với docstring `1 - movel, 0 - moveJ` tại `myarmm_control.py:L800-L807`.
+
+### 6.4. Method catalog theo nhóm — format rút gọn dễ đọc
+
+Các method của `MyArmMControl` dưới đây là bề mặt API của Coordinate firmware. Format được rút gọn giống `MyArmM`: ý nghĩa kỹ thuật, protocol/code, validation, encode/decode và return/reply. Catalog CSV nằm ở `assets/tables/myarmmcontrol_method_catalog_v008.csv`.
+
+::: callout-note
+Khác với `MyArmM`, `MyArmMControl._mesg()` ép `kwargs["has_reply"] = True`, nên gần như mọi method đều có hành vi write-then-read-response. Baudrate cao hơn giúp truyền byte nhanh hơn, nhưng không loại bỏ bản chất blocking-reply ở wrapper Python.
+:::
+
+#### Processor nội bộ và khởi tạo
+
+- **`__init__(port, baudrate, timeout=0.1, debug=False)`** — source: `pymycobot/myarmm_control.py:L49-L55`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng trong source; nếu method không gửi frame thì không có reply firmware.
+
+- **`__init__(port, baudrate=115200, timeout=0.1, debug=False)`** — source: `pymycobot/myarmm_control.py:L176-L177`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** Không thấy biểu thức `return` riêng trong source; nếu method không gửi frame thì không có reply firmware.
+
+- **`_mesg(genre, *args, **kwargs)`** — source: `pymycobot/myarmm_control.py:L70-L77`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** genre.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._read_genre_result(genre)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`_read_genre_result(genre)`** — source: `pymycobot/myarmm_control.py:L79-L171`.
+  - **Ý nghĩa:** Không có mô tả docstring rõ trong catalog; đọc theo tên method và protocol.
+  - **Protocol/code:** Không có `ProtocolCode` trực tiếp trong catalog; method chủ yếu khởi tạo, đọc/ghi serial, hoặc xử lý nội bộ.
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** `_int2angle`: integer $\mapsto ^\circ$; `_int2coord`: integer $\mapsto \mathrm{mm}$.
+  - **Return/reply:** `-1; self._process_single(res); 1; data[-2]; [self._int2angle(angle) for angle in res]; r; [self._int2coord(angle) for angle in res]; self._int2coord(res[0]); self._int2coord(self._process_single(res)); res`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+
+#### System, power và firmware version
+
+- **`get_robot_modify_version(self)`** — source: `pymycobot/myarmm_control.py:L180-L182`.
+  - **Ý nghĩa:** Get the bot correction version number
+  - **Protocol/code:** RobotProtocolCode.GET_ROBOT_MODIFY_VERSION (0x01).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.GET_ROBOT_MODIFY_VERSION)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_robot_system_version(self)`** — source: `pymycobot/myarmm_control.py:L184-L186`.
+  - **Ý nghĩa:** Obtaining the Robot Firmware Version (Major and Minor Versions)
+  - **Protocol/code:** RobotProtocolCode.GET_ROBOT_SYSTEM_VERSION (0x02).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.GET_ROBOT_SYSTEM_VERSION)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_robot_tool_modify_version(self)`** — source: `pymycobot/myarmm_control.py:L188-L190`.
+  - **Ý nghĩa:** Get the remediation version of the bot tool
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_TOOL_MODIFY_VERSION (0x04).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_TOOL_MODIFY_VERSION)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_robot_tool_system_version(self)`** — source: `pymycobot/myarmm_control.py:L192-L194`.
+  - **Ý nghĩa:** Get the Robot Tool Firmware Version (End Atom)
+  - **Protocol/code:** RobotProtocolCode.GET_ROBOT_TOOL_SYSTEM_VERSION (0x09).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.GET_ROBOT_TOOL_SYSTEM_VERSION)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`power_on(self)`** — source: `pymycobot/myarmm_control.py:L196-L198`.
+  - **Ý nghĩa:** The robotic arm turns on the power
+  - **Protocol/code:** RobotProtocolCode.POWER_ON (0x10).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.POWER_ON)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`power_off(self)`** — source: `pymycobot/myarmm_control.py:L200-L202`.
+  - **Ý nghĩa:** The robotic arm turns off the power
+  - **Protocol/code:** RobotProtocolCode.POWER_OFF (0x11).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.POWER_OFF)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_powered_on(self)`** — source: `pymycobot/myarmm_control.py:L204-L212`.
+  - **Ý nghĩa:** Control core connection status queries; Trả về:  1 - power on; 0 - power off; -1 - error data
+  - **Protocol/code:** RobotProtocolCode.IS_POWERED_ON (0x12).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.IS_POWERED_ON)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`release_all_servos(data=None)`** — source: `pymycobot/myarmm_control.py:L214-L223`.
+  - **Ý nghĩa:** The robot turns off the torque output; Tham số:  data: 1 - Un damping (The default is damping)
+  - **Protocol/code:** ProtocolCode.RELEASE_ALL_SERVOS (0x13).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.RELEASE_ALL_SERVOS); self._mesg(ProtocolCode.RELEASE_ALL_SERVOS, data)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_robot_status(self)`** — source: `pymycobot/myarmm_control.py:L240-L242`.
+  - **Ý nghĩa:** Get robot status
+  - **Protocol/code:** ProtocolCode.GET_ROBOT_STATUS (0x19).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ROBOT_STATUS)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+
+#### Fresh mode, MDI joint motion và Cartesian motion
+
+- **`set_fresh_mode(mode)`** — source: `pymycobot/myarmm_control.py:L225-L234`.
+  - **Ý nghĩa:** Set command refresh mode; Tham số:  mode: int.; 1 - Always execute the latest command first.; 0 - Execute instructions sequentially in the form of a queue.
+  - **Protocol/code:** ProtocolCode.SET_FRESH_MODE (0x16).
+  - **Validation:** mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_FRESH_MODE, mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_fresh_mode(self)`** — source: `pymycobot/myarmm_control.py:L236-L238`.
+  - **Ý nghĩa:** Query sports mode
+  - **Protocol/code:** ProtocolCode.GET_FRESH_MODE (0x17).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_FRESH_MODE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_angles(self)`** — source: `pymycobot/myarmm_control.py:L244-L250`.
+  - **Ý nghĩa:** Get the angle of all joints.; Trả về:  list: A float list of all angle.
+  - **Protocol/code:** ProtocolCode.GET_ANGLES (0x20).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ANGLES)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`write_angle(joint_id, degree, speed)`** — source: `pymycobot/myarmm_control.py:L252-L261`.
+  - **Ý nghĩa:** Send the angle of a joint to robot arm.; Tham số:  joint_id: (int) 1 ~ 6; degree: (float) -150 ~ 150; speed : (int) 1 ~ 100
+  - **Protocol/code:** ProtocolCode.SEND_ANGLE (0x21).
+  - **Validation:** joint_id=joint_id, angle=degree, speed=speed.
+  - **Encode/decode:** `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.SEND_ANGLE, joint_id, [self._angle2int(degree)], speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`write_angles(angles, speed)`** — source: `pymycobot/myarmm_control.py:L263-L272`.
+  - **Ý nghĩa:** Send the angles of all joints to robot arm.; Tham số:  angles: (list) A float list of all angle.; speed : (int) 1 ~ 100
+  - **Protocol/code:** ProtocolCode.SEND_ANGLES (0x22).
+  - **Validation:** angles=angles, speed=speed.
+  - **Encode/decode:** `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.SEND_ANGLES, angles, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_coords(self)`** — source: `pymycobot/myarmm_control.py:L274-L280`.
+  - **Ý nghĩa:** Get the coordinates of all joints.; Trả về:  list: A float list of all coordinates.
+  - **Protocol/code:** ProtocolCode.GET_COORDS (0x23).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_COORDS)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`write_coord(coord_id, coord, speed)`** — source: `pymycobot/myarmm_control.py:L282-L292`.
+  - **Ý nghĩa:** Send the coordinates of a joint to robot arm.; Tham số:  coord_id: (int) 1 ~ 6; coord: (float) -150 ~ 150; speed : (int) 1 ~ 100
+  - **Protocol/code:** ProtocolCode.SEND_COORD (0x24).
+  - **Validation:** coord_id=coord_id, coord=coord, speed=speed.
+  - **Encode/decode:** `_coord2int`: $\mathrm{mm} \mapsto$ integer $x_\mathrm{int}=10x_\mathrm{mm}$; `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.SEND_COORD, coord_id, [value], speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`write_coords(coords, speed, mode=None)`** — source: `pymycobot/myarmm_control.py:L294-L311`.
+  - **Ý nghĩa:** Send the coordinates of all joints to robot arm.; Tham số:  coords: (list) A float list of all coordinates.; speed : (int) 1 ~ 100; mode: (int) 0 - normal, 1 - low, 2 - high
+  - **Protocol/code:** ProtocolCode.SEND_COORDS (0x25).
+  - **Validation:** coords=coords, speed=speed.
+  - **Encode/decode:** `_coord2int`: $\mathrm{mm} \mapsto$ integer $x_\mathrm{int}=10x_\mathrm{mm}$; `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.SEND_COORDS, coord_list, speed, mode); self._mesg(ProtocolCode.SEND_COORDS, coord_list, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_in_position(data, mode=0)`** — source: `pymycobot/myarmm_control.py:L313-L339`.
+  - **Ý nghĩa:** Judge whether in the position.; Tham số:  data: A data list, angles or coords.; for myArm: angles len 7, coords len 6.; mode: 1 - coords, 0 - angles; Trả về:  1 - True; 0 - False; -1 - Error
+  - **Protocol/code:** ProtocolCode.IS_IN_POSITION (0x2A).
+  - **Validation:** coords=data; angles=data.
+  - **Encode/decode:** `_coord2int`: $\mathrm{mm} \mapsto$ integer $x_\mathrm{int}=10x_\mathrm{mm}$; `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_IN_POSITION, data_list, mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_moving(self)`** — source: `pymycobot/myarmm_control.py:L341-L349`.
+  - **Ý nghĩa:** Detect if the robot is moving; Trả về:  0 - not moving; 1 - is moving; -1 - error data
+  - **Protocol/code:** ProtocolCode.IS_MOVING (0x2B).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_MOVING)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+
+#### JOG, pause/resume/stop và incremental motion
+
+- **`jog_rpy(end_direction, direction, speed)`** — source: `pymycobot/myarmm_control.py:L351-L360`.
+  - **Ý nghĩa:** Rotate the end around a fixed axis in the base coordinate system; Tham số:  end_direction (int): Roll, Pitch, Yaw (1-3); direction (int): 1 - forward rotation, 0 - reverse rotation; speed (int): 1 ~ 100
+  - **Protocol/code:** ProtocolCode.JOG_ABSOLUTE (0x31).
+  - **Validation:** direction=direction, speed=speed, end_direction=end_direction.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.JOG_ABSOLUTE, end_direction, direction, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`jog_angle(joint_id, direction, speed)`** — source: `pymycobot/myarmm_control.py:L363-L373`.
+  - **Ý nghĩa:** Jog control angle.; Tham số:  joint_id: int; for myArm: Joint id 1 - 7.; direction: 0 - decrease, 1 - increase; speed: int ([0,100])
+  - **Protocol/code:** ProtocolCode.JOG_ANGLE (0x30).
+  - **Validation:** joint_id=joint_id, direction=direction, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.JOG_ANGLE, joint_id, direction, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`jog_coord(coord_id, direction, speed)`** — source: `pymycobot/myarmm_control.py:L375-L384`.
+  - **Ý nghĩa:** Jog control coord.; Tham số:  coord_id: int 1 ~ 6; direction: 0 - decrease, 1 - increase; speed: int ([1,100])
+  - **Protocol/code:** ProtocolCode.JOG_COORD (0x32).
+  - **Validation:** coord_id=coord_id, direction=direction, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.JOG_COORD, coord_id, direction, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`jog_increment(joint_id, increment, speed)`** — source: `pymycobot/myarmm_control.py:L386-L396`.
+  - **Ý nghĩa:** step mode; Tham số:  joint_id(int):  for myArm: Joint id 1 - 6.; increment(int): incremental; speed(int): int ([0,100])
+  - **Protocol/code:** ProtocolCode.JOG_INCREMENT (0x33).
+  - **Validation:** joint_id=joint_id, angle=increment, speed=speed.
+  - **Encode/decode:** `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.JOG_INCREMENT, joint_id, [self._angle2int(increment)], speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`pause(self)`** — source: `pymycobot/myarmm_control.py:L398-L400`.
+  - **Ý nghĩa:** Pause movement
+  - **Protocol/code:** ProtocolCode.PAUSE (0x26).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.PAUSE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_paused(self)`** — source: `pymycobot/myarmm_control.py:L402-L410`.
+  - **Ý nghĩa:** Judge whether the manipulator pauses or not.; Trả về:  1 - paused; 0 - not paused; -1 - error
+  - **Protocol/code:** ProtocolCode.IS_PAUSED (0x27).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_PAUSED)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`resume(self)`** — source: `pymycobot/myarmm_control.py:L412-L414`.
+  - **Ý nghĩa:** Recovery movement
+  - **Protocol/code:** ProtocolCode.RESUME (0x28).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.RESUME)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`stop(self)`** — source: `pymycobot/myarmm_control.py:L416-L418`.
+  - **Ý nghĩa:** Stop moving
+  - **Protocol/code:** ProtocolCode.STOP (0x29).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.STOP)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+
+#### Encoder, speed, limit và servo control
+
+- **`get_encoder(joint_id)`** — source: `pymycobot/myarmm_control.py:L420-L428`.
+  - **Ý nghĩa:** Obtain the specified joint potential value.; Tham số:  joint_id: (int); for myArm: Joint id 1 - 7.
+  - **Protocol/code:** ProtocolCode.GET_ENCODER (0x3B).
+  - **Validation:** joint_id=joint_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ENCODER, joint_id)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_encoders(self)`** — source: `pymycobot/myarmm_control.py:L430-L436`.
+  - **Ý nghĩa:** Get the six joints of the manipulator; Trả về:  The list of encoders
+  - **Protocol/code:** ProtocolCode.GET_ENCODERS (0x3D).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_ENCODERS)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_speed(self)`** — source: `pymycobot/myarmm_control.py:L439-L445`.
+  - **Ý nghĩa:** Get speed; Trả về:  int
+  - **Protocol/code:** ProtocolCode.GET_SPEED (0x40).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SPEED)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_speed(speed)`** — source: `pymycobot/myarmm_control.py:L447-L454`.
+  - **Ý nghĩa:** Set speed value; Tham số:  speed (int): 1 ~ 100
+  - **Protocol/code:** ProtocolCode.SET_SPEED (0x41).
+  - **Validation:** speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_SPEED, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_joint_min(joint_id)`** — source: `pymycobot/myarmm_control.py:L456-L467`.
+  - **Ý nghĩa:** Gets the minimum movement angle of the specified joint; Tham số:  joint_id:  for myArm: Joint id 1 - 7.; Trả về:  angle value(float)
+  - **Protocol/code:** ProtocolCode.GET_JOINT_MIN_ANGLE (0x4A).
+  - **Validation:** joint_id=joint_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_JOINT_MIN_ANGLE, joint_id)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_joint_max(joint_id)`** — source: `pymycobot/myarmm_control.py:L469-L480`.
+  - **Ý nghĩa:** Gets the maximum movement angle of the specified joint; Tham số:  joint_id:  for myArm: Joint id 1 - 7.; Trả về:  angle value(float)
+  - **Protocol/code:** ProtocolCode.GET_JOINT_MAX_ANGLE (0x4B).
+  - **Validation:** joint_id=joint_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_JOINT_MAX_ANGLE, joint_id)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_joint_max(joint_id, angle)`** — source: `pymycobot/myarmm_control.py:L482-L491`.
+  - **Ý nghĩa:** Set the joint maximum angle; Tham số:  joint_id: int.; for myArm: Joint id 1 - 7.; angle: 0 ~ 180
+  - **Protocol/code:** ProtocolCode.SET_JOINT_MAX (0x4D).
+  - **Validation:** joint_id=joint_id, angle=angle.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_JOINT_MAX, joint_id, angle)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_joint_min(joint_id, angle)`** — source: `pymycobot/myarmm_control.py:L493-L502`.
+  - **Ý nghĩa:** Set the joint minimum angle; Tham số:  joint_id: int.; for myArm: Joint id 1 - 7.; angle: 0 ~ 180
+  - **Protocol/code:** ProtocolCode.SET_JOINT_MIN (0x4C).
+  - **Validation:** joint_id=joint_id, angle=angle.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_JOINT_MIN, joint_id, angle)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_servo_enable(servo_id)`** — source: `pymycobot/myarmm_control.py:L505-L518`.
+  - **Ý nghĩa:** To detect the connection state of a single joint; Tham số:  servo_id:  for myArm: Joint id 1 - 8.; Trả về:  0 - disable; 1 - enable; -1 - error
+  - **Protocol/code:** ProtocolCode.IS_SERVO_ENABLE (0x50).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_SERVO_ENABLE, servo_id)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_all_servo_enable(self)`** — source: `pymycobot/myarmm_control.py:L520-L528`.
+  - **Ý nghĩa:** Detect the connection status of all joints; Trả về:  0 - disable; 1 - enable; -1 - error
+  - **Protocol/code:** ProtocolCode.IS_ALL_SERVO_ENABLE (0x51).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_ALL_SERVO_ENABLE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_servo_data(servo_id, data_id, value, mode=None)`** — source: `pymycobot/myarmm_control.py:L530-L548`.
+  - **Ý nghĩa:** Set the data parameters of the specified address of the steering gear; Tham số:  servo_id: Serial number of articulated steering gear.; for myArm: joint id [1,8]; data_id: Data address.; value: [0,4096]; mode: 0 - indicates that v
+  - **Protocol/code:** ProtocolCode.SET_SERVO_DATA (0x52).
+  - **Validation:** servo_id=servo_id, servo_addr=data_id, value=value; servo_id=servo_id, servo_addr=data_id, value=value, mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_SERVO_DATA, servo_id, data_id, value); self._mesg(ProtocolCode.SET_SERVO_DATA, servo_id, data_id, [value], mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_servo_data(servo_id, data_id, mode=None)`** — source: `pymycobot/myarmm_control.py:L550-L566`.
+  - **Ý nghĩa:** Read the data parameter of the specified address of the steering gear.; Tham số:  servo_id: Serial number of articulated steering gear. 1 ~ 7; data_id: Data address.; mode: 0 - indicates that value is one byte(default), [1,1] represents a value
+  - **Protocol/code:** ProtocolCode.GET_SERVO_DATA (0x53).
+  - **Validation:** servo_id=servo_id; servo_id=servo_id, mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_DATA, servo_id, data_id); self._mesg(ProtocolCode.GET_SERVO_DATA, servo_id, data_id, mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_servo_calibration(servo_id)`** — source: `pymycobot/myarmm_control.py:L568-L576`.
+  - **Ý nghĩa:** The current position of the calibration joint actuator is the angle zero point,; and the corresponding potential value is 2048.; Tham số:  servo_id: 1 ~ 8
+  - **Protocol/code:** ProtocolCode.SET_SERVO_CALIBRATION (0x54).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_SERVO_CALIBRATION, servo_id)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`release_servo(servo_id, mode=None)`** — source: `pymycobot/myarmm_control.py:L578-L591`.
+  - **Ý nghĩa:** Power off designated servo; Tham số:  servo_id: int 1 ~ 8; mode: Default damping, set to 1, cancel damping
+  - **Protocol/code:** ProtocolCode.RELEASE_SERVO (0x56).
+  - **Validation:** servo_id=servo_id; servo_id=servo_id, mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.RELEASE_SERVO, servo_id); self._mesg(ProtocolCode.RELEASE_SERVO, servo_id, mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`focus_servo(servo_id)`** — source: `pymycobot/myarmm_control.py:L593-L600`.
+  - **Ý nghĩa:** Power on designated servo; Tham số:  servo_id: int 1 ~ 7
+  - **Protocol/code:** ProtocolCode.FOCUS_SERVO (0x57).
+  - **Validation:** servo_id=servo_id.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.FOCUS_SERVO, servo_id)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+
+#### Atom/tool IO, gripper, base IO và network
+
+- **`set_digital_output(pin_no, pin_signal)`** — source: `pymycobot/myarmm_control.py:L602-L610`.
+  - **Ý nghĩa:** Set the terminal atom io status; Tham số:  pin_no (int):  pin_signal (int): 0; 1
+  - **Protocol/code:** ProtocolCode.SET_DIGITAL_OUTPUT (0x61).
+  - **Validation:** pin_number=pin_no, pin_signal=pin_signal.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_DIGITAL_OUTPUT, pin_no, pin_signal)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_digital_input(pin_no)`** — source: `pymycobot/myarmm_control.py:L612-L617`.
+  - **Ý nghĩa:** Get the terminal atom io status; Trả về: int 0;1
+  - **Protocol/code:** ProtocolCode.GET_DIGITAL_INPUT (0x62).
+  - **Validation:** pin_number=pin_no.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_DIGITAL_INPUT, pin_no)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_gripper_enabled(self)`** — source: `pymycobot/myarmm_control.py:L619-L621`.
+  - **Ý nghĩa:** Enable gripper
+  - **Protocol/code:** RobotProtocolCode.SET_GRIPPER_ENABLED (0x58).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(RobotProtocolCode.SET_GRIPPER_ENABLED)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_gripper_value(self)`** — source: `pymycobot/myarmm_control.py:L623-L629`.
+  - **Ý nghĩa:** Get the value of gripper.; Trả về:  gripper value (int)
+  - **Protocol/code:** ProtocolCode.GET_GRIPPER_VALUE (0x65).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_GRIPPER_VALUE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_gripper_state(flag, speed)`** — source: `pymycobot/myarmm_control.py:L631-L639`.
+  - **Ý nghĩa:** Set gripper switch state; Tham số:  flag (int): 0 - open, 1 - close, 254 - release; speed (int): 1 ~ 100
+  - **Protocol/code:** ProtocolCode.SET_GRIPPER_STATE (0x66).
+  - **Validation:** gripper_flag=flag, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_GRIPPER_STATE, flag, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_gripper_value(gripper_value, speed)`** — source: `pymycobot/myarmm_control.py:L641-L650`.
+  - **Ý nghĩa:** Set gripper value; Tham số:  gripper_value (int): 0 ~ 100; speed (int): 1 ~ 100
+  - **Protocol/code:** ProtocolCode.SET_GRIPPER_VALUE (0x67).
+  - **Validation:** gripper_value=gripper_value, speed=speed.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_GRIPPER_VALUE, gripper_value, speed)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_gripper_calibration(self)`** — source: `pymycobot/myarmm_control.py:L652-L654`.
+  - **Ý nghĩa:** Set the current position to zero, set current position value is `2048`.
+  - **Protocol/code:** ProtocolCode.SET_GRIPPER_CALIBRATION (0x68).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_GRIPPER_CALIBRATION)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_gripper_moving(self)`** — source: `pymycobot/myarmm_control.py:L656-L664`.
+  - **Ý nghĩa:** Judge whether the gripper is moving or not; Trả về:  0 - not moving; 1 - is moving; -1- error data
+  - **Protocol/code:** ProtocolCode.IS_GRIPPER_MOVING (0x69).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_GRIPPER_MOVING)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_led_color(r=0, g=0, b=0)`** — source: `pymycobot/myarmm_control.py:L667-L677`.
+  - **Ý nghĩa:** Set the light color on the top of the robot arm.; Tham số:  r (int): 0 ~ 255; g (int): 0 ~ 255; b (int): 0 ~ 255
+  - **Protocol/code:** ProtocolCode.SET_COLOR (0x6A).
+  - **Validation:** rgb=(r, g, b).
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_COLOR, r, g, b)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`is_tool_btn_clicked(self)`** — source: `pymycobot/myarmm_control.py:L679-L687`.
+  - **Ý nghĩa:** Judge whether the button on the top of the robot arm is clicked or not.; Trả về:  0 - not clicked; 1 - is clicked; -1- error data
+  - **Protocol/code:** ProtocolCode.IS_TOOL_BTN_CLICKED (0x6B).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.IS_TOOL_BTN_CLICKED)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_basic_output(pin_no, pin_signal)`** — source: `pymycobot/myarmm_control.py:L690-L698`.
+  - **Ý nghĩa:** Set the base IO output; Tham số:  pin_no: pin port number.; pin_signal: 0; 1
+  - **Protocol/code:** ProtocolCode.SET_BASIC_OUTPUT (0xA0).
+  - **Validation:** pin_signal=pin_signal, basic_pin_number=pin_no.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_BASIC_OUTPUT, pin_no, pin_signal)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_basic_input(pin_no)`** — source: `pymycobot/myarmm_control.py:L700-L707`.
+  - **Ý nghĩa:** Read the base IO output; Tham số:  pin_no: (int) pin port number.
+  - **Protocol/code:** ProtocolCode.GET_BASIC_INPUT (0xA1).
+  - **Validation:** basic_pin_number=pin_no.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_BASIC_INPUT, pin_no)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_ssid_pwd(account: str, password: str)`** — source: `pymycobot/myarmm_control.py:L709-L719`.
+  - **Ý nghĩa:** Change connected wi-fi.; Tham số:  account: (str) new wi-fi account.; password: (str) new wi-fi password.
+  - **Protocol/code:** ProtocolCode.SET_SSID_PWD (0xB0).
+  - **Validation:** account=account, password=password.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_SSID_PWD, account, password)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_ssid_pwd(self)`** — source: `pymycobot/myarmm_control.py:L721-L727`.
+  - **Ý nghĩa:** Get connected wi-fi account and password.; Trả về:  (account, password)
+  - **Protocol/code:** ProtocolCode.GET_SSID_PWD (0xB1).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SSID_PWD)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_server_port(port)`** — source: `pymycobot/myarmm_control.py:L729-L737`.
+  - **Ý nghĩa:** Change the connection port of the server.; Tham số:  port: (int) The new connection port of the server.
+  - **Protocol/code:** ProtocolCode.SET_SERVER_PORT (0xB2).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_SERVER_PORT, port)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_tof_distance(self)`** — source: `pymycobot/myarmm_control.py:L739-L745`.
+  - **Ý nghĩa:** Get the detected distance (Requires external distance detector).; Trả về:  (int) The unit is mm.
+  - **Protocol/code:** ProtocolCode.GET_TOF_DISTANCE (0xC0).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_TOF_DISTANCE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+
+#### Coordinate frame, movement type và planner config
+
+- **`set_tool_reference(coords)`** — source: `pymycobot/myarmm_control.py:L747-L759`.
+  - **Ý nghĩa:** Set tool coordinate system; Tham số:  coords: a list of coords value(List[float]), [x(mm), y, z, rx(angle), ry, rz]
+  - **Protocol/code:** ProtocolCode.SET_TOOL_REFERENCE (0x81).
+  - **Validation:** coords=coords.
+  - **Encode/decode:** `_coord2int`: $\mathrm{mm} \mapsto$ integer $x_\mathrm{int}=10x_\mathrm{mm}$; `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_TOOL_REFERENCE, coord_list)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_tool_reference(self)`** — source: `pymycobot/myarmm_control.py:L761-L763`.
+  - **Ý nghĩa:** Get tool coordinate system
+  - **Protocol/code:** ProtocolCode.GET_TOOL_REFERENCE (0x82).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_TOOL_REFERENCE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_world_reference(coords)`** — source: `pymycobot/myarmm_control.py:L765-L777`.
+  - **Ý nghĩa:** Set the world coordinate system; Tham số:  coords: a list of coords value(List[float]), [x(mm), y, z, rx(angle), ry, rz]
+  - **Protocol/code:** ProtocolCode.SET_WORLD_REFERENCE (0x83).
+  - **Validation:** coords=coords.
+  - **Encode/decode:** `_coord2int`: $\mathrm{mm} \mapsto$ integer $x_\mathrm{int}=10x_\mathrm{mm}$; `_angle2int`: $^\circ \mapsto$ integer $\theta_\mathrm{int}=100\theta_{^\circ}$.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_WORLD_REFERENCE, coord_list)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_world_reference(self)`** — source: `pymycobot/myarmm_control.py:L779-L781`.
+  - **Ý nghĩa:** Get the world coordinate system
+  - **Protocol/code:** ProtocolCode.GET_WORLD_REFERENCE (0x84).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_WORLD_REFERENCE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_reference_frame(rftype)`** — source: `pymycobot/myarmm_control.py:L783-L790`.
+  - **Ý nghĩa:** Set the base coordinate system; Tham số:  rftype: 0 - base 1 - tool.
+  - **Protocol/code:** ProtocolCode.SET_REFERENCE_FRAME (0x85).
+  - **Validation:** rftype=rftype.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_REFERENCE_FRAME, rftype)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_reference_frame(self)`** — source: `pymycobot/myarmm_control.py:L792-L798`.
+  - **Ý nghĩa:** Get the base coordinate system; Trả về:  0 - base 1 - tool.
+  - **Protocol/code:** ProtocolCode.GET_REFERENCE_FRAME (0x86).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_REFERENCE_FRAME)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_movement_type(move_type)`** — source: `pymycobot/myarmm_control.py:L800-L807`.
+  - **Ý nghĩa:** Set movement type; Tham số:  move_type: 1 - movel, 0 - moveJ
+  - **Protocol/code:** ProtocolCode.SET_MOVEMENT_TYPE (0x87).
+  - **Validation:** move_type=move_type.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_MOVEMENT_TYPE, move_type)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_movement_type(self)`** — source: `pymycobot/myarmm_control.py:L809-L815`.
+  - **Ý nghĩa:** Get movement type; Trả về:  1 - movel, 0 - moveJ
+  - **Protocol/code:** ProtocolCode.GET_MOVEMENT_TYPE (0x88).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_MOVEMENT_TYPE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_end_type(mode)`** — source: `pymycobot/myarmm_control.py:L817-L824`.
+  - **Ý nghĩa:** Set end coordinate system; Tham số:  mode: int, 0 - flange, 1 - tool
+  - **Protocol/code:** ProtocolCode.SET_END_TYPE (0x89).
+  - **Validation:** mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_END_TYPE, mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_end_type(self)`** — source: `pymycobot/myarmm_control.py:L826-L832`.
+  - **Ý nghĩa:** Get end coordinate system; Trả về:  0 - flange, 1 - tool
+  - **Protocol/code:** ProtocolCode.GET_END_TYPE (0x8A).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_END_TYPE)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_plan_speed(self)`** — source: `pymycobot/myarmm_control.py:L834-L840`.
+  - **Ý nghĩa:** Get planning speed; Trả về:  [movel planning speed, movej planning speed].
+  - **Protocol/code:** ProtocolCode.GET_PLAN_SPEED (0xD0).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_PLAN_SPEED)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_plan_acceleration(self)`** — source: `pymycobot/myarmm_control.py:L842-L848`.
+  - **Ý nghĩa:** Get planning acceleration; Trả về:  [movel planning acceleration, movej planning acceleration].
+  - **Protocol/code:** ProtocolCode.GET_PLAN_ACCELERATION (0xD1).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_PLAN_ACCELERATION)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_plan_speed(speed, is_linear)`** — source: `pymycobot/myarmm_control.py:L850-L858`.
+  - **Ý nghĩa:** Set planning speed; Tham số:  speed (int): (1 ~ 100).; is_linear: 0 -> joint 1 -> straight line
+  - **Protocol/code:** ProtocolCode.SET_PLAN_SPEED (0xD2).
+  - **Validation:** speed=speed, is_linear=is_linear.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_PLAN_SPEED, speed, is_linear)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_plan_acceleration(acceleration, is_linear)`** — source: `pymycobot/myarmm_control.py:L860-L868`.
+  - **Ý nghĩa:** Set planning acceleration; Tham số:  acceleration (int): (1 ~ 100).; is_linear(int): 0 -> joint 1 -> straight line
+  - **Protocol/code:** ProtocolCode.SET_PLAN_ACCELERATION (0xD3).
+  - **Validation:** speed=acceleration, is_linear=is_linear.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_PLAN_ACCELERATION, acceleration, is_linear)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_servo_speeds(self)`** — source: `pymycobot/myarmm_control.py:L870-L875`.
+  - **Ý nghĩa:** Get the joint speed .; Trả về:  speeds: list[float * 8] +- 3000 step;s
+  - **Protocol/code:** ProtocolCode.GET_SERVO_SPEED (0xE1).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_SPEED)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_servo_currents(self)`** — source: `pymycobot/myarmm_control.py:L877-L882`.
+  - **Ý nghĩa:** Get the joint current; Trả về:  currents: list[float * 8] 0 ~ 3250
+  - **Protocol/code:** ProtocolCode.GET_SERVO_CURRENTS (0xE2).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_CURRENTS)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_servo_voltages(self)`** — source: `pymycobot/myarmm_control.py:L884-L890`.
+  - **Ý nghĩa:** Get the joint voltages; Trả về:  voltages: list[float] voltage 0 ~ 240
+  - **Protocol/code:** ProtocolCode.GET_SERVO_VOLTAGES (0xE3).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_VOLTAGES)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_servo_status(self)`** — source: `pymycobot/myarmm_control.py:L892-L900`.
+  - **Ý nghĩa:** Get the joint status.; Trả về:  status: list[int] 0 ~ 255; 0 - normal,; other - error
+  - **Protocol/code:** ProtocolCode.GET_SERVO_STATUS (0xE4).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_STATUS)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`get_servo_temps(self)`** — source: `pymycobot/myarmm_control.py:L902-L908`.
+  - **Ý nghĩa:** Get joint temperature; Trả về:  temperatures: list[float] 0 ~ 255
+  - **Protocol/code:** ProtocolCode.GET_SERVO_TEMPS (0xE5).
+  - **Validation:** Không thấy gọi `calibration_parameters(...)` trực tiếp trong thân method.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.GET_SERVO_TEMPS)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+- **`set_void_compensate(mode)`** — source: `pymycobot/myarmm_control.py:L910-L919`.
+  - **Ý nghĩa:** Set the virtual position compensation mode (; after turning on, the virtual position will be automatically compensated after the exercise is over; ); Tham số:  mode (int): 0 - close, 1 - open
+  - **Protocol/code:** ProtocolCode.SET_VOID_COMPENSATE (0xE7).
+  - **Validation:** mode=mode.
+  - **Encode/decode:** Không có bước encode/decode riêng trong method hoặc phụ thuộc `_mesg()` chung.
+  - **Return/reply:** `self._mesg(ProtocolCode.SET_VOID_COMPENSATE, mode)`; do `MyArmMControl._mesg()` ép `has_reply=True`, đây là lệnh write-then-read-response.
+
+## 7. `MyArmM` và `MyArmMControl` có gửi cùng message không?
+
+Một số method dùng **cùng `ProtocolCode`** và cùng codec của `DataProcessor`. Ví dụ:
+
+| Chức năng | `MyArmM` | `MyArmMControl` | ProtocolCode | Ý nghĩa |
+|---|---|---|---|---|
+| Gửi joint vector | `set_joints_angle(angles, speed)` | `write_angles(angles, speed)` | `SEND_ANGLES = 0x22` | Payload angle được encode bằng $\theta_\mathrm{int}=\lfloor100\theta_{^\circ}\rfloor$. |
+| Đọc joint vector | `get_joints_angle()` | `get_angles()` | `GET_ANGLES = 0x20` | Trả về list angle $^\circ$. |
+| Dừng motion | `stop_robot()` | `stop()` | `STOP = 0x29` | `MyArmMControl.stop()` có reply vì `_mesg` ép `has_reply=True`. |
+| Đọc moving flag | `is_robot_moving()` | `is_moving()` | `IS_MOVING = 0x2B` | Return single value. |
+| Encoder single | `get_servo_encoder(servo_id)` | `get_encoder(joint_id)` | `GET_ENCODER = 0x3B` | Cùng command nhưng tên argument khác nhau. |
+| Encoder vector | `get_servos_encoder()` | `get_encoders()` | `GET_ENCODERS = 0x3D` | Raw count. |
+
+Tuy nhiên không thể kết luận hai class thay thế trực tiếp cho nhau, vì source khác ở bốn điểm:
+
+1. `MyArmMControl._mesg()` luôn đọc response; `MyArmM` chỉ đọc khi method truyền `has_reply=True`.
+2. Validation dùng `class_name`, nên `MyArmM` và `MyArmMControl` dùng limit/length khác nhau.
+3. `MyArmMControl` có `coord_id`, `coord_min`, `coord_max`; `MyArmM` không có coordinate range trong `robot_info.py`.
+4. `MyArmMControl` có frame/planner/config API; `MyArmM` tập trung joint/servo/status.
+
+::: callout-warning
+Nếu robot đang nạp Coordinate firmware nhưng gọi `MyArmM`, một số command trùng protocol có thể vẫn đi xuống firmware. Tuy nhiên source-level không đảm bảo an toàn về reply behavior và validation. Đặc biệt `MyArmM.set_joints_angle()` không đọc ACK, trong khi Coordinate firmware có thể trả response cho command tương tự. Điều này có thể để lại frame trong serial buffer cho lần đọc tiếp theo.
+:::
+
+## 8. Điểm không thống nhất nội bộ trong source/docs cần ghi nhận
+
+| Vấn đề | Evidence | Nhận xét kỹ thuật |
+|---|---|---|
+| Default baudrate của `MyArmMControl` trong source vẫn là $115200~\mathrm{baud}$ | `myarmm_control.py:L176-L177` | Không phủ định observation firmware mới chạy $1{,}000{,}000~\mathrm{baud}$; chỉ nói source default chưa đổi. |
+| `MyArmM` đòi 7 angle theo `robot_info.py`, nhưng nhiều docs ví dụ dùng 6 joint arm | `robot_info.py:L440-L444`, `error.py:L2323-L2325` | `set_joints_angle()` validate length bằng `len(joint_id)`. |
+| `MyArmM` và `MyArmMControl` dùng limit khác nhau | `robot_info.py:L440-L457` | `MyArmMControl` khớp bộ limit rộng hơn ở docs mới; `MyArmM` còn hẹp ở $q_2,q_3,q_4,q_5,q_6$. |
+| `get_joint_min/max` trong `MyArmMControl` decode bằng `_int2coord` | `myarmm_control.py:L153-L154` | Tên method là angle nhưng decode branch dùng chia 10. Cần kiểm chứng output thực tế firmware. |
+| `set_servo_d/i` trong `MyArmAPI` dùng tên `ProtocolCode` không trực quan | `myarm_api.py:L361-L388` | `set_servo_d` gọi `MERCURY_DRAG_TECH_EXECUTE`, `set_servo_i` gọi `MERCURY_DRAG_TECH_PAUSE`. Đây là source fact, không suy đoán ý nghĩa firmware. |
+| `drag_speeds` docstring và validation lệch | `myarmm.py:L73-L74`, `error.py:L2451-L2455` | Docstring ghi $[-10000,10000]$, validation thực tế chấp nhận $(-10000,1000)$. |
+
+## 9. Dữ liệu phụ trợ
+
+- `assets/tables/myarmm_method_catalog_v008.csv`
+- `assets/tables/myarmapi_method_catalog_v008.csv`
+- `assets/tables/myarmmcontrol_method_catalog_v008.csv`
+- `assets/tables/pymycobot_protocol_codes_v006.csv`
+- `assets/tables/pymycobot_robot_info_limits_v006.csv`

@@ -1,14 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360">
-  <rect width="960" height="360" rx="24" fill="#f7f7f7" stroke="#222" stroke-width="3"/>
-  <text x="48" y="72" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#111">RobotNetwork</text>
-  <text x="48" y="118" font-family="Arial, sans-serif" font-size="24" fill="#333">Flash Jetson AGX Xavier với Auvidea X221-AI</text>
-  <g transform="translate(610,70)" fill="none" stroke="#111" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="55" cy="210" r="28" fill="#fff"/>
-    <path d="M55 182 L95 120 L165 90"/>
-    <circle cx="95" cy="120" r="16" fill="#fff"/>
-    <circle cx="165" cy="90" r="16" fill="#fff"/>
-    <path d="M165 90 L230 52"/>
-    <path d="M230 52 L260 35 M230 52 L265 65"/>
-  </g>
-  <text x="48" y="310" font-family="Arial, sans-serif" font-size="18" fill="#555">Draft scaffold · Jetson AGX Xavier · Auvidea X221 · ROS2/ML/DL</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Simplified reBot B601-DM robot arm architecture diagram">
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/></marker></defs>
+  <rect x="0" y="0" width="960" height="540" fill="#f8fafc"/>
+  <text x="48" y="58" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">reBot B601-DM: software-defined arm stack</text>
+  <text x="48" y="92" font-family="Arial, sans-serif" font-size="16" fill="#374151">Policy / demo → SDK → kinematics / trajectory → motorbridge → CAN servo</text>
+  <rect x="55" y="142" width="180" height="62" rx="14" fill="#e0f2fe" stroke="#0369a1"/>
+  <text x="83" y="178" font-family="Arial" font-size="16" fill="#0c4a6e">App / Demo / Policy</text>
+  <rect x="285" y="142" width="180" height="62" rx="14" fill="#dcfce7" stroke="#15803d"/>
+  <text x="322" y="178" font-family="Arial" font-size="16" fill="#14532d">Python SDK</text>
+  <rect x="515" y="142" width="180" height="62" rx="14" fill="#fef9c3" stroke="#a16207"/>
+  <text x="555" y="168" font-family="Arial" font-size="16" fill="#713f12">Pinocchio</text>
+  <text x="548" y="190" font-family="Arial" font-size="14" fill="#713f12">FK / IK / gravity</text>
+  <rect x="745" y="142" width="160" height="62" rx="14" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="779" y="168" font-family="Arial" font-size="16" fill="#7f1d1d">motorbridge</text>
+  <text x="782" y="190" font-family="Arial" font-size="14" fill="#7f1d1d">Damiao CAN</text>
+  <line x1="235" y1="173" x2="282" y2="173" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="465" y1="173" x2="512" y2="173" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="695" y1="173" x2="742" y2="173" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="285" y="280" width="180" height="62" rx="14" fill="#ede9fe" stroke="#6d28d9"/>
+  <text x="330" y="306" font-family="Arial" font-size="16" fill="#3b0764">ROS 2 SDK</text>
+  <text x="309" y="328" font-family="Arial" font-size="14" fill="#3b0764">topics / services / actions</text>
+  <rect x="515" y="280" width="180" height="62" rx="14" fill="#fce7f3" stroke="#be185d"/>
+  <text x="556" y="306" font-family="Arial" font-size="16" fill="#831843">MoveIt 2</text>
+  <text x="544" y="328" font-family="Arial" font-size="14" fill="#831843">RViz2 / mock sim</text>
+  <line x1="375" y1="204" x2="375" y2="277" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="465" y1="311" x2="512" y2="311" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 605 280 C 640 240, 690 235, 744 185" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="56" y="440" font-family="Arial" font-size="14" fill="#374151">Generated placeholder SVG for Quarto docs. Replace with official figure or screenshot when available.</text>
 </svg>

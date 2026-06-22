@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Nguyen Hoang Dang Khoa">
-<meta name="description" content="Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot">
+<meta name="description" content="Phân tích kiến trúc Python SDK, hardware abstraction, FK, IK, trajectory, control loop và gravity compensation của reBot B601-DM.">
 
-<title>Phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot – DynaCortex</title>
+<title>Phân tích Python SDK và tầng điều khiển reBot B601-DM – DynaCortex</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -25,6 +25,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -35,6 +70,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../../">
+<link href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-ros2-sdk-specification/index.html" rel="next">
+<link href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-hardware-specification/index.html" rel="prev">
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
@@ -77,7 +114,40 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<meta name="mermaid-theme" content="neutral">
+<script src="../../../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../../../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../../styles.css">
 </head>
@@ -297,7 +367,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../04-reference/index.html">04. Reference</a></li><li class="breadcrumb-item"><a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/index.html">Phân tích và đánh giá cánh tay robot reBot B601-DM của seeed studio</a></li><li class="breadcrumb-item"><a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html">Phân tích Python SDK và tầng điều khiển reBot B601-DM</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -335,20 +405,435 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../01-system-foundations/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">System Foundations</span></a>
+ <span class="menu-text">01. System Foundations</span></a>
   </div>
 </li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
+          <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
- <span class="menu-text">02. Implementation</span></a>
+ <span class="menu-text">Modern Robotics</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modern Robotics Core</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/00-learning-roadmap/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">00. Lộ trình học Modern Robotics cho robot arm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/01-notation-units-conventions/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">01. Quy ước ký hiệu, đơn vị và frame</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/02-configuration-space/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">02. Configuration Space</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/03-task-space-workspace/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">03. Task Space và Workspace</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/04-rigid-body-motion/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">04. Rigid-Body Motion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/05-so3-rotation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">05. Rotation Matrix và SO(3)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/06-se3-homogeneous-transform/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">06. Homogeneous Transform và SE(3)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/07-exponential-coordinates-lie-algebra/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">07. Exponential Coordinates và Lie Algebra</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/08-twist-screw-axis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">08. Twist và Screw Axis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/09-wrench-spatial-force-statics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">09. Wrench, Spatial Force và Statics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/10-forward-kinematics-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. Forward Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/11-product-of-exponentials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">11. Product of Exponentials</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/12-dh-mdh-poe-urdf-comparison/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">12. D-H, M-DH, PoE và URDF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/13-urdf-as-kinematic-model/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">13. URDF dưới góc nhìn động học</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/14-jacobian-velocity-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">14. Jacobian và Velocity Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/15-singularity-manipulability/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">15. Singularity và Manipulability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/16-inverse-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">16. Inverse Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/17-numerical-ik-damped-least-squares/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">17. Numerical IK và Damped Least Squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/18-dynamics-open-chain-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">18. Dynamics of Open Chains</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/19-mass-coriolis-gravity/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">19. Mass Matrix, Coriolis và Gravity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/20-inverse-dynamics-rnea/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">20. Inverse Dynamics và RNEA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/21-trajectory-generation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">21. Trajectory Generation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/22-motion-planning-cspace/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">22. Motion Planning trong C-space</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/23-robot-control/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">23. Robot Control</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/24-practical-debugging-map/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">24. Bản đồ debug thực dụng từ Modern Robotics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">ROS 2 Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ROS 2 Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/ros2-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ROS 2 là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/computation-graph/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computation Graph</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/node/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Node</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/topic-message/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Topic và Message</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/service/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Service</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/action/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Action</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/parameter-launch/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parameter và Launch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/tf2-frame-tree/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TF2 và Frame Tree</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/dds-qos/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DDS và QoS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/executor-callback/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Executor và Callback</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/ros2-control/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ros2_control</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/rviz2-gazebo/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RViz2 và Gazebo</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">MoveIt 2 Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MoveIt 2 Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/moveit2-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MoveIt 2 là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/robot-model-urdf-srdf/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Robot Model, URDF, SRDF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/planning-group-state/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Group và Robot State</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/planning-scene-collision/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Scene và Collision Checking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/kinematics-solver/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematics Solver</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/planning-pipeline-ompl/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Pipeline và OMPL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/trajectory-execution/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Trajectory và Execution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Pinocchio Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pinocchio Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/pinocchio-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pinocchio là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/model-data-geometry/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model, Data và Geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/joint-frame-placement/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint, Frame và Placement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/fk-jacobian/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FK và Jacobian</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/dynamics-rnea-crba/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamics, RNEA và CRBA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/solver-support/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solver Support</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Source-informed Core Map</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Source-informed Core Map</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/pymycobot-sdk-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pymycobot SDK observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/myarm-ros2-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">myarm_ros2 observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/rebotarm-control-py-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reBotArm_control_py observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/rebotarm-ros2-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reBotArmController_ROS2 observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/theory-to-source-traceability/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Theory to Source Traceability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">02. Implementation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../02-implementation/index.html" class="sidebar-item-text sidebar-link">
@@ -365,13 +850,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
  <span class="menu-text">03. Experiments</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../03-experiments/index.html" class="sidebar-item-text sidebar-link">
@@ -382,13 +867,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
  <span class="menu-text">04. Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../04-reference/index.html" class="sidebar-item-text sidebar-link">
@@ -397,13 +882,13 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
  <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../04-reference/elephant-robotics-myarm-master-750-analysis/index.html" class="sidebar-item-text sidebar-link">
@@ -425,7 +910,48 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Hiện trạng ROS2 SDK/demo package của MyArm Master 750</span></a>
+ <span class="menu-text">Hiện trạng ROS2 SDK và URDF/Xacro của MyArm Master 750</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot reBot B601-DM của seeed studio</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot reBot B601-DM của Seeed Studio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích phần cứng cánh tay robot reBot B601-DM của Seeed Studio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Phân tích Python SDK và tầng điều khiển reBot B601-DM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích ROS 2 SDK, MoveIt 2 và RViz2 cho reBot B601-DM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-demo/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích demo ứng dụng reBot B601-DM: Visual Grasping và LeRobot</span></a>
   </div>
 </li>
       </ul>
@@ -434,13 +960,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
  <span class="menu-text">05. Literature</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../05-literature/index.html" class="sidebar-item-text sidebar-link">
@@ -451,13 +977,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
  <span class="menu-text">06. Reports</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../06-reports/index.html" class="sidebar-item-text sidebar-link">
@@ -468,13 +994,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
  <span class="menu-text">07. Inbox</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../07-inbox/index.html" class="sidebar-item-text sidebar-link">
@@ -485,13 +1011,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
  <span class="menu-text">08. Notes</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../08-notes/index.html" class="sidebar-item-text sidebar-link">
@@ -502,13 +1028,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false">
  <span class="menu-text">09. Troubleshooting</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../09-troubleshooting/index.html" class="sidebar-item-text sidebar-link">
@@ -533,11 +1059,20 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#một-số-phần-cứng-và-thông-số-cần-chuẩn-bị-và-lưu-ý" id="toc-một-số-phần-cứng-và-thông-số-cần-chuẩn-bị-và-lưu-ý" class="nav-link active" data-scroll-target="#một-số-phần-cứng-và-thông-số-cần-chuẩn-bị-và-lưu-ý">Một số phần cứng và thông số cần chuẩn bị và lưu ý</a></li>
-  <li><a href="#setup-mạng-với-nmcli" id="toc-setup-mạng-với-nmcli" class="nav-link" data-scroll-target="#setup-mạng-với-nmcli">Setup mạng với nmcli</a></li>
-  <li><a href="#tải-và-cài-đặt-ethtool" id="toc-tải-và-cài-đặt-ethtool" class="nav-link" data-scroll-target="#tải-và-cài-đặt-ethtool">Tải và cài đặt ethtool</a></li>
-  <li><a href="#tải-và-cài-đặt-iperf3-để-kiểm-tra-tốc-độ-mạng" id="toc-tải-và-cài-đặt-iperf3-để-kiểm-tra-tốc-độ-mạng" class="nav-link" data-scroll-target="#tải-và-cài-đặt-iperf3-để-kiểm-tra-tốc-độ-mạng">Tải và cài đặt iperf3 để kiểm tra tốc độ mạng</a></li>
-  <li><a href="#tài-liệu-và-nguồn-tham-khảo" id="toc-tài-liệu-và-nguồn-tham-khảo" class="nav-link" data-scroll-target="#tài-liệu-và-nguồn-tham-khảo">Tài liệu và nguồn tham khảo</a></li>
+  <li><a href="#phân-tích-python-sdk-và-tầng-điều-khiển-rebot-b601-dm" id="toc-phân-tích-python-sdk-và-tầng-điều-khiển-rebot-b601-dm" class="nav-link active" data-scroll-target="#phân-tích-python-sdk-và-tầng-điều-khiển-rebot-b601-dm">Phân tích Python SDK và tầng điều khiển reBot B601-DM</a>
+  <ul>
+  <li><a href="#kiến-trúc-tổng-thể" id="toc-kiến-trúc-tổng-thể" class="nav-link" data-scroll-target="#kiến-trúc-tổng-thể">1. Kiến trúc tổng thể</a></li>
+  <li><a href="#hardware-description-yaml-urdf" id="toc-hardware-description-yaml-urdf" class="nav-link" data-scroll-target="#hardware-description-yaml-urdf">2. Hardware description: YAML + URDF</a>
+  <ul class="collapse">
+  <li><a href="#vai-trò-của-urdf" id="toc-vai-trò-của-urdf" class="nav-link" data-scroll-target="#vai-trò-của-urdf">2.1. Vai trò của URDF</a></li>
+  </ul></li>
+  <li><a href="#hardware-abstraction-rebotarm-jointgroup-noopgroup" id="toc-hardware-abstraction-rebotarm-jointgroup-noopgroup" class="nav-link" data-scroll-target="#hardware-abstraction-rebotarm-jointgroup-noopgroup">3. Hardware abstraction: <code>RebotArm</code>, <code>JointGroup</code>, <code>NoOpGroup</code></a></li>
+  <li><a href="#control-modes-và-control-loop" id="toc-control-modes-và-control-loop" class="nav-link" data-scroll-target="#control-modes-và-control-loop">4. Control modes và control loop</a></li>
+  <li><a href="#fk-ik-và-trajectory" id="toc-fk-ik-và-trajectory" class="nav-link" data-scroll-target="#fk-ik-và-trajectory">5. FK, IK và trajectory</a></li>
+  <li><a href="#high-level-rebotarmendpose-và-gravity-compensation" id="toc-high-level-rebotarmendpose-và-gravity-compensation" class="nav-link" data-scroll-target="#high-level-rebotarmendpose-và-gravity-compensation">6. High-level <code>RebotArmEndPose</code> và gravity compensation</a></li>
+  <li><a href="#đánh-giá-và-bài-học-cho-myarm-m750" id="toc-đánh-giá-và-bài-học-cho-myarm-m750" class="nav-link" data-scroll-target="#đánh-giá-và-bài-học-cho-myarm-m750">7. Đánh giá và bài học cho MyArm M750</a></li>
+  <li><a href="#source-evidence" id="toc-source-evidence" class="nav-link" data-scroll-target="#source-evidence">8. Source evidence</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -545,34 +1080,27 @@ ul.task-list li input[type="checkbox"] {
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../04-reference/index.html">04. Reference</a></li><li class="breadcrumb-item"><a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/index.html">Phân tích và đánh giá cánh tay robot reBot B601-DM của seeed studio</a></li><li class="breadcrumb-item"><a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html">Phân tích Python SDK và tầng điều khiển reBot B601-DM</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot</h1>
+<h1 class="title">Phân tích Python SDK và tầng điều khiển reBot B601-DM</h1>
   <div class="quarto-categories">
     <div class="quarto-category">reference</div>
-    <div class="quarto-category">lerobot</div>
-    <div class="quarto-category">so100</div>
-    <div class="quarto-category">so101</div>
-    <div class="quarto-category">policy</div>
+    <div class="quarto-category">seeedstudio</div>
+    <div class="quarto-category">rebot-b601-dm</div>
+    <div class="quarto-category">python-sdk</div>
+    <div class="quarto-category">api</div>
     <div class="quarto-category">controller</div>
+    <div class="quarto-category">kinematics</div>
+    <div class="quarto-category">dynamics</div>
+    <div class="quarto-category">pinocchio</div>
+    <div class="quarto-category">motorbridge</div>
     <div class="quarto-category">analysis</div>
-    <div class="quarto-category">evaluation</div>
-    <div class="quarto-category">inferrence</div>
-    <div class="quarto-category">trainging</div>
-    <div class="quarto-category">development</div>
-    <div class="quarto-category">ecosystem</div>
-    <div class="quarto-category">lerobot-arm</div>
-    <div class="quarto-category">lerobot-arm-so100</div>
-    <div class="quarto-category">lerobot-arm-so101</div>
-    <div class="quarto-category">collecting-robot-data</div>
-    <div class="quarto-category">dataset</div>
-    <div class="quarto-category">deployment</div>
   </div>
   </div>
 
 <div>
   <div class="description">
-    Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot SO100 và SO101 và hệ sinh thái phát triển dành cho policy của Lerobot
+    Phân tích kiến trúc Python SDK, hardware abstraction, FK, IK, trajectory, control loop và gravity compensation của reBot B601-DM.
   </div>
 </div>
 
@@ -589,7 +1117,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">20/06/2026 18:11:12+07:00Z</p>
+      <p class="date">22/06/2026 21:14:59+07:00Z</p>
     </div>
   </div>
   
@@ -601,31 +1129,502 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="một-số-phần-cứng-và-thông-số-cần-chuẩn-bị-và-lưu-ý" class="level2">
-<h2 class="anchored" data-anchor-id="một-số-phần-cứng-và-thông-số-cần-chuẩn-bị-và-lưu-ý">Một số phần cứng và thông số cần chuẩn bị và lưu ý</h2>
-<ul>
-<li>Dây mạng Ethernet chuẩn CAT6 hoặc CAT5 để đảm bảo tốc độ truyền tải cao nhất có thể (lên đến 1 Gbps hoặc hơn nếu cả hai thiết bị hỗ trợ).</li>
-</ul>
+<section id="phân-tích-python-sdk-và-tầng-điều-khiển-rebot-b601-dm" class="level1">
+<h1>Phân tích Python SDK và tầng điều khiển reBot B601-DM</h1>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Python SDK là phần đáng học nhất nếu mục tiêu là xây lại tầng điều khiển cho MyArm M750. Nó đưa FK, IK, trajectory và gravity compensation lên software bằng URDF + Pinocchio, thay vì phụ thuộc vào coordinate firmware blackbox.</p>
+</div>
+</div>
+<div id="fig-python-sdk-overview" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-python-sdk-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/images/example-robot.svg" class="img-fluid figure-img" style="width:85.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-python-sdk-overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Sơ đồ tầng Python SDK reBot B601-DM
+</figcaption>
+</figure>
+</div>
+<section id="kiến-trúc-tổng-thể" class="level2">
+<h2 class="anchored" data-anchor-id="kiến-trúc-tổng-thể">1. Kiến trúc tổng thể</h2>
+<p>Luồng runtime của Python SDK có thể mô tả như sau:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    A[config/rebotarm.yaml] --&gt; B[hardware YAML: rebotarm_dm.yaml]
+    B --&gt; C[RebotArm]
+    C --&gt; D[JointGroup arm]
+    C --&gt; E[JointGroup gripper]
+    D --&gt; F[motorbridge Controller]
+    E --&gt; F
+    F --&gt; G[Damiao / RobStride motors]
+    B --&gt; H[URDF path]
+    H --&gt; I[Pinocchio Robot Model]
+    I --&gt; J[FK / IK / Gravity]
+    J --&gt; K[RebotArmEndPose]
+    K --&gt; D
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Python SDK có 5 lớp chức năng chính:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Lớp</th>
+<th>Thành phần chính</th>
+<th>Vai trò</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Config layer</td>
+<td><code>rebotarm.yaml</code>, <code>rebotarm_dm.yaml</code></td>
+<td>Chọn model, URDF, channel, rate, motor IDs, gains.</td>
+</tr>
+<tr class="even">
+<td>Hardware abstraction</td>
+<td><code>RebotArm</code>, <code>JointGroup</code>, <code>NoOpGroup</code></td>
+<td>Gom motor thành group logic, ẩn chi tiết vendor.</td>
+</tr>
+<tr class="odd">
+<td>Kinematics</td>
+<td><code>robot_model.py</code>, <code>forward_kinematics.py</code>, <code>inverse_kinematics.py</code></td>
+<td>Load URDF bằng Pinocchio, FK, numerical IK.</td>
+</tr>
+<tr class="even">
+<td>Trajectory</td>
+<td><code>sampler.py</code>, <code>clik_tracker.py</code>, <code>trajectory_planner.py</code></td>
+<td>SE(3) interpolation, CLIK tracking, joint trajectory.</td>
+</tr>
+<tr class="odd">
+<td>High-level controller</td>
+<td><code>RebotArmEndPose</code></td>
+<td>Pose command, safe home, gravity compensation, loop callback.</td>
+</tr>
+</tbody>
+</table>
+<p>Source map chi tiết nằm tại <code>assets/tables/python_sdk_source_map.csv</code>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 </section>
-<section id="setup-mạng-với-nmcli" class="level2">
-<h2 class="anchored" data-anchor-id="setup-mạng-với-nmcli">Setup mạng với nmcli</h2>
+<section id="hardware-description-yaml-urdf" class="level2">
+<h2 class="anchored" data-anchor-id="hardware-description-yaml-urdf">2. Hardware description: YAML + URDF</h2>
+<p>YAML DM runtime khai báo:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> rebot_arm</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">urdf_path</span><span class="kw">:</span><span class="at"> urdf/reBot-DevArm_fixend_description/urdf/reBot-DevArm_fixend.urdf</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">end_effector_frame</span><span class="kw">:</span><span class="at"> end_link</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">channel</span><span class="kw">:</span><span class="at"> /dev/ttyACM0</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rate</span><span class="kw">:</span><span class="at"> </span><span class="dv">500</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Cấu hình group:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">groups</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">arm</span><span class="kw">:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">joints</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">joint1</span><span class="kw">,</span><span class="at"> joint2</span><span class="kw">,</span><span class="at"> joint3</span><span class="kw">,</span><span class="at"> joint4</span><span class="kw">,</span><span class="at"> joint5</span><span class="kw">,</span><span class="at"> joint6</span><span class="kw">]</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">gripper</span><span class="kw">:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">joints</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">gripper</span><span class="kw">]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Điều này cho thấy SDK dùng mô hình <strong>config-driven</strong>. Code không hard-code toàn bộ robot trong controller; thay vào đó runtime được cấu hình bằng YAML.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>joint</th>
+<th>motor_id_hex</th>
+<th>feedback_id_hex</th>
+<th>vendor</th>
+<th>model</th>
+<th>mit_kp</th>
+<th>mit_kd</th>
+<th>pos_vel_vlim_rad_s</th>
+<th>pos_vel_pos_kp</th>
+<th>pos_vel_pos_ki</th>
+<th>pos_vel_vel_kp</th>
+<th>pos_vel_vel_ki</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>joint1</td>
+<td>0x1</td>
+<td>0x11</td>
+<td>damiao</td>
+<td>4340P</td>
+<td>120.0</td>
+<td>8.0</td>
+<td>5.0</td>
+<td>150.0</td>
+<td>0.5</td>
+<td>0.0125</td>
+<td>0.004</td>
+</tr>
+<tr class="even">
+<td>joint2</td>
+<td>0x2</td>
+<td>0x12</td>
+<td>damiao</td>
+<td>4340P</td>
+<td>120.0</td>
+<td>8.0</td>
+<td>5.0</td>
+<td>150.0</td>
+<td>0.5</td>
+<td>0.0125</td>
+<td>0.004</td>
+</tr>
+<tr class="odd">
+<td>joint3</td>
+<td>0x3</td>
+<td>0x13</td>
+<td>damiao</td>
+<td>4340P</td>
+<td>120.0</td>
+<td>8.0</td>
+<td>5.0</td>
+<td>150.0</td>
+<td>0.5</td>
+<td>0.0125</td>
+<td>0.004</td>
+</tr>
+<tr class="even">
+<td>joint4</td>
+<td>0x4</td>
+<td>0x14</td>
+<td>damiao</td>
+<td>4310</td>
+<td>18.0</td>
+<td>2.0</td>
+<td>3.0</td>
+<td>50.0</td>
+<td>1.0</td>
+<td>0.0008</td>
+<td>0.002</td>
+</tr>
+<tr class="odd">
+<td>joint5</td>
+<td>0x5</td>
+<td>0x15</td>
+<td>damiao</td>
+<td>4310</td>
+<td>18.0</td>
+<td>2.0</td>
+<td>3.0</td>
+<td>50.0</td>
+<td>1.0</td>
+<td>0.0008</td>
+<td>0.002</td>
+</tr>
+<tr class="even">
+<td>joint6</td>
+<td>0x6</td>
+<td>0x16</td>
+<td>damiao</td>
+<td>4310</td>
+<td>18.0</td>
+<td>2.0</td>
+<td>3.0</td>
+<td>50.0</td>
+<td>1.0</td>
+<td>0.0008</td>
+<td>0.002</td>
+</tr>
+<tr class="odd">
+<td>gripper</td>
+<td>0x7</td>
+<td>0x17</td>
+<td>damiao</td>
+<td>4310</td>
+<td>8.0</td>
+<td>1.0</td>
+<td>3.0</td>
+<td>50.0</td>
+<td>1.0</td>
+<td>0.0008</td>
+<td>0.002</td>
+</tr>
+</tbody>
+</table>
+<section id="vai-trò-của-urdf" class="level3">
+<h3 class="anchored" data-anchor-id="vai-trò-của-urdf">2.1. Vai trò của URDF</h3>
+<p>URDF được dùng bởi Pinocchio để build model:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> pin.buildModelFromUrdf(urdf_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Sau đó SDK lấy frame id, joint names, joint limits và end-effector frame từ model.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 </section>
-<section id="tải-và-cài-đặt-ethtool" class="level2">
-<h2 class="anchored" data-anchor-id="tải-và-cài-đặt-ethtool">Tải và cài đặt ethtool</h2>
 </section>
-<section id="tải-và-cài-đặt-iperf3-để-kiểm-tra-tốc-độ-mạng" class="level2">
-<h2 class="anchored" data-anchor-id="tải-và-cài-đặt-iperf3-để-kiểm-tra-tốc-độ-mạng">Tải và cài đặt iperf3 để kiểm tra tốc độ mạng</h2>
+<section id="hardware-abstraction-rebotarm-jointgroup-noopgroup" class="level2">
+<h2 class="anchored" data-anchor-id="hardware-abstraction-rebotarm-jointgroup-noopgroup">3. Hardware abstraction: <code>RebotArm</code>, <code>JointGroup</code>, <code>NoOpGroup</code></h2>
+<p><code>RebotArm</code> là container runtime: load YAML, tạo motorbridge controller, tạo motor objects, tạo group, connect/disconnect, enable/disable, read state và start/stop control loop. <code>_make_controller()</code> chọn serial bridge nếu channel bắt đầu bằng <code>/dev/tty</code>, dùng <code>Controller.from_dm_serial(channel, 921600)</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p><code>JointGroup</code> gom nhiều motor thành một interface chung:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>arm.mode_pos_vel()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>arm.send_pos_vel(pos<span class="op">=</span>q_target, vlim<span class="op">=</span>vlim)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>arm.mode_mit()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>arm.send_mit(pos<span class="op">=</span>q, vel<span class="op">=</span>qd, kp<span class="op">=</span>kp, kd<span class="op">=</span>kd, tau<span class="op">=</span>tau_ff)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Nó lưu mảng gain như <code>_mit_kp</code>, <code>_mit_kd</code>, <code>_pv_vlim</code> và cung cấp API feedback như <code>get_positions()</code>, <code>get_velocities()</code>, <code>get_torques()</code>.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>Nếu config không có gripper, <code>RebotArm</code> tạo <code>NoOpGroup</code>. Đây là pattern tốt: high-level code vẫn gọi cùng interface nhưng không phải viết quá nhiều nhánh <code>if gripper is None</code>.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Với MyArm M750, nên copy ý tưởng <code>JointGroup</code> và <code>NoOpGroup</code>. Application chỉ nên thấy <code>arm_group</code>, <code>gripper_group</code>, không nên gọi trực tiếp từng motor hoặc từng command firmware.</p>
+</div>
+</div>
 </section>
-<section id="tài-liệu-và-nguồn-tham-khảo" class="level2">
-<h2 class="anchored" data-anchor-id="tài-liệu-và-nguồn-tham-khảo">Tài liệu và nguồn tham khảo</h2>
-<ul>
-<li><a href="https://docs.ros.org/en/foxy">ROS2 Foxy Fitzroy</a></li>
-</ul>
+<section id="control-modes-và-control-loop" class="level2">
+<h2 class="anchored" data-anchor-id="control-modes-và-control-loop">4. Control modes và control loop</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>API</th>
+<th>Ý nghĩa</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MIT</td>
+<td><code>send_mit(pos, vel, kp, kd, tau)</code></td>
+<td>PD + feedforward torque / impedance-like</td>
+<td>Holding, gravity compensation, gripper force-like control</td>
+</tr>
+<tr class="even">
+<td>POS_VEL</td>
+<td><code>send_pos_vel(pos, vlim)</code></td>
+<td>Position target + velocity limit</td>
+<td>Move đơn giản, trajectory position mode</td>
+</tr>
+<tr class="odd">
+<td>VEL</td>
+<td><code>send_vel(vel)</code></td>
+<td>Velocity command</td>
+<td>Debug/low-level velocity</td>
+</tr>
+</tbody>
+</table>
+<p>Trong B601-DM, arm mặc định thường dùng POS_VEL, còn gripper và gravity compensation dùng MIT. Với B601-RS, ROS2 config chuyển arm sang MIT.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+<p><code>start_control_loop(control_fn, rate)</code> tạo daemon thread và gọi callback theo chu kỳ. Với <code>rate: 500</code>, chu kỳ lý tưởng là <span class="math inline">\(dt=0.002~\mathrm{s}\)</span>.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Trong các hàm <code>send_mit</code>, <code>send_pos_vel</code>, <code>send_vel</code>, SDK catch <code>CallError</code> rồi <code>pass</code>.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> Điều này không tốt cho benchmark nghiêm túc vì command drop có thể không được log.</p>
+</div>
+</div>
+</section>
+<section id="fk-ik-và-trajectory" class="level2">
+<h2 class="anchored" data-anchor-id="fk-ik-và-trajectory">5. FK, IK và trajectory</h2>
+<p>Hàm FK gọi <code>pin.forwardKinematics()</code> và <code>pin.updateFramePlacements()</code>, trả về:</p>
+<p><span id="eq-python-sdk-se3"><span class="math display">\[
+T =
+\begin{bmatrix}
+R &amp; p \\
+0 &amp; 1
+\end{bmatrix},
+\quad R \in SO(3),\quad p \in \mathbb{R}^3
+\tag{1}\]</span></span></p>
+<p>IK solver dùng error trong Lie algebra:</p>
+<p><span id="eq-ik-error"><span class="math display">\[
+e = \log\left(T_{current}^{-1}T_{target}\right) \in \mathbb{R}^6
+\tag{2}\]</span></span></p>
+<p>và damped least squares:</p>
+<p><span id="eq-dls"><span class="math display">\[
+\Delta q = \eta J^T\left(JJ^T + \lambda I\right)^{-1} e
+\tag{3}\]</span></span></p>
+<p>Trong code, error được tính bằng <code>pin.log6(T_cur.inverse() * target).vector</code>, Jacobian lấy ở local frame, có adaptive damping, clamp joint limit, backtracking line search và retry với seed random.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></p>
+<p>Trajectory sampler dùng nội suy trên <span class="math inline">\(SE(3)\)</span>:</p>
+<p><span id="eq-se3-geodesic"><span class="math display">\[
+T(s)=T_0\exp\left(\log(T_0^{-1}T_1)s\right),\quad s\in[0,1]
+\tag{4}\]</span></span></p>
+<p>CLIK tracker biến chuỗi pose thành chuỗi joint bằng Jacobian DLS theo từng waypoint.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> <a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a></p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    A[Target pose] --&gt; B[IK endpoint]
+    B --&gt; C[FK start/end]
+    C --&gt; D[SE(3) geodesic sampler]
+    D --&gt; E[CLIK tracker]
+    E --&gt; F[Joint trajectory q(t)]
+    F --&gt; G[send_pos_vel or send_mit]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Đây là trajectory generator, chưa phải full motion planner: chưa tránh collision, chưa tối ưu manipulability, chưa ràng buộc obstacle.</p>
+</section>
+<section id="high-level-rebotarmendpose-và-gravity-compensation" class="level2">
+<h2 class="anchored" data-anchor-id="high-level-rebotarmendpose-và-gravity-compensation">6. High-level <code>RebotArmEndPose</code> và gravity compensation</h2>
+<p><code>RebotArmEndPose</code> expose <code>start()</code>, <code>end()</code>, <code>safe_home()</code>, <code>move_to_ik(...)</code>, <code>move_to_traj(...)</code>. <code>move_to_ik()</code> giải IK một lần rồi set <code>_q_target</code>. <code>move_to_traj()</code> giải IK target, lấy FK start/end, tạo Cartesian geodesic trajectory, tracking bằng CLIK, rồi stream joint targets ở thread riêng.<a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a></p>
+<p>Trong MIT mode, loop callback có thể tính generalized gravity:</p>
+<p><span id="eq-gravity"><span class="math display">\[
+\tau_g(q) = G(q)
+\tag{5}\]</span></span></p>
+<p>Code dùng Pinocchio <code>computeGeneralizedGravity</code> và scale riêng joint2/joint3 khoảng <span class="math inline">\(1.55\)</span> trong <code>RebotArmEndPose</code>.<a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a></p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Nếu copy kiến trúc sang MyArm M750 nhưng hardware không hỗ trợ torque/MIT mode, gravity compensation chỉ có thể dùng gián tiếp để phân tích hoặc feedforward nếu firmware hỗ trợ torque/current. Với position-only firmware, vẫn có thể benchmark holding drift nhưng không thể áp dụng <span class="math inline">\(\tau_g\)</span> trực tiếp.</p>
+</div>
+</div>
+</section>
+<section id="đánh-giá-và-bài-học-cho-myarm-m750" class="level2">
+<h2 class="anchored" data-anchor-id="đánh-giá-và-bài-học-cho-myarm-m750">7. Đánh giá và bài học cho MyArm M750</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tiêu chí</th>
+<th>Đánh giá</th>
+<th>Ý nghĩa cho MyArm M750</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tách FK/IK khỏi firmware</td>
+<td>Rất tốt</td>
+<td>Đúng hướng thay coordinate firmware blackbox.</td>
+</tr>
+<tr class="even">
+<td>Config-driven hardware</td>
+<td>Tốt</td>
+<td>Nên áp dụng bằng YAML riêng cho MyArm.</td>
+</tr>
+<tr class="odd">
+<td>JointGroup abstraction</td>
+<td>Tốt</td>
+<td>Giảm coupling giữa app và vendor protocol.</td>
+</tr>
+<tr class="even">
+<td>Pinocchio integration</td>
+<td>Tốt</td>
+<td>Phù hợp FK/IK/gravity/benchmark.</td>
+</tr>
+<tr class="odd">
+<td>Trajectory layer</td>
+<td>Trung bình tốt</td>
+<td>Đủ prototype, chưa full collision planning.</td>
+</tr>
+<tr class="even">
+<td>Error handling</td>
+<td>Cần cải thiện</td>
+<td>Không nên nuốt lỗi communication trong benchmark.</td>
+</tr>
+<tr class="odd">
+<td>Real-time behavior</td>
+<td>Cần benchmark</td>
+<td>Python thread không hard real-time.</td>
+</tr>
+<tr class="even">
+<td>API boundary</td>
+<td>Cần sạch hơn</td>
+<td>Một số demo/ROS2 chọc private fields.</td>
+</tr>
+</tbody>
+</table>
+<p>Thiết kế MyArm M750 nên có:</p>
+<pre class="text"><code>MyArmM750PythonSDK
+  ├── config/myarm_m750.yaml
+  ├── hardware/MyArmTransport
+  ├── hardware/JointGroup
+  ├── kinematics/PinocchioModel
+  ├── kinematics/DLSIKSolver
+  ├── trajectory/JointTrajectorySampler
+  ├── trajectory/CartesianCLIKTracker
+  ├── controller/ArmController
+  └── safety/Watchdog + StateMachine</code></pre>
+</section>
+<section id="source-evidence" class="level2">
+<h2 class="anchored" data-anchor-id="source-evidence">8. Source evidence</h2>
+<div id="e8d2bb04" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>pd.read_csv(<span class="st">"assets/tables/python_sdk_source_map.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 
 
 </section>
+</section>
 
-</main> <!-- /main -->
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><code>assets/tables/python_sdk_source_map.csv</code>, tạo từ source zip được upload trong phiên làm việc này.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/actuator/rebotarm.py</code>, lines 69–116.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/kinematics/robot_model.py</code>, lines 21–84.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/actuator/rebotarm.py</code>, lines 484–508.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/actuator/rebotarm.py</code>, lines 186–314 and 331–424.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/actuator/rebotarm.py</code>, lines 123–179.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Uploaded source: <code>reBotArmController_ROS2/src/rebotarm_bringup/config/rebotarm_hardware.yaml</code>, lines 7–59.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/actuator/rebotarm.py</code>, lines 705–735.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/actuator/rebotarm.py</code>, lines 331–390.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/kinematics/inverse_kinematics.py</code>, lines 70–186 and 189–280.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/trajectory/sampler.py</code>, lines 16–118.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/trajectory/clik_tracker.py</code>, lines 17–127.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/controllers/rebotarm_endpose_controller.py</code>, lines 76–356.<a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>Uploaded source: <code>reBotArm_control_py/reBotArm_control_py/dynamics/inverse_dynamics.py</code>, lines 24–131; <code>controllers/rebotarm_endpose_controller.py</code>, lines 326–356.<a href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <button type="button" class="layout-toggle" id="layout-toggle" aria-pressed="false" title="Mở rộng nội dung">
   <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
   <span class="visually-hidden">Mở rộng nội dung</span>
@@ -1106,6 +2105,18 @@ ul.task-list li input[type="checkbox"] {
     }
   });
   </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-hardware-specification/index.html" class="pagination-link" aria-label="Phân tích phần cứng cánh tay robot reBot B601-DM của Seeed Studio">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Phân tích phần cứng cánh tay robot reBot B601-DM của Seeed Studio</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-ros2-sdk-specification/index.html" class="pagination-link" aria-label="Phân tích ROS 2 SDK, MoveIt 2 và RViz2 cho reBot B601-DM">
+        <span class="nav-page-text">Phân tích ROS 2 SDK, MoveIt 2 và RViz2 cho reBot B601-DM</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
 </div> <!-- /content -->
 
 

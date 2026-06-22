@@ -1,0 +1,12 @@
+order,topic,modern_robotics_chapter,why_it_matters
+00,Learning roadmap,Ch. 2-11,Giữ thứ tự học để không nhảy vào IK/MoveIt khi chưa hiểu frame và transform.
+01,Notation and units,Appendix A,"Chuẩn hóa rad, m, frame, vector, twist, wrench trước khi đọc code."
+02,Configuration space,Ch. 2,"Nền cho joint limits, planning, IK feasibility và workspace."
+03,Rigid-body motion,Ch. 3,"Nền cho pose, TF, URDF origin, Pinocchio placement."
+09,Forward kinematics,Ch. 4,"Từ q tính pose tool, là phép kiểm chứng quan trọng nhất."
+13,Jacobian,Ch. 5,"Nền cho velocity control, IK số, singularity, manipulability."
+15,Inverse kinematics,Ch. 6,"Từ pose mục tiêu tìm q, nhưng có thể nhiều nghiệm hoặc không có nghiệm."
+17,Dynamics,Ch. 8,"Nền cho torque, gravity compensation và kiểm tra tải."
+20,Trajectory,Ch. 9,Biến path thành chuyển động có thời gian và giới hạn vận tốc.
+21,Motion planning,Ch. 10,Tìm đường đi tránh va chạm trong C-space.
+22,Control,Ch. 11,Biến trajectory/goal thành lệnh vận hành ổn định.

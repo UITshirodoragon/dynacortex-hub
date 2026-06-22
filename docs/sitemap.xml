@@ -14,7 +14,7 @@
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/08-notes/todo/index.html</loc>
-    <lastmod>2026-06-18T09:26:13.823Z</lastmod>
+    <lastmod>2026-06-22T05:27:45.922Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/08-notes/date-2026-06-16/index.html</loc>
@@ -26,15 +26,15 @@
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-ros2-sdk-specification/index.html</loc>
-    <lastmod>2026-06-20T11:13:11.751Z</lastmod>
+    <lastmod>2026-06-22T14:14:59.413Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-hardware-specification/index.html</loc>
-    <lastmod>2026-06-20T11:10:33.392Z</lastmod>
+    <lastmod>2026-06-22T14:14:59.303Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/index.html</loc>
-    <lastmod>2026-06-20T16:25:34.507Z</lastmod>
+    <lastmod>2026-06-22T05:27:48.591Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/index.html</loc>
@@ -42,11 +42,11 @@
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html</loc>
-    <lastmod>2026-06-20T16:43:37.388Z</lastmod>
+    <lastmod>2026-06-22T16:00:01.484Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-hardware-specification/index.html</loc>
-    <lastmod>2026-06-21T15:30:41.801Z</lastmod>
+    <lastmod>2026-06-22T16:00:01.344Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/setup-lan-p2p-jetson-and-host-through-rj45/index.html</loc>
@@ -63,74 +63,6 @@
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/camera-calibration-and-caculate-instrinsics-extrinsics/index.html</loc>
     <lastmod>2026-06-19T15:54:06.079Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/index.html</loc>
-    <lastmod>2026-06-21T17:06:59.451Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/build-and-setup-docker-file-ros2-foxy-ubuntu2004-for-rviz2-gazebo/index.html</loc>
-    <lastmod>2026-06-19T15:44:10.489Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html</loc>
-    <lastmod>2026-06-18T07:56:36.538Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/install-and-setup-special-deeplearning-framework-library-on-jetson/index.html</loc>
-    <lastmod>2026-06-18T07:54:28.998Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/quarto-tutorial-and-docs-rules-format/index.html</loc>
-    <lastmod>2026-06-19T16:00:15.545Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/03-experiments/index.html</loc>
-    <lastmod>2026-06-14T10:08:01.047Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.html</loc>
-    <lastmod>2026-06-20T16:43:28.015Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/elephant-robotics-myarm-master-750-analysis/index.html</loc>
-    <lastmod>2026-06-21T15:21:58.038Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/lerobot-arm-so100-and-so101-policy-and-controller/index.html</loc>
-    <lastmod>2026-06-19T16:10:51.111Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-demo/index.html</loc>
-    <lastmod>2026-06-20T11:13:30.841Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html</loc>
-    <lastmod>2026-06-20T11:11:12.419Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/05-literature/index.html</loc>
-    <lastmod>2026-06-14T10:09:17.413Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/07-inbox/index.html</loc>
-    <lastmod>2026-06-14T10:09:49.814Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/08-notes/index.html</loc>
-    <lastmod>2026-06-10T06:14:02.000Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/09-troubleshooting/index.html</loc>
-    <lastmod>2026-06-14T10:10:28.806Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/index.html</loc>
-    <lastmod>2026-06-14T10:38:44.537Z</lastmod>
-  </url>
-  <url>
-    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/templates/note-template.html</loc>
-    <lastmod>2026-06-10T06:14:02.000Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/source-informed-core-map/theory-to-source-traceability/index.html</loc>
@@ -245,6 +177,10 @@
     <lastmod>2026-06-21T17:06:59.786Z</lastmod>
   </url>
   <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/index.html</loc>
+    <lastmod>2026-06-21T17:06:59.451Z</lastmod>
+  </url>
+  <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/dh-mdh/index.html</loc>
     <lastmod>2026-06-21T17:06:59.788Z</lastmod>
   </url>
@@ -254,7 +190,7 @@
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/index.html</loc>
-    <lastmod>2026-06-21T17:21:48.261Z</lastmod>
+    <lastmod>2026-06-22T14:51:14.063Z</lastmod>
   </url>
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/jacobian-velocity-kinematics/index.html</loc>
@@ -351,5 +287,169 @@
   <url>
     <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/source-informed-core-map/rebotarm-ros2-observations/index.html</loc>
     <lastmod>2026-06-21T17:07:00.232Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/build-and-setup-docker-file-ros2-foxy-ubuntu2004-for-rviz2-gazebo/index.html</loc>
+    <lastmod>2026-06-19T15:44:10.489Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html</loc>
+    <lastmod>2026-06-18T07:56:36.538Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/install-and-setup-special-deeplearning-framework-library-on-jetson/index.html</loc>
+    <lastmod>2026-06-18T07:54:28.998Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/02-implementation/quarto-tutorial-and-docs-rules-format/index.html</loc>
+    <lastmod>2026-06-19T16:00:15.545Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/03-experiments/index.html</loc>
+    <lastmod>2026-06-14T10:08:01.047Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.html</loc>
+    <lastmod>2026-06-22T16:01:38.323Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/elephant-robotics-myarm-master-750-analysis/index.html</loc>
+    <lastmod>2026-06-22T16:00:01.527Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/lerobot-arm-so100-and-so101-policy-and-controller/index.html</loc>
+    <lastmod>2026-06-19T16:10:51.111Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-demo/index.html</loc>
+    <lastmod>2026-06-22T14:14:59.107Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html</loc>
+    <lastmod>2026-06-22T14:14:59.351Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/05-literature/index.html</loc>
+    <lastmod>2026-06-14T10:09:17.413Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/07-inbox/index.html</loc>
+    <lastmod>2026-06-14T10:09:49.814Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/08-notes/index.html</loc>
+    <lastmod>2026-06-10T06:14:02.000Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/09-troubleshooting/index.html</loc>
+    <lastmod>2026-06-14T10:10:28.806Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/index.html</loc>
+    <lastmod>2026-06-14T10:38:44.537Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/templates/note-template.html</loc>
+    <lastmod>2026-06-10T06:14:02.000Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/24-practical-debugging-map/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.836Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/22-motion-planning-cspace/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.590Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/20-inverse-dynamics-rnea/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.285Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/18-dynamics-open-chain-overview/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.079Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/16-inverse-kinematics/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.934Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/14-jacobian-velocity-kinematics/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.776Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/12-dh-mdh-poe-urdf-comparison/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.642Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/10-forward-kinematics-overview/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.577Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/08-twist-screw-axis/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.435Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/06-se3-homogeneous-transform/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.334Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/04-rigid-body-motion/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.275Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/02-configuration-space/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.233Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/00-learning-roadmap/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.190Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/01-notation-units-conventions/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.206Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/03-task-space-workspace/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.249Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/05-so3-rotation/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.304Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/07-exponential-coordinates-lie-algebra/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.362Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/09-wrench-spatial-force-statics/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.494Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/11-product-of-exponentials/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.611Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/13-urdf-as-kinematic-model/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.718Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/15-singularity-manipulability/index.html</loc>
+    <lastmod>2026-06-22T14:51:12.815Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/17-numerical-ik-damped-least-squares/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.008Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/19-mass-coriolis-gravity/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.174Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/21-trajectory-generation/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.356Z</lastmod>
+  </url>
+  <url>
+    <loc>https://uitshirodoragon.github.io/dynacortex-hub/docs/01-system-foundations/modern-robotics/23-robot-control/index.html</loc>
+    <lastmod>2026-06-22T14:51:13.720Z</lastmod>
   </url>
 </urlset>

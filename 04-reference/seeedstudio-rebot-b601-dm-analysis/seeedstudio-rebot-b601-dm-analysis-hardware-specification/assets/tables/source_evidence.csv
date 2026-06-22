@@ -1,0 +1,6 @@
+claim,source,line_range
+"Official high-level hardware specs: payload, reach, weight, repeatability, DOF, ecosystem, voltage",https://github.com/Seeed-Projects/reBot-DevArm,web lines 321-332 checked 2026-06-22
+"DM YAML: URDF path, end_effector_frame, channel, rate, groups, motor IDs and modes",reBotArm_control_py/config/rebotarm_dm.yaml,13-129
+Python SDK fixed-end URDF arm chain and arm joint limits,reBotArm_control_py/urdf/reBot-DevArm_fixend_description/urdf/reBot-DevArm_fixend.urdf,parsed into assets/tables/urdf_joint_chain_dm_fixedend.csv
+ROS2 full gripper URDF contains gripper prismatic joints,reBotArmController_ROS2/src/rebotarm_bringup/description/urdf/reBot_B601_DM_with_gripper.urdf,parsed into assets/tables/urdf_joint_chain_dm_with_gripper.csv
+MoveIt2 uses gripper_tcp and ros2_control xacro,reBotArmController_ROS2/src/rebotarm_moveit_config/config/rebotarm.urdf.xacro,1-16

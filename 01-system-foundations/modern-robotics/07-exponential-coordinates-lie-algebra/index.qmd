@@ -1,0 +1,46 @@
+---
+title: "07. Exponential Coordinates và Lie Algebra"
+description: "Cầu nối giữa chuyển động liên tục và pose trong SO(3)/SE(3)."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 07. Exponential Coordinates và Lie Algebra
+
+![07. Exponential Coordinates và Lie Algebra](assets/images/07-exponential-coordinates-lie-algebra.svg){#fig-07-exponential-coordinates-lie-algebra width=85%}
+
+*Modern Robotics* dùng exponential coordinates để mô tả rotation và rigid-body motion một cách thống nhất [@lynch2017modernrobotics]. Ý tưởng chính: một chuyển động nhỏ trong Lie algebra có thể được map sang một pose hữu hạn bằng exponential map.
+
+## Với rotation
+
+Một rotation có thể biểu diễn bằng trục đơn vị $\hat{\omega}$ và góc $\theta$:
+
+$$
+R = e^{[\hat{\omega}]\theta}
+$$ {#eq-so3-exp}
+
+Trong đó $[\hat{\omega}]$ là ma trận skew-symmetric.
+
+## Với rigid-body motion
+
+Rigid-body motion dùng twist $V$:
+
+$$
+T = e^{[V]\theta}
+$$ {#eq-se3-exp}
+
+## Vì sao quan trọng?
+
+| Khái niệm | Exponential map giúp gì? |
+|---|---|
+| PoE FK | mỗi joint là một exponential transform |
+| IK pose error | dùng log map trong $SE(3)$ để có lỗi 6D |
+| Interpolation | nội suy pose theo geodesic thay vì RPY tuyến tính |
+| Control | velocity/twist tích phân thành pose |
+
+::: callout-note
+Nếu chỉ dùng RPY và cộng trừ từng góc, ta rất dễ sai khi orientation thay đổi lớn hoặc gần singularity của Euler angles.
+:::

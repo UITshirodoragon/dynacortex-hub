@@ -29,13 +29,19 @@ author: "Nguyen Hoang Dang Khoa"
 
 cần tập trung!
 - phân tích rõ ràng kiến trúc thiết kế tổng thể hoạt động chi tiết của python sdk
-- Họ dùng mô tả hardware như thế nào, các config, urdf, xacro, mô hình 3d, joint limits, encoder, calib,... để điều khiển cánh tay robot reBot B601-DM của Seeed Studio
-- 
-
+- Họ dùng mô tả hardware như thế nào, các config yaml, urdf, xacro, mô hình 3d, joint limits, encoder, calib,... để điều khiển cánh tay robot reBot B601-DM của Seeed Studio
+- Kiến trúc và hardware abstraction của python sdk, các tầng điều khiển, các mode điều khiển, các tầng giao tiếp, ....
+- FK, IK và quỹ đạo di chuyển trong Python SDK. IK solver, pinocchio, CLIK, Numerical IK, damped least square,....
+- Tầng high level, xử lý gravity compensation
 
 ## Phân tích ROS2 SDK của cánh tay robot reBot B601-DM của Seeed Studio, bao gồm các gói ROS2, node, topic, service, action, và các công cụ phát triển ROS2 có sẵn, rviz2 simulation cho cánh tay robot reBot B601-DM của Seeed Studio
 
 cần tập trung!
+- Kiến trúc và stack triển khai trong ROS2 SDK, các gói và cấu trúc gói, vai trò,..
+- Ros node, topic, service, action, message type, interface, state machine quả lý, phân luồng, process,..
+- Robot descripton, FK, IK trong ROS2, MoveIt2, Urdf
+- Rviz2 simulation 
+
 
 ## Phân tích ví dụ của demo cánh tay robot
 

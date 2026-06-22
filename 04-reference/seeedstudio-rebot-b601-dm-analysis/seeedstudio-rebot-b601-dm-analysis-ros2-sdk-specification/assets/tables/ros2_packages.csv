@@ -1,0 +1,6 @@
+package,role,important_files
+rebotarm_msgs,Custom interface package,"msg/*.msg, srv/*.srv, action/MoveToPose.action"
+rebotarmcontroller,Hardware-facing ROS2 node wrapping Python SDK,"rebotarm_controller.py, hardware_manager.py, ros_publishers.py, ros_services.py, ros_actions.py, motor_passthrough.py"
+rebotarm_bringup,"Launch hardware node, robot_state_publisher, RViz config, hardware YAML","launch/bringup.launch.py, config/rebotarm_hardware.yaml, description/urdf/*.urdf"
+rebotarm_moveit_config,"MoveIt2 robot model, SRDF, KDL IK, ros2_control mock system","rebotarm.urdf.xacro, rebotarm.srdf, kinematics.yaml, moveit_controllers.yaml, ros2_controllers.yaml"
+rebotarm_moveit_demos,MoveIt2 examples,"draw_square.py, pick_place.py"

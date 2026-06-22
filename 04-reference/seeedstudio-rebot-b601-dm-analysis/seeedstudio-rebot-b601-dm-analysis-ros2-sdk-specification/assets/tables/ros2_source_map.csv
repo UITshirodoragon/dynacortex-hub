@@ -1,0 +1,11 @@
+component,source,line_range
+ROS2 controller node parameters and executor,rebotarmcontroller/rebotarm_controller.py,16-100
+HardwareManager state machine and Python SDK adapter,rebotarmcontroller/hardware_manager.py,25-759
+Publishers,rebotarmcontroller/ros_publishers.py,20-135
+Services,rebotarmcontroller/ros_services.py,14-154
+Actions,rebotarmcontroller/ros_actions.py,13-291
+Low-level motor passthrough,rebotarmcontroller/motor_passthrough.py,10-143
+ROS hardware config,rebotarm_bringup/config/rebotarm_hardware.yaml,7-59
+MoveIt2 KDL IK config,rebotarm_moveit_config/config/kinematics.yaml,1-5
+MoveIt2 SRDF groups and TCP,rebotarm_moveit_config/config/rebotarm.srdf,1-48
+MoveIt2 controllers,rebotarm_moveit_config/config/moveit_controllers.yaml,1-32

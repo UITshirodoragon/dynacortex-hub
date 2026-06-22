@@ -1,0 +1,14 @@
+component,source,line_range
+Package metadata,reBotArm_control_py/pyproject.toml,"dependencies: pin, motorbridge, numpy, pyyaml, meshcat"
+Config loader,actuator/rebotarm.py,69-116
+NoOpGroup,actuator/rebotarm.py,123-179
+JointGroup abstraction and mode switching,actuator/rebotarm.py,186-314
+Motor commands and feedback,actuator/rebotarm.py,331-424
+Controller creation and serial bridge,actuator/rebotarm.py,484-508
+Control loop,actuator/rebotarm.py,705-735
+FK,kinematics/forward_kinematics.py,17-79
+IK DLS solver,kinematics/inverse_kinematics.py,70-186
+SE(3) trajectory sampler,trajectory/sampler.py,16-118
+CLIK trajectory tracker,trajectory/clik_tracker.py,17-127
+High-level end-pose controller,controllers/rebotarm_endpose_controller.py,76-356
+Gravity / inverse dynamics,dynamics/inverse_dynamics.py,24-131

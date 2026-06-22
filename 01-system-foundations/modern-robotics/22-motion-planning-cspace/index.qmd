@@ -1,0 +1,39 @@
+---
+title: "22. Motion Planning trong C-space"
+description: "Tìm đường đi không va chạm từ start đến goal."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 22. Motion Planning trong C-space
+
+![22. Motion Planning trong C-space](assets/images/22-motion-planning-cspace.svg){#fig-22-motion-planning-cspace width=85%}
+
+Motion planning tìm một path hợp lệ từ cấu hình đầu đến cấu hình đích, thường trong C-space. Với robot arm, planner cần xét joint limit, self-collision, environment collision và đôi khi constraint task-space [@lynch2017modernrobotics].
+
+```{mermaid}
+flowchart LR
+    A[Start q] --> B[Planner]
+    C[Goal q or pose] --> B
+    D[Collision model] --> B
+    E[Joint limits] --> B
+    B --> F[Collision-free path]
+    F --> G[Time parameterized trajectory]
+```
+
+## Khái niệm cần nắm
+
+| Khái niệm | Ý nghĩa |
+|---|---|
+| C-space obstacle | tập cấu hình gây va chạm |
+| Collision checking | kiểm tra hình học robot với môi trường |
+| Sampling-based planning | tìm đường bằng mẫu ngẫu nhiên/heuristic |
+| RRT/PRM | hai họ planner phổ biến |
+| Smoothing | làm path bớt gấp khúc |
+
+::: callout-tip
+MoveIt 2 planning sẽ dễ hiểu hơn nhiều nếu đã hiểu C-space obstacle và sampling-based planning ở mức nền tảng.
+:::

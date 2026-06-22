@@ -1,0 +1,15 @@
+kind,name,type,role
+topic,/rebotarm/joint_states,sensor_msgs/msg/JointState,"State for robot_state_publisher, RViz2 and MoveIt2 current state monitor"
+topic,/rebotarm/arm_status,rebotarm_msgs/msg/ArmStatus,Transient local high-level status and state machine
+topic,/rebotarm/joints/{joint}/state,rebotarm_msgs/msg/JointMotorState,Per-joint motor state
+topic,/rebotarm/gripper/state,sensor_msgs/msg/JointState,Virtual gripper opening state
+topic,/rebotarm/joints/{joint}/cmd/mit,rebotarm_msgs/msg/JointMitCmd,Low-level passthrough MIT command
+topic,/rebotarm/joints/{joint}/cmd/pos_vel,rebotarm_msgs/msg/JointPosVelCmd,Low-level passthrough position/velocity command
+service,/rebotarm/enable,std_srvs/srv/Trigger,Enable hardware
+service,/rebotarm/disable,std_srvs/srv/Trigger,Disable hardware
+service,/rebotarm/safe_home,std_srvs/srv/Trigger,Run safe homing through Python SDK
+service,/rebotarm/move_to_pose_ik,rebotarm_msgs/srv/MoveToPoseIK,One-shot IK pose request
+service,/rebotarm/gripper/set/open/close,rebotarm_msgs/srv/SetGripper + Trigger,Gripper commands
+action,/rebotarm/move_to_pose,rebotarm_msgs/action/MoveToPose,Cartesian pose action through Python SDK trajectory
+action,/rebotarm/follow_joint_trajectory,control_msgs/action/FollowJointTrajectory,MoveIt2-compatible arm trajectory action
+action,/rebotarm/gripper/command,control_msgs/action/GripperCommand,MoveIt2-compatible gripper command

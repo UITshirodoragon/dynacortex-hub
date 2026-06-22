@@ -1,0 +1,64 @@
+---
+title: "01. Quy ước ký hiệu, đơn vị và frame"
+description: "Chuẩn hóa ngôn ngữ toán học dùng trong toàn bộ tài liệu."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 01. Quy ước ký hiệu, đơn vị và frame
+
+![01. Quy ước ký hiệu, đơn vị và frame](assets/images/01-notation-units-conventions.svg){#fig-01-notation-units-conventions width=85%}
+
+Quy ước ký hiệu là nền để tránh sai sót khi chuyển giữa sách, code, URDF và log. Một lỗi nhỏ như dùng độ thay vì radian hoặc mm thay vì m có thể làm FK/IK sai hoàn toàn.
+
+## Ký hiệu cốt lõi
+
+| Ký hiệu | Ý nghĩa | Ghi chú |
+|---|---|---|
+| $q$ | vector cấu hình khớp | thường là joint angles/displacements |
+| $	heta_i$ | biến khớp quay | đơn vị chuẩn là rad |
+| $d_i$ | biến khớp tịnh tiến hoặc offset | đơn vị chuẩn là m |
+| $R$ | rotation matrix | $R \in SO(3)$ |
+| $p$ | translation vector | $p \in \mathbb{R}^3$ |
+| $T$ | homogeneous transform | $T \in SE(3)$ |
+| $V$ | twist / spatial velocity | vector 6 chiều |
+| $F$ | wrench / spatial force | vector 6 chiều |
+| $J(q)$ | Jacobian | ánh xạ $\dot{q}$ sang twist |
+| $\tau$ | joint torque/force | đầu vào dynamics |
+
+## Chuẩn đơn vị
+
+Trong công thức và code nên dùng:
+
+$$
+\theta~[\mathrm{rad}], \quad p~[\mathrm{m}], \quad \dot{q}~[\mathrm{rad/s}], \quad \tau~[\mathrm{N\cdot m}]
+$$
+
+Trong bảng có thể trình bày song song:
+
+| Đại lượng | Cách ghi trong bảng |
+|---|---|
+| Góc | $1.571~\mathrm{rad}$<br>$90.000~^\circ$ |
+| Chiều dài | $0.100~\mathrm{m}$<br>$100.000~\mathrm{mm}$ |
+| Joint range | $q_i \in [q_i^-, q_i^+]$ |
+
+## Quy ước frame
+
+Một transform nên được đọc là: pose của frame con trong frame cha.
+
+$$
+{}^aT_b =
+\begin{bmatrix}
+{}^aR_b & {}^ap_b \\
+0 & 1
+\end{bmatrix}
+$$ {#eq-transform-notation}
+
+Trong đó ${}^aR_b$ là hướng của frame $\{b\}$ biểu diễn trong $\{a\}$, còn ${}^ap_b$ là vị trí gốc của $\{b\}$ biểu diễn trong $\{a\}$.
+
+::: callout-warning
+Không trộn lẫn cách đọc ${}^aT_b$ với cách đặt tên biến kiểu `T_b_a`. Trong code phải ghi rõ convention ngay từ đầu.
+:::

@@ -1,0 +1,10 @@
+link,meshes,origins,source
+base,package://mycobot_description/urdf/myarm_m750/myarm_m750_base.dae,xyz=0.0 0 0 ; rpy= 0 0 0,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+link1,package://mycobot_description/urdf/myarm_m750/link1.dae,xyz=0.0 0 -0.1 ; rpy= 0 3.14 0 | xyz=0.0 0 -0.1 ; rpy=0 3.14 0,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+link2,package://mycobot_description/urdf/myarm_m750/link2.dae,xyz=0.0 0 0 ; rpy=0 3.14159 0,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+link3,package://mycobot_description/urdf/myarm_m750/link3.dae,xyz=0.0 0 0.0; rpy=0 3.14159 0 | xyz=0.0 0 0; rpy=0 3.14159 0,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+link4,package://mycobot_description/urdf/myarm_m750/link4.dae,xyz=0.0 0 0 ; rpy= 0 3.14159  -1.5708 | xyz=0.0 0 0 ; rpy= 0 3.14159 -1.5708,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+link5,package://mycobot_description/urdf/myarm_m750/link5.dae,xyz=0 0.00 0 ; rpy= 0 0 0 | xyz=0 0.00 0; rpy= 0 0 0,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+gripper,package://mycobot_description/urdf/myarm_m750/finger_holder.dae,xyz=0 0.00 0; rpy= 0 3.14159 -1.57079,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+gripper_left,package://mycobot_description/urdf/myarm_m750/finger_left.dae,xyz=0 0.00 0; rpy= 0 0 0 | xyz=0 0.00 0; rpy= 0 3.14159 -1.57079,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144
+gripper_right,package://mycobot_description/urdf/myarm_m750/finger_right.dae,xyz=0 0.00 0; rpy= 0 3.14159 -1.57079,mycobot_description/urdf/myarm_m750/myarm_m750.urdf.xacro:L6-L144

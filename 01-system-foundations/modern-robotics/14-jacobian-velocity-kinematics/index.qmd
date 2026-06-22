@@ -1,0 +1,42 @@
+---
+title: "14. Jacobian và Velocity Kinematics"
+description: "Ánh xạ vận tốc khớp sang twist của end-effector."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 14. Jacobian và Velocity Kinematics
+
+![14. Jacobian và Velocity Kinematics](assets/images/14-jacobian-velocity-kinematics.svg){#fig-14-jacobian-velocity-kinematics width=85%}
+
+Jacobian là ma trận phụ thuộc cấu hình $q$, ánh xạ joint velocity sang twist end-effector:
+
+$$
+V = J(q)\dot{q}
+$$ {#eq-jacobian-velocity}
+
+Trong đó $V$ là twist 6D, $\dot{q}$ là vector vận tốc khớp.
+
+## Vì sao Jacobian là trung tâm?
+
+| Bài toán | Vai trò của Jacobian |
+|---|---|
+| Velocity control | đổi twist mong muốn thành $\dot{q}$ |
+| Numerical IK | dùng $J^\dagger$ để giảm pose error |
+| Singularity | rank của $J$ cho biết mất phương chuyển động |
+| Manipulability | hình dạng ellipsoid vận tốc |
+| Statics | $\tau = J^TF$ |
+
+## Space và body Jacobian
+
+| Loại | Twist biểu diễn trong frame nào? | Ghi chú |
+|---|---|---|
+| Space Jacobian $J_s$ | base/space frame | thường thuận tiện khi goal trong world/base |
+| Body Jacobian $J_b$ | body/tool frame | thuận tiện khi lỗi pose tính trong tool frame |
+
+::: callout-warning
+Không trộn body Jacobian với pose error trong space frame. Sai frame của error là một nguyên nhân phổ biến làm IK hội tụ kém.
+:::

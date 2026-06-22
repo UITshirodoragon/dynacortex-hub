@@ -1,0 +1,6 @@
+item,value,source
+Camera,"Orbbec Gemini 2, RGB 1280x720, depth 1280x720, 30 fps",reBot-DevArm-Grasp/config/default.yaml
+Detection,"YOLO confidence 0.50, IoU 0.45, OBB/minimum-area rectangle pipeline",config/default.yaml + utils/ordinary_grasp.py
+Hand-eye,"Tsai method, load/save .npz, compensation z = -0.01 m",calibration + config/default.yaml
+Robot control,"DM default POS_VEL, RS default MIT; uses RebotArm + RebotArmEndPose",drivers/robot/grasp_driver.py
+Gripper state machine,POSITION → CLOSING → HOLDING,drivers/robot/grasp_driver.py lines 290-327

@@ -1,0 +1,52 @@
+---
+title: "12. D-H, M-DH, PoE và URDF"
+description: "So sánh các biểu diễn động học serial robot."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 12. D-H, M-DH, PoE và URDF
+
+![12. D-H, M-DH, PoE và URDF](assets/images/12-dh-mdh-poe-urdf-comparison.svg){#fig-12-dh-mdh-poe-urdf-comparison width=85%}
+
+D-H, Modified D-H, PoE và URDF đều có thể dùng để mô tả quan hệ hình học của robot arm, nhưng chúng phục vụ các bối cảnh khác nhau.
+
+## Classic D-H
+
+$$
+{}^{i-1}T_i = R_z(\theta_i)T_z(d_i)T_x(a_i)R_x(\alpha_i)
+$$ {#eq-classic-dh}
+
+## Modified D-H
+
+Một convention M-DH phổ biến là:
+
+$$
+{}^{i-1}T_i = R_x(\alpha_{i-1})T_x(a_{i-1})R_z(\theta_i)T_z(d_i)
+$$ {#eq-modified-dh}
+
+::: callout-warning
+Không được lấy bảng D-H classic đưa vào công thức M-DH, hoặc ngược lại. Hai bảng có thể dùng ký hiệu giống nhau nhưng frame convention khác nhau.
+:::
+
+## So sánh thực dụng
+
+| Biểu diễn | Điểm mạnh | Điểm yếu |
+|---|---|---|
+| D-H | gọn, dễ đưa vào bảng | phụ thuộc frame convention |
+| M-DH | thuận tiện trong một số mô hình công nghiệp | rất dễ nhầm với D-H classic |
+| PoE | tốt cho $SE(3)$, Jacobian, IK, calibration | khó học hơn |
+| URDF | hợp ROS/MoveIt/visual/collision/inertial | không phải bảng tham số tối thiểu |
+
+```{python}
+#| eval: false
+import pandas as pd
+pd.read_csv("assets/tables/kinematic_representation_comparison.csv")
+```
+
+## Kết luận thực dụng
+
+D-H/M-DH phù hợp để đọc tài liệu, kiểm tra nhanh và viết báo cáo. PoE phù hợp để học bản chất động học hiện đại. URDF/Xacro phù hợp làm mô tả robot trong ROS/MoveIt. Nội dung so sánh này cũng được mở rộng từ ghi chú D-H/M-DH/PoE người dùng cung cấp trong phiên làm việc này.

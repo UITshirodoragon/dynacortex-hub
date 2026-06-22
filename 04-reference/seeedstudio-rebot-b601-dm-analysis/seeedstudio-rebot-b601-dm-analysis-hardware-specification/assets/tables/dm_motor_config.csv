@@ -1,0 +1,8 @@
+joint,motor_id_hex,feedback_id_hex,vendor,model,mit_kp,mit_kd,pos_vel_vlim_rad_s,pos_vel_pos_kp,pos_vel_pos_ki,pos_vel_vel_kp,pos_vel_vel_ki
+joint1,0x1,0x11,damiao,4340P,120.0,8.0,5.0,150.0,0.5,0.0125,0.004
+joint2,0x2,0x12,damiao,4340P,120.0,8.0,5.0,150.0,0.5,0.0125,0.004
+joint3,0x3,0x13,damiao,4340P,120.0,8.0,5.0,150.0,0.5,0.0125,0.004
+joint4,0x4,0x14,damiao,4310,18.0,2.0,3.0,50.0,1.0,0.0008,0.002
+joint5,0x5,0x15,damiao,4310,18.0,2.0,3.0,50.0,1.0,0.0008,0.002
+joint6,0x6,0x16,damiao,4310,18.0,2.0,3.0,50.0,1.0,0.0008,0.002
+gripper,0x7,0x17,damiao,4310,8.0,1.0,3.0,50.0,1.0,0.0008,0.002

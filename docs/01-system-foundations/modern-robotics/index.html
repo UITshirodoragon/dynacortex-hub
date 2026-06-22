@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Nguyen Hoang Dang Khoa">
-<meta name="description" content="Phần này chắt lọc các kiến thức cần học từ Modern Robotics . Trọng tâm không phải đọc hết sách, mà là lấy đúng các khái niệm cần cho robot arm, ROS 2, MoveIt 2 và Pinocchio.">
+<meta name="description" content="Lộ trình học phần cốt lõi của Modern Robotics theo thứ tự đánh số cho robot arm và manipulation stack.">
 
 <title>Modern Robotics Core – DynaCortex</title>
 <style>
@@ -25,7 +25,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -35,7 +54,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../01-system-foundations/modern-robotics/notation-units/index.html" rel="next">
+<link href="../../01-system-foundations/ros-2-concepts/index.html" rel="next">
 <link href="../../01-system-foundations/index.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -360,125 +379,65 @@ ul.task-list li input[type="checkbox"] {
   </div>
 </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/notation-units/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Quy ước ký hiệu và đơn vị</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/notation-units/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/configuration-space/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Configuration Space</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/configuration-space/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/task-space-workspace/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Task Space và Workspace</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/task-space-workspace/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/rigid-body-motion/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Rigid-Body Motion</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/rigid-body-motion/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/so3-rotation/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Rotation Matrix và SO(3)</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/so3-rotation/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/se3-transform/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Homogeneous Transform và SE(3)</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/se3-transform/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/exponential-coordinates/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Exponential Coordinates</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/exponential-coordinates/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/twists-screws/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Twist và Screw Axis</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/twists-screws/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/wrenches-statics/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Wrench và Statics</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/wrenches-statics/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/forward-kinematics/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Forward Kinematics</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/forward-kinematics/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/product-of-exponentials/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Product of Exponentials</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/product-of-exponentials/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/dh-mdh/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">D-H và Modified D-H</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/dh-mdh/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/urdf-as-kinematic-model/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">URDF dưới góc nhìn động học</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/urdf-as-kinematic-model/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/jacobian-velocity-kinematics/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Jacobian và Velocity Kinematics</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/jacobian-velocity-kinematics/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/singularity-manipulability/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Singularity và Manipulability</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/singularity-manipulability/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/inverse-kinematics/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Inverse Kinematics</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/inverse-kinematics/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/dynamics-open-chains/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Dynamics of Open Chains</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/dynamics-open-chains/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/trajectory-generation/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Trajectory Generation</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/trajectory-generation/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/motion-planning/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Motion Planning</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/motion-planning/index.qmd</span>
+  </li>
           <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../01-system-foundations/modern-robotics/robot-control/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Robot Control</span></a>
-  </div>
-</li>
+ <span class="menu-text">01-system-foundations/modern-robotics/robot-control/index.qmd</span>
+  </li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -816,7 +775,48 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Hiện trạng ROS2 SDK/demo package của MyArm Master 750</span></a>
+ <span class="menu-text">Hiện trạng ROS2 SDK và URDF/Xacro của MyArm Master 750</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot reBot B601-DM của seeed studio</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/seeedstudio-rebot-b601-dm-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot reBot B601-DM của Seeed Studio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích phần cứng cánh tay robot reBot B601-DM của Seeed Studio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích Python SDK và tầng điều khiển reBot B601-DM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích ROS 2 SDK, MoveIt 2 và RViz2 cho reBot B601-DM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-demo/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích demo ứng dụng reBot B601-DM: Visual Grasping và LeRobot</span></a>
   </div>
 </li>
       </ul>
@@ -825,13 +825,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
  <span class="menu-text">05. Literature</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../05-literature/index.html" class="sidebar-item-text sidebar-link">
@@ -842,13 +842,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
  <span class="menu-text">06. Reports</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../06-reports/index.html" class="sidebar-item-text sidebar-link">
@@ -859,13 +859,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
  <span class="menu-text">07. Inbox</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../07-inbox/index.html" class="sidebar-item-text sidebar-link">
@@ -876,13 +876,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
  <span class="menu-text">08. Notes</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../08-notes/index.html" class="sidebar-item-text sidebar-link">
@@ -893,13 +893,13 @@ ul.task-list li input[type="checkbox"] {
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false">
  <span class="menu-text">09. Troubleshooting</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../09-troubleshooting/index.html" class="sidebar-item-text sidebar-link">
@@ -924,7 +924,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#cách-đọc-source-robot-để-học-modern-robotics" id="toc-cách-đọc-source-robot-để-học-modern-robotics" class="nav-link active" data-scroll-target="#cách-đọc-source-robot-để-học-modern-robotics">Cách đọc source robot để học Modern Robotics</a></li>
+  <li><a href="#modern-robotics-core" id="toc-modern-robotics-core" class="nav-link active" data-scroll-target="#modern-robotics-core">Modern Robotics Core</a>
+  <ul>
+  <li><a href="#danh-sách-bài-học-theo-số-thứ-tự" id="toc-danh-sách-bài-học-theo-số-thứ-tự" class="nav-link" data-scroll-target="#danh-sách-bài-học-theo-số-thứ-tự">Danh sách bài học theo số thứ tự</a></li>
+  <li><a href="#nguyên-tắc-học" id="toc-nguyên-tắc-học" class="nav-link" data-scroll-target="#nguyên-tắc-học">Nguyên tắc học</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/01-system-foundations/modern-robotics/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -944,7 +948,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    Phần này chắt lọc các kiến thức cần học từ <em>Modern Robotics</em> . Trọng tâm không phải đọc hết sách, mà là lấy đúng các khái niệm cần cho robot arm, ROS 2, MoveIt 2 và Pinocchio.
+    Lộ trình học phần cốt lõi của Modern Robotics theo thứ tự đánh số cho robot arm và manipulation stack.
   </div>
 </div>
 
@@ -961,7 +965,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">22/06/2026 00:21:48+07:00Z</p>
+      <p class="date">22/06/2026 21:51:14+07:00Z</p>
     </div>
   </div>
   
@@ -973,43 +977,138 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="modern-robotics-core" class="level1">
+<h1>Modern Robotics Core</h1>
+<p>Phần này chắt lọc các kiến thức cần học từ <em>Modern Robotics</em> <span class="citation" data-cites="lynch2017modernrobotics">(<a href="#ref-lynch2017modernrobotics" role="doc-biblioref">Lynch and Park 2017</a>)</span>. Trọng tâm là học vững nền toán và cơ học robot để sau này đọc ROS 2, MoveIt 2, Pinocchio, URDF và source robot không bị rời rạc.</p>
+<div id="fig-modern-robotics-core-map" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-modern-robotics-core-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/images/modern-robotics-core-map.svg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-modern-robotics-core-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Modern Robotics core map
+</figcaption>
+</figure>
+</div>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">flowchart TB
-    A[Configuration Space] --&gt; B[Rigid-Body Motion]
-    B --&gt; C[$\text_{SO(3)}$ and $\text_{SE(3)}$]
-    C --&gt; D[Twist and Screw Axis]
-    D --&gt; E[Forward Kinematics]
-    E --&gt; F[Jacobian]
-    F --&gt; G[Singularity and Manipulability]
-    F --&gt; H[Inverse Kinematics]
-    H --&gt; I[Trajectory Generation]
-    I --&gt; J[Motion Planning]
-    C --&gt; K[Dynamics]
-    K --&gt; L[Robot Control]
+    A[00 Roadmap] --&gt; B[01 Notation]
+    B --&gt; C[02 C-space]
+    C --&gt; D[04 Rigid-body Motion]
+    D --&gt; E[05 SO(3)]
+    E --&gt; F[06 SE(3)]
+    F --&gt; G[07 Exponential Coordinates]
+    G --&gt; H[08 Twist / Screw]
+    H --&gt; I[10 FK]
+    I --&gt; J[11 PoE]
+    J --&gt; K[14 Jacobian]
+    K --&gt; L[16 IK]
+    K --&gt; M[15 Singularity]
+    F --&gt; N[18 Dynamics]
+    L --&gt; O[21 Trajectory]
+    O --&gt; P[22 Motion Planning]
+    N --&gt; Q[23 Control]
+    P --&gt; Q
 </pre>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
-<section id="cách-đọc-source-robot-để-học-modern-robotics" class="level2">
-<h2 class="anchored" data-anchor-id="cách-đọc-source-robot-để-học-modern-robotics">Cách đọc source robot để học Modern Robotics</h2>
-<p>Các repo robot đã đọc cho thấy các khái niệm Modern Robotics không đứng riêng lẻ:</p>
+<section id="danh-sách-bài-học-theo-số-thứ-tự" class="level2">
+<h2 class="anchored" data-anchor-id="danh-sách-bài-học-theo-số-thứ-tự">Danh sách bài học theo số thứ tự</h2>
 <ul>
-<li><code>reBotArm_control_py</code> có module <code>kinematics</code>, <code>dynamics</code>, <code>trajectory</code> và dùng Pinocchio cho FK/IK/dynamics.</li>
-<li><code>reBotArmController_ROS2</code> có MoveIt config, <code>kinematics.yaml</code>, <code>ompl_planning.yaml</code>, action/service/msg và bringup.</li>
-<li><code>myarm_ros2</code> cho thấy ROS 2 node/topic/service và việc chuyển đổi <code>JointState</code> từ rad sang deg trước khi gọi SDK.</li>
-<li><code>pymycobot</code> cho thấy hardware API/serial protocol là biên thấp hơn, không phải lớp toán học FK/IK minh bạch.</li>
+<li><a href="../../01-system-foundations/modern-robotics/00-learning-roadmap/index.html">00. Lộ trình học Modern Robotics cho robot arm</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/01-notation-units-conventions/index.html">01. Quy ước ký hiệu, đơn vị và frame</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/02-configuration-space/index.html">02. Configuration Space</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/03-task-space-workspace/index.html">03. Task Space và Workspace</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/04-rigid-body-motion/index.html">04. Rigid-Body Motion</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/05-so3-rotation/index.html">05. Rotation Matrix và SO(3)</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/06-se3-homogeneous-transform/index.html">06. Homogeneous Transform và SE(3)</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/07-exponential-coordinates-lie-algebra/index.html">07. Exponential Coordinates và Lie Algebra</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/08-twist-screw-axis/index.html">08. Twist và Screw Axis</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/09-wrench-spatial-force-statics/index.html">09. Wrench, Spatial Force và Statics</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/10-forward-kinematics-overview/index.html">10. Forward Kinematics</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/11-product-of-exponentials/index.html">11. Product of Exponentials</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/12-dh-mdh-poe-urdf-comparison/index.html">12. D-H, M-DH, PoE và URDF</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/13-urdf-as-kinematic-model/index.html">13. URDF dưới góc nhìn động học</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/14-jacobian-velocity-kinematics/index.html">14. Jacobian và Velocity Kinematics</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/15-singularity-manipulability/index.html">15. Singularity và Manipulability</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/16-inverse-kinematics/index.html">16. Inverse Kinematics</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/17-numerical-ik-damped-least-squares/index.html">17. Numerical IK và Damped Least Squares</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/18-dynamics-open-chain-overview/index.html">18. Dynamics of Open Chains</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/19-mass-coriolis-gravity/index.html">19. Mass Matrix, Coriolis và Gravity</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/20-inverse-dynamics-rnea/index.html">20. Inverse Dynamics và RNEA</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/21-trajectory-generation/index.html">21. Trajectory Generation</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/22-motion-planning-cspace/index.html">22. Motion Planning trong C-space</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/23-robot-control/index.html">23. Robot Control</a></li>
+<li><a href="../../01-system-foundations/modern-robotics/24-practical-debugging-map/index.html">24. Bản đồ debug thực dụng từ Modern Robotics</a></li>
 </ul>
+</section>
+<section id="nguyên-tắc-học" class="level2">
+<h2 class="anchored" data-anchor-id="nguyên-tắc-học">Nguyên tắc học</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Nguyên tắc</th>
+<th>Diễn giải</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Học frame trước solver</td>
+<td>Solver IK/MoveIt/Pinocchio đều dựa trên frame và transform đúng</td>
+</tr>
+<tr class="even">
+<td>FK trước IK</td>
+<td>Không thể debug IK nếu chưa tự kiểm tra được FK</td>
+</tr>
+<tr class="odd">
+<td>Jacobian là cầu nối</td>
+<td>Jacobian nối FK, IK, singularity, velocity control và statics</td>
+</tr>
+<tr class="even">
+<td>Dynamics học vừa đủ</td>
+<td>Chưa cần torque control vẫn cần hiểu gravity, inertia và limits</td>
+</tr>
+<tr class="odd">
+<td>Trajectory khác path</td>
+<td>Path hợp lệ chưa đủ; trajectory phải có thời gian và giới hạn động học</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Bản v0.0.3 đã đổi toàn bộ topic Modern Robotics sang thư mục có số thứ tự để dễ đọc nối tiếp và dễ mở rộng về sau.</p>
+</div>
+</div>
+
 
 
 </section>
+</section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-lynch2017modernrobotics" class="csl-entry" role="listitem">
+Lynch, Kevin M., and Frank C. Park. 2017. <em>Modern Robotics: Mechanics, Planning, and Control</em>. Cambridge University Press. <a href="https://modernrobotics.org/">https://modernrobotics.org/</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <button type="button" class="layout-toggle" id="layout-toggle" aria-pressed="false" title="Mở rộng nội dung">
   <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
   <span class="visually-hidden">Mở rộng nội dung</span>
@@ -1497,8 +1596,8 @@ ul.task-list li input[type="checkbox"] {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../01-system-foundations/modern-robotics/notation-units/index.html" class="pagination-link" aria-label="Quy ước ký hiệu và đơn vị">
-        <span class="nav-page-text">Quy ước ký hiệu và đơn vị</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../01-system-foundations/ros-2-concepts/index.html" class="pagination-link" aria-label="ROS 2 Concepts">
+        <span class="nav-page-text">ROS 2 Concepts</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

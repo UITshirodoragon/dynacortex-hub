@@ -1,0 +1,7 @@
+repo,component,source,line_range
+reBot-DevArm-Grasp,GraspDriver wrapper and gripper state machine,drivers/robot/grasp_driver.py,1-377
+reBot-DevArm-Grasp,Main keyboard/Yolo/camera/grasp execution pipeline,scripts/main.py,69-312
+reBot-DevArm-Grasp,Camera-base transformations and TCP convention,utils/transforms.py,140-223
+reBot-DevArm-Grasp,YOLO/OBB/depth grasp estimation,utils/ordinary_grasp.py,52-205
+lerobot-robot-seeed-b601,"LeRobot follower base, observation/action feature, calibration, send_action",lerobot_robot_seeed_b601/seeed_b601_follower.py,20-390
+lerobot-robot-seeed-b601,B601-DM LeRobot joint limits/directions,lerobot_robot_seeed_b601/config_seeed_b601_dm_follower.py,7-54

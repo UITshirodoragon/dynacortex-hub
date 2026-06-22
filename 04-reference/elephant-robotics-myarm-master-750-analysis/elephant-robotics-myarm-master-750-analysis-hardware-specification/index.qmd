@@ -181,20 +181,7 @@ Hiện tại đang có nhiều số liệu và thống số không đòng nhất
 
 ## 8. Đối chiếu encoder/potential limits
 
-Encoder/potential là raw count. Không đổi sang rad/deg nếu chưa có calibration map.
-
-| servo | docs_shake_before_2025_potential | docs_shake_after_2025_potential | sdk_MyArmM_potential | sdk_MyArmMControl_potential | unit |
-| --- | --- | --- | --- | --- | --- |
-| S1 | 114..3981 | 175..3910 | 114..3981 | 137..4004 | raw encoder/potential count, dimensionless |
-| S2 | 1200..2991 | 1370..3120 | 1200..2991 | 1163..2945 | raw encoder/potential count, dimensionless |
-| S3 | 1200..2991 | 1370..3120 | 1200..2991 | 1035..3079 | raw encoder/potential count, dimensionless |
-| S4 | 1024..3002 | 1015..2890 | 1024..3002 | 1013..3026 | raw encoder/potential count, dimensionless |
-| S5 | 286..3788 | 350..3740 | 286..3788 | 248..3724 | raw encoder/potential count, dimensionless |
-| S6 | 1013..3048 | 1013..3048 | 1013..3048 | 979..2994 | raw encoder/potential count, dimensionless |
-| S7 | 307..3788 | 350..3740 | 307..3788 | 220..3704 | raw encoder/potential count, dimensionless |
-| S8 | 706..2068 | 706..2068 | 706..2068 | 706..2048 | raw encoder/potential count, dimensionless |
-
-_Dữ liệu nguồn: `assets/tables/encoder_limit_crosscheck.csv`._
+Encoder/potential là raw count.
 
 | Servo | Docs Shake trước 13/06/2025 | Docs Shake sau 13/06/2025 | SDK `MyArmM` | SDK `MyArmMControl` |
 |---|---:|---:|---:|---:|
@@ -206,6 +193,8 @@ _Dữ liệu nguồn: `assets/tables/encoder_limit_crosscheck.csv`._
 | S6 | $[1013,3048]$ | $[1013,3048]$ | $[1013,3048]$ | $[979,2994]$ |
 | S7 | $[307,3788]$ | $[350,3740]$ | $[307,3788]$ | $[220,3704]$ |
 | S8 | $[706,2068]$ | $[706,2068]$ | $[706,2068]$ | $[706,2048]$ |
+
+_Dữ liệu nguồn: `assets/tables/encoder_limit_crosscheck.csv`._
 
 Hiện trạng đáng chú ý: `MyArmM` SDK trùng với bảng Shake trước 13/06/2025, không trùng bảng Shake mới; `MyArmMControl` có bộ encoder/potential riêng và không trùng hoàn toàn với cả hai bảng Shake docs.
 
@@ -236,3 +225,19 @@ Hiện trạng đáng chú ý: `MyArmM` SDK trùng với bảng Shake trước 1
 ![Hình wrist spec của MyArm Master 750](./assets/images/M750-wrist-spec-en.jpg){#fig-m750-wrist-spec-en}
 ![Hình zero calibration 1 của MyArm Master 750](./assets/images/M750-zero-calib-1.png){#fig-m750-zero-calib-1}
 ![Hình zero calibration 2 của MyArm Master 750](./assets/images/M750-zero-calib-2.png){#fig-m750-zero-calib-2}   
+
+## Phụ lục v0.0.6: đọc URDF/Xacro như một mô hình động học riêng
+
+Bản v0.0.6 bổ sung bảng phân tích URDF chi tiết ở `../elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.qmd`. Điểm quan trọng nhất là URDF không phải bảng MDH; mỗi joint URDF có dạng:
+
+$$
+{}^{P_i}T_{C_i}(q_i)=T(x_i,y_i,z_i)R_{rpy}(r_i,p_i,y_i)R_z(q_i)
+$$ {#eq-hw-urdf-joint-transform-v006}
+
+trong khi MDH docs dùng:
+
+$$
+{}^{i-1}T_i(q_i)=R_x(\alpha_{i-1})T_x(a_{i-1})R_z(q_i+\Delta_i)T_z(d_i)
+$$ {#eq-hw-mdh-transform-v006}
+
+Vì vậy việc đối chiếu cần dùng FK chain hoặc tool kiểm chứng transform, không chỉ so từng số `origin xyz/rpy` với từng hàng MDH. Bảng joint URDF được xuất ra tại `assets/tables/ros2_urdf_joint_model_v006.csv` để giữ dấu vết source-level.

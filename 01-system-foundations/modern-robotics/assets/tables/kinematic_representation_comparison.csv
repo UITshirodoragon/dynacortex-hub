@@ -1,0 +1,5 @@
+model,core_representation,strength,risk
+D-H,4 parameters per link,"Gọn, phổ biến trong tài liệu và tính tay","Dễ nhầm convention, frame, dấu và đơn vị"
+Modified D-H,4 parameters with shifted frame convention,Thường thuận tiện trong một số robot công nghiệp,Không trộn được với classic D-H
+PoE,screw axes + home pose M,"Rất tốt cho SE(3), Jacobian, IK số và calibration",Khó học hơn và ít xuất hiện trong datasheet
+URDF transform tree,links + joints + origin + axis,Phù hợp ROS/MoveIt/visual/collision/inertial,Không phải bảng tham số tối thiểu

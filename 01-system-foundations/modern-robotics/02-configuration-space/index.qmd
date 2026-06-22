@@ -1,0 +1,52 @@
+---
+title: "02. Configuration Space"
+description: "Không gian cấu hình, DOF, joint limits và ý nghĩa với robot arm."
+categories: [modern-robotics, robotics-math, system-foundations]
+status: draft
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+# 02. Configuration Space
+
+![02. Configuration Space](assets/images/02-configuration-space.svg){#fig-02-configuration-space width=85%}
+
+**Configuration** là mô tả đầy đủ vị trí của mọi điểm trên robot. Với robot arm nối tiếp, ta thường không cần mô tả từng điểm; chỉ cần vector biến khớp $q$ là đủ để xác định hình dạng robot nếu mô hình link/joint đã biết [@lynch2017modernrobotics].
+
+$$
+q = [q_1, q_2, \dots, q_n]^T
+$$ {#eq-q-vector}
+
+**Configuration space**, hay **C-space**, là tập mọi cấu hình hợp lệ của robot. Với arm $n$ khớp quay, C-space thường được xấp xỉ là tích của các khoảng joint limit:
+
+$$
+\mathcal{C} = [q_1^-,q_1^+] \times [q_2^-,q_2^+] \times \cdots \times [q_n^-,q_n^+]
+$$ {#eq-cspace-box}
+
+## Vì sao C-space quan trọng?
+
+| Khái niệm | Ý nghĩa thực dụng |
+|---|---|
+| DOF | số biến độc lập cần để mô tả cấu hình |
+| Joint limit | giới hạn vùng robot được phép chuyển động |
+| C-space obstacle | vùng cấu hình gây va chạm |
+| Redundancy | nhiều cấu hình cho cùng một pose tool |
+| Feasibility | pose có thể reach hay không |
+
+```{mermaid}
+flowchart LR
+    A[Joint limits] --> B[C-space]
+    C[Robot geometry] --> B
+    D[Obstacles] --> E[C-space obstacles]
+    B --> F[Valid configurations]
+    E --> F
+```
+
+::: callout-tip
+Trong software robot arm, planner thường tìm đường trong C-space trước, rồi mới biến đường đó thành trajectory có thời gian.
+:::
+
+## Lỗi tư duy thường gặp
+
+Pose tool đẹp trong không gian 3D chưa chắc reach được. Một pose có thể fail vì nằm ngoài workspace, vì đòi hỏi orientation không thể đạt, vì collision, hoặc vì cần joint vượt quá limit.
