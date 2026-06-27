@@ -1,0 +1,86 @@
+---
+title: "00. Tổng quan dự án"
+description: "Tổng quan mục tiêu, phạm vi, phần cứng, OS/runtime và định hướng phát triển MyArm M750 Controller Framework."
+categories: [overview, myarm-m750, robotics, jetson, ros2]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 00. Tổng quan dự án
+
+## 00.1. Bối cảnh
+
+Kiến trúc cũ của MyArm M750 đang phụ thuộc nhiều vào path coordinate/FK/IK blackbox trong firmware. Application thường gọi trực tiếp Python API của nhà sản xuất như `write_coords()`, `get_coords()`, `write_angles()` hoặc các hàm raw khác. Mỗi application có một style riêng, thiếu boundary rõ ràng, khó debug, khó benchmark và khó tái sử dụng.
+
+Vấn đề thực tế đã quan sát:
+
+- `write_coords()` có thể timeout hoặc đứng im dù pose nhìn có vẻ hợp lệ.
+- Pose Euler tương đương có thể cho hành vi khác nhau.
+- Pose trước ảnh hưởng pose sau.
+- `get_coords()` trả về Euler branch khác hoặc pose tương đương nhưng không giống command ban đầu.
+- Robot có thể cần kill process hoặc reset robot khi firmware vào trạng thái lỗi.
+- Backlash, gravity sag và payload làm pose thật lệch so với pose mong muốn.
+- Document firmware/API chưa đủ rõ để biết mode nội bộ, IK branch, trajectory planner hoặc recovery state.
+
+::: {.callout-note}
+## Luận điểm của framework
+
+Bản v0.0.3 không cố sửa firmware coordinate. Framework kéo FK, IK, Jacobian, trajectory, state machine, safety check, benchmark và debug lên tầng software có thể quan sát, cấu hình và thay thế bằng plugin.
+:::
+
+## 00.2. Mục tiêu
+
+Framework hướng tới 6 mục tiêu:
+
+1. **Chuẩn hóa application boundary**: application không gọi raw firmware API trong production path.
+2. **Tách domain khỏi framework**: domain model, kinematics, planner, controller không phụ thuộc trực tiếp ROS 2, MoveIt2, pymycobot, camera SDK hoặc simulator.
+3. **Dùng adapter đã kiểm chứng**: Pinocchio, MoveIt2, OpenCV, AprilTag/Aruco, SciPy Rotation, ros2_control, Gazebo, MuJoCo được dùng như adapter/plugin để tiết kiệm công sức.
+4. **Hỗ trợ ROS 2 và non-ROS**: có thể bật/tắt RViz2/Gazebo/MoveIt2, hoặc chạy Python SDK trực tiếp với WebSocket/gRPC/ZMQ/MuJoCo.
+5. **Benchmark tự động**: T1–T4 có process isolation, watchdog, logging và external observer bằng 2 camera RGB.
+6. **Tài liệu sống**: version tài liệu đi cùng version phần mềm; mọi thay đổi lớn phải ghi changelog.
+
+## 00.3. Phần cứng triển khai
+
+| Thành phần | Cấu hình v0.0.3 | Vai trò |
+|---|---|---|
+| Robot | MyArm M750 | Manipulator thực nghiệm. |
+| Robot link | USB serial từ Jetson đến robot | Real hardware adapter. |
+| Edge computer | Jetson AGX Xavier, 32GB RAM, thường headless | Chạy driver, Python Core SDK, ROS 2 node, camera capture, logging nhẹ. |
+| Host PC | Ubuntu 22.04, giao tiếp Jetson qua RJ45 LAN 1Gbit/s | RViz2, Gazebo Classic trong Docker Ubuntu 20.04/ROS 2 Foxy, analysis, visualization. |
+| Camera 1 | Logitech C922, RGB, 1280x720/30fps hoặc 640x480/30fps | `camera_01_wrist`: camera cổ tay hoặc camera gắn tool/end-effector. |
+| Camera 2 | Logitech C922, RGB, 1280x720/30fps hoặc 640x480/30fps | `camera_02_shoulder`: camera góc nhìn thứ ba/shoulder/fixed observer. |
+| Network | RJ45 LAN 1Gbit/s cùng subnet | DDS/ROS 2, non-ROS streaming, remote visualization. |
+
+::: {.callout-warning}
+## Network stability
+
+DDS, camera stream và remote visualization nên ưu tiên Ethernet 1Gbit/s. Wi-Fi chỉ dùng khi benchmark không yêu cầu timing ổn định hoặc khi chỉ chạy dashboard nhẹ.
+:::
+
+## 00.4. OS và environment
+
+| Máy | OS/runtime chính | Ghi chú |
+|---|---|---|
+| Jetson | Ubuntu 20.04, ROS 2 Foxy, Python 3.8 | Runtime chính cho robot và camera. |
+| Host PC | Ubuntu 22.04 host + Docker Ubuntu 20.04/ROS 2 Foxy | Dùng Docker để đồng bộ với Jetson khi chạy RViz2/Gazebo Classic. |
+| MuJoCo runtime | Python 3.10+ ngoài ROS 2 Foxy env | Chạy như non-ROS simulator adapter hoặc offline simulator. |
+
+Do ROS 2 Foxy gắn chặt với Ubuntu 20.04 và Python 3.8, phần ROS 2/Gazebo Classic nên thống nhất trên Ubuntu 20.04. MuJoCo có thể chạy ngoài workspace ROS 2, giao tiếp qua adapter non-ROS hoặc replay/log bridge.
+
+## 00.5. Quan điểm về simulation và observation
+
+Observation không chỉ là camera. Observation bao gồm:
+
+- encoder/joint state từ robot;
+- firmware status;
+- servo temperature/current/voltage/status nếu backend đọc được;
+- camera RGB/depth;
+- tag detection;
+- fake/replay observation;
+- simulated camera trong Gazebo/MuJoCo;
+- external observer bằng camera third-person.
+
+Vì vậy v0.0.3 gộp `ObservationPort` vào `HardwarePort`. `HardwarePort` trở thành port tổng cho mọi thiết bị vật lý, sensor, actuator, simulated device và replay/fake device.

@@ -1,0 +1,105 @@
+---
+title: "10. Simulation pipeline và digital twin"
+description: "Thiết kế Gazebo Classic, MuJoCo, fake/replay observation, real camera vs sim camera và digital twin adapter."
+categories: [simulation, digital-twin, gazebo, mujoco, fake, replay]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 10. Simulation pipeline và digital twin
+
+## 10.1. Mục tiêu
+
+Simulation trong framework không chỉ để nhìn robot di chuyển. Simulation dùng để:
+
+1. Test domain/core logic khi không có robot.
+2. Test ROS 2 interface với fake hardware.
+3. Replay benchmark log.
+4. Kiểm tra URDF/mesh/frame/camera placement.
+5. Sinh observation giả hoặc camera sim.
+6. Chuẩn bị path trước khi chạy thật.
+
+## 10.2. Các nguồn observation
+
+| Nguồn | Adapter | Vai trò |
+|---|---|---|
+| Real camera | Logitech C922 adapter / ROS 2 camera node | Benchmark và real perception. |
+| Sim camera | Gazebo/MuJoCo camera adapter | Digital twin và CI visual check. |
+| Fake camera | Null/fake image adapter | Test API không crash. |
+| Replay camera | Image folder/video/rosbag replay | Regression và offline analysis. |
+| Real encoder | MyArmMControl adapter | Real robot feedback. |
+| Sim joint state | Gazebo/MuJoCo/fake robot adapter | Simulation feedback. |
+| Replay joint state | Log replay adapter | Reproduce bug. |
+
+## 10.3. Gazebo Classic path
+
+Gazebo Classic nằm trong ROS 2 Foxy/Ubuntu 20.04 Docker trên Host PC.
+
+```text
+Host PC Docker Ubuntu 20.04
+  -> ROS 2 Foxy
+  -> Gazebo Classic
+  -> robot_state_publisher
+  -> RViz2
+```
+
+Gazebo path phù hợp để test ROS 2 interface, URDF/Xacro, TF tree và camera topic. Không nên xem Gazebo là ground truth dynamics cho backlash/gravity của MyArm nếu URDF/inertial chưa chuẩn.
+
+## 10.4. MuJoCo path
+
+MuJoCo có thể chạy ngoài ROS 2 Foxy vì Python version mới hơn. Nó dùng non-ROS adapter:
+
+```text
+MuJoCo Python runtime
+  -> MuJoCoAdapter
+  -> HardwarePort capability simulation
+  -> Core SDK
+```
+
+MuJoCo dùng cho:
+
+- sim hiện đại;
+- RL/gym-style application;
+- digital twin non-ROS;
+- replay/path visualization.
+
+## 10.5. Real/sim switch bằng config
+
+```yaml
+hardware_port:
+  profile: sim_mujoco
+  adapters:
+    - id: robot_arm_01_sim
+      role: manipulator
+      adapter: mujoco_robot_adapter
+    - id: camera_01_wrist_sim
+      role: wrist_rgb_camera
+      adapter: mujoco_camera_adapter
+```
+
+Đổi sang real:
+
+```yaml
+hardware_port:
+  profile: real_jetson
+  adapters:
+    - id: robot_arm_01_m750
+      role: manipulator
+      adapter: myarm_mcontrol_real
+    - id: camera_01_wrist
+      role: wrist_rgb_camera
+      adapter: logitech_c922_v4l2
+```
+
+## 10.6. Digital twin không thay thế benchmark thật
+
+Digital twin giúp debug và phát triển nhanh, nhưng benchmark thật vẫn cần external observer bằng camera/tag vì:
+
+- backlash thật không chắc được mô phỏng đúng;
+- gravity sag/payload effect phụ thuộc cơ khí thật;
+- firmware behavior không quan sát được trong sim;
+- USB serial timeout/freeze chỉ xuất hiện ở real path;
+- camera real có noise, lighting, blur và calibration error.

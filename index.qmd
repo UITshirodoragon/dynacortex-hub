@@ -1,8 +1,7 @@
 ---
 title: "DynaCortex"
-description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
+description: "Project Hub"
 status: standard
 ---
 
-DynaCortex là nhóm các dự án nghiên cứu và thử nghiệm về Trí tuệ nhân tạo hiện thân và Robot (Embodied AI & Robotics), được thực hiện tại Phòng thí nghiệm Đa phương tiện (MMLab) thuộc Trường Đại học Công nghệ Thông tin, ĐHQG-HCM (UIT). Chuỗi các dự án này tập trung phát triển hệ thống nhận thức thông minh (Cortex) kết hợp chặt chẽ với động lực học chuyển động (Dynamics) của robot.
 

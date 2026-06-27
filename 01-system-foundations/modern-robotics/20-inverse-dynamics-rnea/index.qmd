@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 20. Inverse Dynamics và RNEA
-
-![20. Inverse Dynamics và RNEA](assets/images/20-inverse-dynamics-rnea.svg){#fig-20-inverse-dynamics-rnea width=85%}
 
 Inverse dynamics nhận $q$, $\dot{q}$, $\ddot{q}$ và trả về torque cần thiết:
 

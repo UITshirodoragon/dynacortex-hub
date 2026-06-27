@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 15. Singularity và Manipulability
-
-![15. Singularity và Manipulability](assets/images/15-singularity-manipulability.svg){#fig-15-singularity-manipulability width=85%}
-
 Singularity là cấu hình mà Jacobian mất rank. Khi đó robot mất khả năng tạo vận tốc theo một hoặc nhiều hướng trong task space.
 
 $$

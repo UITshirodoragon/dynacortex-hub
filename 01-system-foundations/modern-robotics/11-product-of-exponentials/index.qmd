@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 11. Product of Exponentials
-
-![11. Product of Exponentials](assets/images/11-product-of-exponentials.svg){#fig-11-product-of-exponentials width=85%}
-
 Product of Exponentials, PoE, mô tả FK bằng tích các exponential transform của từng joint [@lynch2017modernrobotics]. Dạng space-frame:
 
 $$

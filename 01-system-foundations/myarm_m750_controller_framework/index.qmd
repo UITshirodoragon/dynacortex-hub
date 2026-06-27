@@ -1,0 +1,47 @@
+---
+title: "MyArm M750 Controller Framework"
+description: "Tài liệu kỹ thuật v0.0.3 cho framework điều khiển MyArm M750 dựa trên Python SDK, ROS 2, MoveIt2, ros2_control, plugin architecture và benchmark tự động."
+categories: [robotics, myarm-m750, controller, architecture, ros2, moveit2, benchmark]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# MyArm M750 Controller Framework
+
+Tài liệu này là bản **docs-only v0.0.3** dùng để thống nhất hướng phát triển framework điều khiển MyArm M750. Bản này chỉ chứa tài liệu QMD và skills, chưa chứa project skeleton.
+
+Mục tiêu không phải là viết lại mọi thứ từ đầu. Mục tiêu là thiết kế một framework có khả năng:
+
+1. Điều khiển robot ổn định hơn path cũ dựa trên firmware coordinate/FK/IK blackbox.
+2. Tách rõ domain model, kinematics, planner, controller, hardware adapter và application runtime.
+3. Cho phép bật/tắt ROS 2, RViz2, Gazebo, MuJoCo, WebSocket/non-ROS visualization theo nhu cầu.
+4. Cho phép dùng các thư viện đã được kiểm chứng như Pinocchio, MoveIt2, OpenCV, AprilTag/Aruco, NumPy/SciPy để tiết kiệm thời gian và giảm rủi ro tự code sai.
+5. Có benchmark tự động với 2 camera RGB, tag/chessboard, logging, watchdog và process isolation.
+6. Có tài liệu, config, skills và quy tắc clean code/comment để AI coding agent và người phát triển cùng tuân thủ.
+
+::: {.callout-important}
+## Quyết định chính của v0.0.3
+
+Production path ban đầu chỉ dựa trên **joint position command**. Không đưa torque control hoặc computed-torque gravity compensation vào controller ban đầu vì API Python hiện tại chưa expose torque/effort interface rõ ràng. Payload detection, backlash compensation và empirical compensation chỉ là concept/future work.
+:::
+
+## Cấu trúc tài liệu
+
+| Trang | Nội dung |
+|---|---|
+| [00. Overview](00-overview/index.qmd) | Tổng quan dự án, hardware setup, OS/runtime. |
+| [01. Requirements](01-requirements/index.qmd) | Yêu cầu chức năng và phi chức năng. |
+| [02. Architecture Principles](02-architecture-principles/index.qmd) | Kiến trúc lai, clean architecture, plugin, boundary. |
+| [03. Repo & Docs Organization](03-repo-and-docs-organization/index.qmd) | Cấu trúc repo, docs, Git, dependencies, skills. |
+| [04. Domain Model, Ports & Adapters](04-domain-model-ports-and-adapters/index.qmd) | Domain model, port, adapter, plugin registry. |
+| [05. Kinematics, Planning & Controller](05-kinematics-planning-and-controller/index.qmd) | FK/IK/Jacobian/planner/controller position-only. |
+| [06. Hardware Port & Observation](06-hardware-port-and-observation/index.qmd) | Real/fake/mock/replay/sim adapters, camera roles, observation. |
+| [07. ROS 2, Non-ROS Runtime & Network](07-ros2-nonros-runtime-and-network/index.qmd) | ROS 2 path, non-ROS path, DDS, WebSocket/gRPC/ZMQ. |
+| [08. Config System](08-config-system/index.qmd) | Config theo tầng và file YAML ngoài code. |
+| [09. Testing, Debug, Visualize & Benchmark](09-testing-debug-visualize-benchmark/index.qmd) | Testing, logging, process isolation, T1–T4 benchmark. |
+| [10. Simulation & Digital Twin](10-simulation-digital-twin/index.qmd) | Gazebo/MuJoCo/fake camera/real camera pipeline. |
+| [11. AI Agent Coding](11-ai-agent-coding-and-maintenance/index.qmd) | Quy tắc AI coding agent, clean code/comment, workflow. |
+| [12. Versioning & Changelog](12-versioning-and-changelog/index.qmd) | Versioning, changelog, tài liệu đi cùng phần mềm. |

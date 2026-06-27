@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 16. Inverse Kinematics
-
-![16. Inverse Kinematics](assets/images/16-inverse-kinematics.svg){#fig-16-inverse-kinematics width=85%}
-
 Inverse kinematics, IK, là bài toán:
 
 $$

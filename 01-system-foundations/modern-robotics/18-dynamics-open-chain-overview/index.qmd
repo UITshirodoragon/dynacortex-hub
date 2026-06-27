@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 18. Dynamics of Open Chains
-
-![18. Dynamics of Open Chains](assets/images/18-dynamics-open-chain-overview.svg){#fig-18-dynamics-open-chain-overview width=85%}
 
 Kinematics chỉ hỏi robot đang ở đâu và chuyển động thế nào. Dynamics hỏi thêm: cần lực/torque nào để tạo ra chuyển động đó?
 

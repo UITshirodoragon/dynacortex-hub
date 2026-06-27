@@ -1,0 +1,248 @@
+---
+title: "Notes"
+description: "Note học tập cá nhân."
+categories: [notes, learning]
+status: draft
+---
+
+## Kiến trúc cũ
+- application làm việc thẳng với python api (mỗi ứng dụng lại có một kiểu lập trình khác nhau không thống nhất)
+- python api điều khiển bằng cả coord và joint
+- firmware (IK, FK, blackbox,...) thật sự rất dễ fail khi điều khiển bằng coord
+- hardware
+
+
+## Một số câu hỏi cũng như suy luận về kiến trúc phần mềm mới dành cho cánh tay robot điều khiển myarm M750
+- Tư tưởng thiết kế module mà tôi hướng đến: config, linh hoạt, gắn, tháo, bặt, tắt, thay, sửa, đổi.... các module nhưng vẫn hoàn toàn chạy được. Hexagonal Architecture (Port và Adapter)
+- Tầng cuối cùng là phần cứng
+- Tầng giao giao tiếp với phần cứng chính là firmware, nhưng vì có 2 loại firmware 'shake' và 'coord', hiện tại đang nạp 'coord'
+- Tại tầng firmware thì không thể chỉnh được gì nhiều hiện tại
+- Tầng Python API đến từ thư viện của nhà sản xuất 'pymycobot' tương ứng với từng firmware như 'shake' sẽ đi cùng với lớp trừu tượng 'MyArmM' còn với firmware 'coord' thì sẽ đi với 'MyArmMControl' mỗi cái sẽ có chức năng có thể riêng. Và động lực lớn nhất vẫn là không sử dụng FK và IK, planer dưới tầng này. Tôi đưa ra lý do hoi chủ quan là đúng thật dễ sài thật, nhưng với các dự án robotics yêu cầu cao hơn thì không hề ổn vì nó là blackbox và nhà sản xuất cũng không thật sự quá để tâm vào trong việc docummnet một cách chi tiết và cẩn thận cho sản phẩm này, còn nhiều quần không thống nhât, cũng như mơ hồ dành cho người dùng.
+- Chính vì vậy nên 2 tầng firmware và tâng Python API để giao tiếp này sẽ chỉ xoay quanh mỗi joint control only mà thôi.
+- Nhưng cũng khá hạn chế khi mà cần cần phải đánh giá rất kĩ câu chuyện là nên sử dụng firmware nào, python api nào, không những thế liệu ta có thể khai thác được hết tiềm năng của joint control mà chỉ thông qua api và các api quản lý đi kèm mà nhà sản xuất cung cấp. Điều này rất quan trọng vì các nó liên quan đến các mode điều khiển của, position, rồi verlocity, torque, force để có thể đưa vào các phương trình IK, FK,... (Tôi đang nhắm tới MyArmMControl) (tồn tại 2 backend Kinematics)
+- Hiện tại tầng python api này cũng khá hạn chế đụng và giữ nguyên của nhà sản xuất nhưng ở một tương lai sẽ viết lại python API này dưới dạng thống nhất hơn, thậm chí là viết bằng C/C++ để ổn định hiệu suất. (không phải là ưu tiên hàng đầu)
+- Tầng tiếp theo đó chính python SDK là tầng cực kì qua trong và là core, trong tần này có thể hoàn toàn lựa chọn được backend `MyArmM` hoặc `MyArmMControl`, những phần quan trong của vẫn là có đươc hệ tọa độ, frame, transform matrix, quartenion, rồi FK, IK được quản lý bởi Pinocchio, PoE, Urdf, Planer, Solver, Robotcontrol, Trajectory Gen,... tất tần tất cần có phần core nhất để điều khiển được robot, tức là không bắt bược phải có các thư viện của Ros2 và MoveIt2, Ros control để chạy. Không chỉ thế còn có thể quản lý được phần observation nhưng rgb camera, depth camera,..., kèm có cả các tool hiệu chỉ và calib với chessboard, apriltag,... các tool calib Tầng này có vẫn có thể điều khiển được joint, và cả coord, nhưng sẽ dễ hiểu hơn, dễ giair thích và dễ debug hơn. Tầng application vẫn có thể hoàn toàn làm việc trực tiếp với tầng năng mà không cần đến ROS2 và MoveIt, ví dụ như là MoJuCo, GUI điều khiển, Gym, RL style, Vision Grasping style, lerobot style,... Nhưng vẫn quan trọng là làm sao để tối ưu được python? thread hay processs nhất là khi làm việc với packet serial như pymycobot? 
+- Tầng tiếp theo cũng quan trọng không kém đó là tầng ROS2 SDK, tầng này sẽ sử dụng các SDK cùng với thư viện như ros control, tf, .... và MoveIt2 và các plugin để có thể quản lý gần như toàn bộ phần điều khiển robot, như tf, frame, PoEm, Planer, Solver, controller, Trajetories gen,... nhưng hiệu suất và chắc chắc hơn, robust hơn, các node, topic, service, action,.... DDS hỗ trợ rviz2 và sim gazebo được định nghĩa ra bao gồm có cả phần observation như rgb camera, depthcamera, một số tool calib tương tự đi kèm, có thể sẽ phải điều chỉnh lại phần URDF.
+- Tầng tiếp theo là tầng cũng quan trọng không kém đó chính là Debuger đây là cross module, mỗi tầng cần tách biệt rõ lỗi này của tần nào module nào, logging, online và offline visualizer, 3D/2D visulier, dễ dàng bật tắt tôi nói rõ một chút về online viz như là hiển thị biểu đồ realtime, hình ảnh từ camera,.. và offline viz sẽ lấy dữ liệu để phân tích, chạy script, tool offline, nén gif tức là sau 1 lần chay mới visualize, để tiển cho việc headless, 3D/2D viz thì nếu như có thư viện có thể làm phần offline visual vẫn có thể hoàn toàn được,tôi thấy có 1 ý tưởng visual lize cũng hay đó là dùng các tag như april aruco để viz các link joint frame mà không cần đến các phần visual như rviz2 và gazebo. Nhìn chung với chăm ngôn thiết kế module thì không phụ thuộc vào rviz2 và simulation gazebo vì làm với phần cứng gần như headless, nhưng vẫn visual 3D 2D ofline đủ ổn, ngoài ra thì các phần chạy rviz2 và gazebo vẫn cần có nhiều khi muốn chạy là chạy thôi. Nhưng vẫn cần có thể thiết kế phần này để có thể visualize từ rviz2 và gazebo từ máy khác mà kết nối qua DDS. Câu hỏi đặt ra là vẫn là cấu hình được nhiều thư như có thể sử dụng dây eth hay wifi cùng subnet, ros2 thì có DDS còn nếu chạy không thì có phần websocker hay công nghệ nào khác để kết nối tới GUI visualize chẳng hạng. Hiện tại tôi đang định sài trước việc ROS DDS rồi truyền qua eth để visual với rviz2 và gazebo (ROS2) còn mujoco (non-ROS2) ở một máy tính host khác.
+- Tầng application là tầng cao nhất có thể sử dụng cả Python SDK và ROS2 SDK, GUI visualize,  MoJuCo, GUI điều khiển, Gym, RL style, Vision Grasping style, lerobot style, inference policy, nhưng tôi có nhiều trăn trở là làm sao để đóng gói tiện nhất tức là thông thường tôi sẽ có nó là một module tần cao khi tôi gọi như python sdk và ros2 sdk thì tôi có thể việt một runtime để có thể tối ưu cho từng dự án kiểu vậy sao? liệu có ổn không khi mà tôi lại đây các phần như RL style, Lerobot style, pơlicy lên tầng application này ?
+- Với mục tiêu là module nên có thể có nhiều tổ hợp các module hoạt động, nhưng suy cho cùng để dễ dàng cách li và linh họat, dễ degbug, bặt tắt, gắn vào tháo ra, config,....
+- test và benchmark và metrics: theo cảm nhận chủ quan của tôi đó là không nhất thiêt phải test lại câu chuyện của accuarcy, repeatbility, payload nữa vì tôi nghĩ nó hoàn toàn phụ thụ vòa phần cứng của robot. Đưong nhiên ở câu chuyện control thì vẫn phần nào đó ảnh hưởng nhưng chủ yếu là mức đọ ổn định của hệ thống điều khiển đó đến đâu, pose này đến pose kia có mượt không có fail không, singularity, out of reach, planer giải không được, nhắm thẳng vào độ ổn định điều khiển,... liệu cần có những bài test benchmark nào để có thể so sánh được kiến trúc cũ và kiến trúc mới
+- Trong đây có chứa urdf, xacro và mesh cùng description của myarm nhưng có vẻ như tôi phải làm lại bản chỉnh chu hơn và và thống nhất hơn, tôi thảo luận 1 chút về kiến trúc và các giải pháp mà bạn đưa ra. Kiển trúc software hexagonal và adapter port khiến cho việc trở nên rất dễ debug cũng như chuyển đổi các module? Liệu tôi đặt ra câu hỏi là có kiến trúc nào khác không?, tầng lớp, clean, microservice, những kiến nào phù hợp với việc phát triển robot, làm việc với ros, hoặc thậm chí đến ROS2 và MoveIt và Roscontrol sử dụng kiên trúc nào? về mặt firmware coordinate và class api MyArmMControl chúng có sử dụng được những API liên quan hoặc kế thừa từ lớp khác không tôi cần bạn nghiên cứu rất sâu về lớp này để có thể vận dụng được hết tiềm năng của nó, để debug, coi lỗi, coi state, reset lỗi, soft reset khi bị đứng chẳng hạn, hoặc liên quan đến phần pos, vel, torque để phát triển của cac mode control ? à ngoài ra thì vẫn cần có các mock hoặc fake adapter để có thể dễ dàng kiểm tra kiểm thử? À ngoài ra nhắc đến backend thì thật chất trong hệ thống sẽ có 3 đường thứ nhất đó là firmware kinematics, thứ 2 là đến từ sdk tự phát triển dùng Pinocchio và các giải pháp khác để tự quản lý, backend thứ 3 là phần MoveIt2 chịu tránh nhiệu khi đi cùng với ROs2? về mặt ROS2 SDK và đặc biệt là phần điều khiển tức là vẫn có 2 path một là phát triển theo reBot sẽ làm việc trực với bộ controller riên, 2 là sử dụng ros control và ros controler? Phần state machine và cmd arbit là phần đáng học nên bạn có thể hoàn toàn đưa vào tầng python sdk. Trong phần Debugger thì có một số trường serial_tx_count,serial_rx_count,serial_timeout_count,firmware_reply thì tôi đang quan ngại là có thể sẽ đụng đến tầng API của nhà cung cấp nên tôi không khuyến khích đúng nhiều vào tầng này. Ngoài ra tôi bổ sung thêm cần có các tool + để có thể calib như camera calib intrinsics và extrinsics rồi còn hand in eye và eye to hand, cùng các visualize, plot, online, offline, 2D, 3D rất cần để có thể debug. Tôi cũng đính chính là như kiến trúc hexagonal thì những lucs nào tôi cần visual với rviz2, sim gazebo, sim mujoco, thì tôi có thể bật tắt tùy ý tức là liên quan đến phần DDS hoặc giao tiếp mạng không dây (websocket) với PC host (cần có các giải pháp native ROS2 và non-ROS để có thể visual như truyền ảnh từ camera, giao tiếp 2 chiều được với rviz2, gazebo, mujoco từ máy khác .
+về câu chuyện benchmark và metrics, hiện tại với setup 2 camera 1 camera là wrist, 1 camera là góc nhình thứ 3 thì tôi mong có thể sử dụng các giải pháp giúp đánh giá từ bên ngoài một cách tự động với các dụng cụ quen thuộc như thước, các loại tag april và aruco, chessboard.... benchmark tự dộng bằng bên với thế giới ngoài? 
+- Hiện tại tình trạng gắp khi làm việc với firmware có FK và IK black box trước đâu và khi điều khiển sẽ sử dụng pose Euler, nhưng có câu hỏi là mặc dù có thể sử dụng các phương pháp đưa vè gián tiếp như đưa về transform matrix SE3 và SO3 dể làm trung gian tính toán rồi gửi lại bằng pose Euler, thậm chí việc đọc lại bằng write coord cũng cần phải đưa về trung gian khi không nhận lại là góc gần tương đương, và thường bị lệch do backlash và ảnh hưởng bới trọng lực hoặc khi gắp vật có khối lượng nhất định, nhưng điều khó chịu không nằm ở mỗi đó mà còn tồn tại ở việc document không rõ ràng, không biết chạy mode nào mode nào trong firmware, hay write coord thì tôi còn phải dùng nhiều phương pháp để mò pose Euler như timeout thì gửi pose tương đương, sampling trajectory để pose ít bị chuyển delta quá lớn, rotate trước rồi trans sau, tăng speed (tôi thấy đáp ứng tốt hơn 1 xíu), pose trước phụ thuộc pose sau, lâu lâu tôi phải lấy tay tác động vật lý để làm thay đổi giá trị encoder để có thể mới di chuyển tới pose mong muốn, nhìn chung có vẻ như vẫn không máy khả quan khi timeout rồi phải gửi lại lệnh dẫn đến robot báo lỗi lên đền rồi đứng yên không chạy lệnh đó bắt bược phải hủy process và chạy lại cả chương trình, rồi thậm chí còn phải reset lại cả robot để reset lỗi, phải dùng nhiều phương pháp dò, có lúc chạy được 5 waypoint trên 1 quỹ đọa, có lục chạy được 1 rồi đứng im do không dò được pose Euler,... liệu câu hỏi mà tôi đặt ra là trong không gian toán học việc từ đưa từ transform SE3 SO3/quaternion - pose euler - transform SE3 SO3/quaternion có thật sự làm bị bottle neck giữa các không gian biễu diễn. Cho nên phát triển kiến trúc phần mềm mới cùng các plugin và library sẽ hỗ trợ tốt hơn, theo bạn sẽ đánh giá phần bench mark như thế nào 
+- tôi mongg muốn thiết làm thành 1 soft benchmark không cần quá nhiều metrics để đánh giá nhưng cần thật sự những metrics cốt lõi và đáng giá nhất để đánh giá tính ổn định của hệ thông kiến trúc cũ với kiến trúc mới nên tôi cần bạn dựa vào các paper cùng các method để giúp tôi đưa ra test task + benchmark và metrics có công thức toán để đánh giá. Tôi cần bạn dựa vào những nguồn uy tín một cách có cơ sở và tham khảo chi tiết  như paper, sách modern robotics hoặc github
+- Tôi thấy khá ổn với các phần task, benchmark, gen test task goal mà bạn đưa ra nhưng tôi cần cần thảo luận 1 chút về thứ tự đầu tiên đó là
+  - T1 - Joint Waypoint Stability
+  - T2 - Euler Representation Stress Test hoặc có thể đổi tên đổi task là sinh ra các pose Euler để stresstesst nhiều pose đa dạng nhưng an toàn, safe pose để test được coord path trong kiến trục và kiến trúc mới
+  - T3 - Boundary/Singularity Safe-Fail Test tương tụ như vậy dùng để đánh giá xem coi gửi các pose Euler có ổn định khi vi phạm các giới hạn, điểm kì dị hoặc gọi là phần độ ổn định khi không an toàn
+  - T4 - Path Stability theo tôi thì không nên chỉ mỗi cartesian coord mà nên là path gồm có pose phức tạo hơn nên có đủ cả Euler xyzrpy mõi path chạy 20 lần
+    - path đường thẳng nhưng khó đường thẳng đó phải yêu cầu cao hơn
+    - path Rectangle tương tự
+    - path đường cong hoặc arc nhưng có thêm orentation
+    - path spherical coordinates như NeuGrasp paper
+    - path nhìn chung cần nàm trong tầm nhìn và kiểm soát và visual của third person camera với april tag
+  - T5 tôi sẽ bỏ
+  - Tôi cần bạn rõ hơn là bạn lấy và tham khảo các công thức này ở đâu : Jitter RMS, JerK RMS, Path Error RMS, Pose Error RMS
+- Phần cứng triển khai là bao gồm có setup:
+  - 2 camera rgb, logitech c922 cùng loại, làm việc ở 1280x720p/30fps hoặc 640x480/30fps
+  - 1 robot MyArm M750 điều khiển thông qua serial USB từ Jetson
+  - Jetson AGX Xavier (thường headless) 32GB RAM
+  - Host PC giao tiếp Jetson thông qua RJ45 LAN cắm dây 1Gbits
+- Phần OS và enviroment
+  - Thống nhất ở Ubuntu 20.04 để sửu dụng ROS2 Foxy và Python 3.8
+  - Trên Host PC (Ubuntu 22.04) để linh hoạt sử dụng docker đã được build trên Ubuntu 20.04 và ROS2 Foxy cùng rviz2 và sim gazebo classic
+  - sim Mujoco có thể chạy ở ngoài do vướng python 3.10
+  - À nhắc đến sim thì cần phải nhắc đến câu chuyện là sử dụng observation từ bên nào từ real camera, camera sim, fake,.. nên thiết kế như thế
+
+- Tất cả phần cấu trúc thư mục cần nằm trong và tổ chức trong 1 workspace ros2, nhưng vẫn có thể chạy được độc lập mà không cần đến ws ros hoặc package nhờ python sdk, 1 thư mục dự án duy nhất và sẽ được sử dụng git để version control cần thiết. Source này sẽ được tải hoàn toàn ở cả 2 phía là Jetson và Host PC
+- Phần module tool chứ các module utils và scripts hỗ trợ visualize cũng như debug và còn là calib thì module này theo tôi nhận định nó là 3rd party nền là có thể tham gia ở cả phần python sdk và application cũng như ros2, và thậm chí phần benchmark có thể được đưa vào đây.
+- Tài liệu kĩ thuật dành cho dự án cần có các mục sau:
+  - Tổng quan và giới thiệu dự án
+  - Yêu cầu hệ thống chức năng và phi chức năng
+  - Kiến trúc phần mềm tổng thêm, kiến trúc lai rõ ràng, sơ đồ 
+  - Cấu trúc repo và workspace
+  - Mô tả robot và mô hình robot
+  - Mô tả về config, hyperparameter, error code or handling
+  - Mô tả rõ ràng về các coore xử lý kinematics, dynamics và planing 
+  - Thiết kế dành cho phần controller
+  - Phần hardware absatraction layer (Simualation/Real/Fake(Mock)) có thể liên quan đến observation như camera,... 
+  - Mô tả về ROS2 và các interface và package liên quan
+  - Mô trường phát triển và triển khai
+  - Mô tả Testing, Unit testing, debug, visualize, becnhmark, loging, tracing
+  - Mô tả về Simualtiong pipeline va digital twin
+
+Yêu cầu sưa lại phiên bản v0.0.1:
+- Tôi cần bạn giúp tôi sửa lại về câu trúc thư mục là chỉ nằm trong thư mục là myarm_m750_controller_framework mà thôi và thu mục này nằm trong phần 01-system foundation
+- Về mặt nội dung và sửa đổi:
+  - Trong phần kiến trúc và nguyên tắc thiết kế một chút về mặt clean và plugin architecture thì việc domain model, kinematics, planer, controller không phụ thuộc vào framework nếu như nó chỉ là port và cần các adpater có sử dụng các thư viện như Pinocchio sẽ tiết kiệm thời gian xây dựng thuật toán IK và FK vì đã được cộng đồng kiểm chứng tốt,
+    - Thậm chí các phần core như frame và transform các trong chiều không gian như transform matrix, quarternion thì hoàn toàn có thể sử dụng thư viện python ngoài để tiết kiệm nhình chung là phần Port và Apdapter (là các thư viện hoặc giair pháp đã được kiểm chứng rộng rãi) 
+    - Mặc dù có thể tự code được nhưng nguyên tắc tham khảo các nguồn chính thống và uy tin, những hệ thống đã hoạt động tốt để có thể tiết kiệm công sức rất nhiều
+    - Nhắc đến phần application boundary thì mặc dù không gọi trực tiếp write_coords(), write_angles() hoặc các hàm firmware raw, nhưng vẫn cần có các có các path ngắn nhất để để cấu hình cho benchmark so sánh 
+    - Không dùng lại ở đó application cũng cần cung cấp đủ các chức năng của một framework đó chính là có thể thêm các api làm việc với frame, transform matrix, quarternion, rồi get observation, get camera,... ví dụ tôi có thể thêm ngoài các phần như frame base, end effector, camera frame thì có thể hoàn toàn thêm dạng API là có thêm frame như workspace giới hạn, rồi tùy biến transform,... nhình chung application boundary không dùng lại ở việc điều khiển robot với các frame đã có sẵn mà cho phép từng application có thể tùy biến không gian xung robot, môi trường cho robot,...
+    - Tôi đang thấy có một chút nhập nhằng giữa hardware port và observation port tôi đang định gộp chúng lại thành chỉ còn phần hardware mà thôi vì observation không chỉ là mỗi camra, depth, sensor mà còn là encoder của của joint cánh tay, các phần khác sau này như trạng thái từ firmware tra về nên tôi quyết định là sẽ gộp lại thành 1 với hardware port. À còn nữa là phần camera và đặt tên thì cần đặt tên theo số đi kèm với role được định nghĩa `wrist`, `shouder`,.... cameara vẫn cần có thể có node ROS chỉnh chu và vẫn có thể làm việc với khi non-ROS tức là các obesrvation hardware vẫn cần có cả non-ROS và ROS
+    - Hardware pport như bạn nói bây giời có các các real apdapter riêng và tương ứng với Fake, Mock, Replay apdapter đó cũng như các framework simulation cũng có các apdater tương ứng để gắn vào phần port này. tôi cần bạn tiết kế phần này cẩn thận vì không phải lúc nào hardware cũng đầy đủ adpater và có thể bật tắt và hoàn toàn bị thay thế, port có thể kết nối với 0 đến nhiều các apdataer về vai trò chức năng
+    - Các phần Port khác tôi cần bạn nêu ra các adapter tương ứng với nó
+    - Nguuyên tấc code, thiết kế và comment cần theo clean code và clean comment rule mà tôi đã gửi trong qmd và skill md
+  - Về mặt phần điều khiên mô men và phần bù trọng lục có vẻ sẽ hơi khó do API python chỉ cung cấp phần position joint mà và speed (thậm chí speed này cũng không được định nghĩa rõ) nên phần này sẽ không cần đưa vào tầng điều khiển, nên chỉ có dựa và position command mà thôi
+  - quyết định tổ chức repo sẽ được tổ chức lại chỉ còn có docs và docs này sẽ chứa các phần nhỏ qmd nên, mục tiêu là không render tại thư mục dự án chỉ này. Nhưng cần có thêm các thư mục và tổ chức file dành cho việc gọi module dể dàng hơn, dành cho git, thêm các phần requirement depecnhcy, ReadMe hướng dẫn đầy đủ, các file và thư mục  liên quan đến setup ros2, và phàn các thư mục và file, skills, tools, plugiin danfhc cho AI agent coding. Về mặt tổ chức và quy tắc coding cần lưu ý đọc kĩ docs và các quy tắc và skill trước làm và lưu lại changlog những gì đã thay đổi qua từng version
+  - Các controller backend thì có các phần như backlash và payload gravity emprical compensation thì chư cần thiết đư vào khi chưa thật sự ổn các phần ở đầu, chỉ là concept nhắc đến thôi
+  - À như tôi đã nói trước là về việc thiết kế debug cũng cần có thể bật tắt loging tại tầng nào, bật tắt visual, sim,... (này để tránh gây lãng phí tài nguyên và tăng latency khi có thể logign và debug quá online visual, lưu observation quá lớn)
+  - Về benchmark tôi chốt luôn về số lần:
+    - T1 - 30 test case mỗi test case chỉ chạy 2 lần duy nhất
+    - T2 - 30 test case mỗi test case chỉ chạy 2 lần duy nhất
+    - T3 - 30 test case mỗi test case chỉ chạy 2 lần duy nhất
+    - T4 - mỗi path chạy 10 lần
+    - cần thiết kế làm sao để dễ dàng hủy process tức là có thể bị đứng bất kì lúc nào hoặc tách biệt các process để dễ benchmark và có thể khởi động lại process điều khiển chẳng hạng. Payload dectection và compensation eval chỉ là concept chưa cần đưa vào ngay 
+    - Toàn bộ config theo tôi nên chia thành từng file tương ứng và theo kiểu chia tâng Application → Runtime → Core SDK (chia theo ROS2/Python/Port) → Adapter → Firmware/Hardware, Config phải nằm ngoài code.
+
+@Web searchtôi cần bạn giúp tôi dựa vào hướng bản tài liệu kĩ thuật thiết kế này đây là bản thiết kế mà tôi đã duyệt qua nhưng có vẻ sẽ còn cập nhập giúp tôi setup các file liên quan đến workflow codex agents để  có thể tối ưu hiệu suất cũng nhưng chất lượng công việc được đảm bảo, hiện tại tôi chỉ mới setup các thư mục trống trong thư mục myarm_m750_controller_framework_ws và chưa có gì cả nhưng tôi cần bạn giúp tôi có thể đóng gói lại trong dựa án này ngoài ra còn có có thể thao khảo các source code mà tôi đã chuẩn bị sẵn nằm trong một thư mục lab có cấu trúc như sau:
+├── ctrlfw_venv # thư mục này là python venv đã được tạo bởi site system packages vì đang làm việc trên jetson
+├── lerobot # thư mục source code của lerobot (có thể tham khảo cho tầng application, runtime)
+├── lerobot-robot-seeed-b601 (có thể tham khảo cho tầng application, runtime)
+├── lerobot-robot-seeed-b601.zip
+├── lerobot.zip
+├── myarm_m750_controller_framework_v0_0_3.zip
+├── myarm_m750_controller_framework_ws (thự mục dự án chính, ws ros2)
+├── myarm_m750_docs_en.zip
+├── myArm_MC_docs (docs của về myArm_MC chủ yếu đọc trong phần docs của dự án không cần quá quan tâm)
+├── myarm_ros2 (nên quan tâm vì cần copy phần robot description, mesh, urdf, xacro, rồi sau này custom lại theo tài liệu kĩ thuật thiết kế của dự án)
+├── myarm_ros2.zip
+├── pymycobot (thư viện api của cánh tay my arm đọc source chỉ để biết cần tận dụng những API nào triệt để và hiệu quả cho cánh tay myarm m750 ưu tiên MyArmMControl)
+├── pymycobot.zip
+├── reBotArmController_ROS2 (cực kì quan trọng! đây là nguồn tham khảo lớn dành cho dự án này về hệ thống ROS2 với reBot)
+├── reBotArmController_ROS2.zip
+├── reBotArm_control_py  (cực kì quan trọng! đây là nguồn tham khảo lớn dành cho dự án này về hệ thống PythonSDK với reBot)
+├── reBotArm_control_py.zip
+├── reBot-DevArm-Grasp (tham khảo để cho phần runtime hoặc appilication)
+└── reBot-DevArm-Grasp.zip
+
+Trong thu mục myarm_m750_controller_framework_ws tôi cũng đã tạo sẵn các thư mục và file rông nhưng có phần docs thiết kế trong đó nên cần setup dành cho Codex agents luôn phải đối chiếu tài liệu này mỗi khi phát triển 
+
+
+├── artifacts
+├── CHANGELOG.md
+├── colcon.meta
+├── config
+│   ├── adapters
+│   ├── application
+│   ├── benchmark
+│   ├── core_sdk
+│   ├── debug_profiles
+│   ├── firmware_hardware
+│   ├── ports
+│   └── runtime
+├── data
+│   ├── benchmark_cases
+│   ├── calibration
+│   └── replay_samples
+├── docker
+│   ├── compose.host.yml
+│   ├── compose.jetson.yml
+│   └── ubuntu20_ros2_foxy.Dockerfile
+├── docs # rất quan trọng cho việc đối chiếu dự án và tài liệu kĩ thuật thiết kế
+│   ├── 00-overview
+│   │   └── index.qmd
+│   ├── 01-requirements
+│   │   └── index.qmd
+│   ├── 02-architecture-principles
+│   │   └── index.qmd
+│   ├── 03-repo-and-docs-organization
+│   │   └── index.qmd
+│   ├── 04-domain-model-ports-and-adapters
+│   │   └── index.qmd
+│   ├── 05-kinematics-planning-and-controller
+│   │   └── index.qmd
+│   ├── 06-hardware-port-and-observation
+│   │   └── index.qmd
+│   ├── 07-ros2-nonros-runtime-and-network
+│   │   └── index.qmd
+│   ├── 08-config-system
+│   │   └── index.qmd
+│   ├── 09-testing-debug-visualize-benchmark
+│   │   └── index.qmd
+│   ├── 10-simulation-digital-twin
+│   │   └── index.qmd
+│   ├── 11-ai-agent-coding-and-maintenance
+│   │   └── index.qmd
+│   ├── 12-versioning-and-changelog
+│   │   └── index.qmd
+│   ├── CHANGELOG.md
+│   ├── index.qmd
+│   ├── README.md
+│   └── skills
+│       ├── clean-code-clean-comment-robotics.qmd
+│       ├── skill_clean_code_comment_robotics.md
+│       └── skill_quarto_docs.md
+├── docs.zip
+├── launch
+│   ├── benchmark
+│   ├── host
+│   ├── jetson
+│   └── simulation
+├── LICENSE
+├── logs
+├── plugins
+│   ├── benchmark_metrics
+│   ├── controllers
+│   ├── hardware_adapters
+│   ├── kinematics
+│   ├── planners
+│   └── visualizers
+├── pyproject.toml
+├── README.md
+├── requirements
+│   ├── base-py38.txt
+│   ├── dev.txt
+│   ├── robotics-py38.txt
+│   ├── ros2-foxy.txt
+│   └── vision-py38.txt
+├── scripts
+│   ├── benchmark
+│   ├── bringup
+│   ├── env
+│   └── maintenance
+├── setup.cfg
+├── skills
+│   ├── project_agent_workflow.md
+│   ├── skill_clean_code_comment_robotics.md
+│   └── skill_quarto_docs.md
+├── src
+│   ├── myarm_m750_benchmarks
+│   ├── myarm_m750_bringup
+│   ├── myarm_m750_description
+│   ├── myarm_m750_driver
+│   ├── myarm_m750_moveit_config
+│   ├── myarm_m750_msgs
+│   ├── myarm_m750_ros2_control
+│   ├── myarm_m750_sdk
+│   └── myarm_m750_tools
+├── tests
+│   ├── hardware_in_loop
+│   ├── integration
+│   ├── regression
+│   └── unit
+├── tools
+│   ├── calibration
+│   ├── dataset
+│   ├── logging
+│   ├── repo_checks
+│   ├── tracing
+│   └── visualization
+└── VERSION
+
+Những như thế này là chưa đủ nên tôi cần bạn giúp tôi bổ sung các file và folder setup workflow còn thiếu để có thể bỏ vào trong ws ros dự án này để phát triển một cách có chất lượng và hiệu suất tốt. Ngoài ra tôi cũng cần bạn tham khảo các web để setup workflow cho agents và skills cần thiết và cốt lõi để phát triển dự án , giúp tôi đóng gói lại thành .zip những thành phần còn thiếu và hướng dẫn tôi set up workflow cho codex agents.
+
+Cần định nghĩa các path use case, tức là ứng với từng usecase sẽ có những path và tương ứng các config, adapter nào được sử dụng. từ các path này cũng dễ dàng trong quá trình phát triển dự án nhưng từ vấn đề này tôi lại suy nghĩ rằng liệu tổ chức các config và hyperparmaters làm sao cho ổn định nhất, quản lý từng phần nhỏ như micro config (config cho tưng tầng từng apdater,..) hay quản lý kiểu 1 file master duy cho use case đó
+
+Tôi có một chút thăc mắc về giải quyết nhập nhằng config ví dụ với từng use case thì ví dú như có use case có phần config adapter khác rồi use case khác lại có confi apdater khác thì sao. tức là config bị thay đổi ở mức micro với từng use path khác nhau thì bạn giải quyết như thế nào, theo tôi thì nên chuẩn hóa bằng use case tức là trong các config của micro config sẽ có 2 phiên bản trở lên đó là default và các phiên bản được đổi lại cho usecase khác
+
+Các path use case mà tôi địn nghĩa là:
+- Điều khiển khớp theo firmware gốc, sử dụng phần cứng thật, không sử dụng sim, không sử dụng ros2, native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng bàn phím qua terminal (tại local) hoặc GUI qua websocket (host) (đơn giản)
+- Điều khiển tọa độ theo fimware gốc, sử dụng phần cứng thật, không sử dụng sim, không sử dụng ros2, native python, vẫn cần có phần safety như joint limit, workspace limit điều khiển bằng bàn phím qua terminal (tại local) hoặc GUI qua websocket (host) (đơn giản)
+- Điều khiển khớp theo firmware gốc, sử dụng phần cứng thật, không sử dụng sim, không sử dụng ros2, native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng fake hoặc replay,chạy local không ros2
+- Điều khiển tọa độ theo fimware gốc, sử dụng phần cứng thật, không sử dụng sim, không sử dụng ros2, native python, vẫn cần có phần safety như joint limit, workspace limit điều khiển bằng fake hoặc replay,chạy local không ros2
+- Điều khiển fake khớp,không sử dụng phần cứng thật, sử dụng dụng rviz2, sử dụng ros2, phần core động học đươc sử dụng là python , native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng fake, có DDS để kết nối rviz2,
+- Điều khiển khớp,không sử dụng phần cứng thật, sử dụng dụng rviz2, sử dụng ros2, phần core động học đươc sử dụng là python , native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng fake, có ROS2 DDS để kết nối rviz2, có GUI đơn gian để đọc và điều chỉnh khớp
+- Điều khiển tọa độ,không sử dụng phần cứng thật, sử dụng dụng rviz2, sử dụng ros2, phần core động học đươc sử dụng là python , native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng fake, có ROS2 DDS để kết nối rviz2, có GUI đơn gian để đọc và điều chỉnh tọa độ
+- Điều khiển khớp,có sử dụng phần cứng thật, sử dụng dụng rviz2, sử dụng ros2, phần core động học đươc sử dụng là python , native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng fake, có ROS2 DDS để kết nối rviz2, có GUI đơn gian để đọc và điều chỉnh khớp
+- Điều khiển tọa độ,có sử dụng phần cứng thật, sử dụng dụng rviz2, sử dụng ros2, phần core động học đươc sử dụng là python , native python, vẫn cần có phần safety như joint limit, workspace limit, điều khiển bằng fake, có ROS2 DDS để kết nối rviz2, có GUI đơn gian để đọc và điều chỉnh tọa độ

@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 12. D-H, M-DH, PoE và URDF
-
-![12. D-H, M-DH, PoE và URDF](assets/images/12-dh-mdh-poe-urdf-comparison.svg){#fig-12-dh-mdh-poe-urdf-comparison width=85%}
 
 D-H, Modified D-H, PoE và URDF đều có thể dùng để mô tả quan hệ hình học của robot arm, nhưng chúng phục vụ các bối cảnh khác nhau.
 

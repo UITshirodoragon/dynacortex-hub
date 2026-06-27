@@ -1,0 +1,164 @@
+---
+title: "02. Kiến trúc và nguyên tắc thiết kế"
+description: "Kiến trúc lai Layered + Hexagonal + Plugin + ROS 2 graph, application boundary, clean code/comment và nguyên tắc dùng thư viện đã kiểm chứng."
+categories: [architecture, clean-architecture, hexagonal, plugin, clean-code]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 02. Kiến trúc và nguyên tắc thiết kế
+
+## 02.1. Kiến trúc lai
+
+Framework dùng kiến trúc lai:
+
+1. **Layered Architecture** để định nghĩa hướng phụ thuộc theo tầng.
+2. **Hexagonal Architecture / Ports & Adapters** để cô lập domain khỏi framework và hardware.
+3. **Plugin Architecture** để thay kinematics, planner, controller, hardware, simulator, visualizer bằng config.
+4. **ROS 2 Graph Architecture** để phân tán node/topic/service/action/tf khi bật ROS 2 path.
+
+```{mermaid}
+flowchart TD
+    APP[Application / Policy / GUI / Benchmark] --> RUNTIME[Runtime Layer]
+    RUNTIME --> CORE[Core SDK / Domain Layer]
+    CORE --> PORTS[Ports]
+    PORTS --> ADAPTERS[Adapters / Plugins]
+    ADAPTERS --> HW[Firmware / Hardware / Simulator / Replay]
+
+    CORE -. no direct dependency .-> ROS2[ROS 2]
+    CORE -. no direct dependency .-> MOVEIT[MoveIt2]
+    CORE -. no direct dependency .-> PIN[Pinocchio]
+
+    ROSAD[ROS 2 Adapter] --> PORTS
+    PINAD[Pinocchio Adapter] --> PORTS
+    SIMAD[MuJoCo/Gazebo Adapter] --> PORTS
+```
+
+## 02.2. Dependency rule
+
+Dependency phải đi từ ngoài vào trong:
+
+```text
+Application → Runtime → Core SDK → Ports → Adapters → Firmware/Hardware
+```
+
+Domain model, kinematics contract, planner contract và controller contract không phụ thuộc trực tiếp:
+
+- ROS 2;
+- MoveIt2;
+- pymycobot;
+- OpenCV;
+- AprilTag/Aruco;
+- Gazebo;
+- MuJoCo;
+- WebSocket/gRPC;
+- file system logging backend cụ thể.
+
+Thư viện ngoài được dùng ở adapter/plugin hoặc utility có boundary rõ ràng.
+
+## 02.3. Vì sao dùng plugin/adapters thay vì tự code tất cả?
+
+Có thể tự code FK, IK, quaternion, transform, planner và camera calibration. Tuy nhiên, nguyên tắc của framework là ưu tiên dùng các nguồn chính thống, thư viện uy tín và hệ thống đã hoạt động tốt để tiết kiệm công sức và giảm rủi ro.
+
+Ví dụ:
+
+| Nhu cầu | Adapter/library khuyến nghị | Lý do |
+|---|---|---|
+| FK/Jacobian/robot model | Pinocchio adapter | Đã được cộng đồng robotics dùng rộng rãi, nhanh, có URDF parser. |
+| PoE cross-check | Internal PoE adapter hoặc Modern Robotics style implementation | Dễ kiểm chứng công thức, dùng để regression và tài liệu. |
+| Transform/quaternion | NumPy + SciPy Rotation hoặc transforms library | Tránh tự xử lý Euler/quaternion branch sai. |
+| Motion planning/collision | MoveIt2 adapter | Có planning scene, planner plugin, collision checking. |
+| Camera calibration | OpenCV adapter | Chuẩn công nghiệp/thực dụng, đủ cho chessboard/Charuco. |
+| Tag detection | AprilTag/Aruco adapter | Phục vụ external observer benchmark. |
+| ROS control path | ros2_control adapter | Chuẩn ROS 2 controller manager/hardware interface về dài hạn. |
+| Simulation | Gazebo/MuJoCo adapter | Cho fake/sim/replay observation và digital twin. |
+
+::: {.callout-note}
+## Adapter không làm mất tính chủ động
+
+Dùng Pinocchio hoặc MoveIt2 không có nghĩa core phụ thuộc vào chúng. Core chỉ biết `KinematicsPort` hoặc `PlannerPort`. Pinocchio/MoveIt2 là adapter thực thi port đó.
+:::
+
+## 02.4. Application boundary
+
+Application không được gọi trực tiếp raw firmware API trong production path:
+
+```text
+write_coords()
+write_angles()
+get_coords()
+raw jog API
+raw firmware mode setter
+```
+
+Production application chỉ gọi các API framework-level như:
+
+```python
+robot.move_to_joint_target(joint_target)
+robot.move_to_pose(target_pose)
+robot.get_joint_state()
+robot.get_hardware_status()
+robot.get_frame_transform("base_link", "tool0")
+robot.register_custom_frame(frame_spec)
+robot.get_camera_frame("camera_01_wrist")
+robot.get_observation(observation_query)
+```
+
+### 02.4.1. Short path cho benchmark/diagnostic
+
+Mặc dù production không gọi raw firmware API, framework vẫn cần **benchmark/diagnostic short path** để so sánh kiến trúc cũ và mới.
+
+Short path phải thỏa các điều kiện:
+
+1. Chỉ bật bằng config benchmark/diagnostic rõ ràng.
+2. Không dùng trong production application.
+3. Có watchdog và timeout.
+4. Có log lý do, command id, retry count, reset count.
+5. Có cảnh báo rằng path này đi qua firmware blackbox.
+
+Ví dụ config:
+
+```yaml
+application_boundary:
+  allow_raw_firmware_short_path: true
+  allowed_profiles: [benchmark_legacy_coord, diagnostic_raw_joint]
+  default_policy: reject_in_production
+```
+
+## 02.5. Frame và environment boundary
+
+Application có quyền tùy biến không gian xung quanh robot thông qua API frame/transform, không bị khóa trong các frame mặc định.
+
+Các nhóm frame:
+
+| Nhóm | Ví dụ | Mục tiêu |
+|---|---|---|
+| Robot frame | `base_link`, `link_1`, `tool0`, `end_effector` | Kinematics và TF tree. |
+| Camera frame | `camera_01_wrist`, `camera_02_shoulder`, optical frames | Vision, external observer. |
+| Workspace frame | `workspace_box_01`, `safe_zone`, `forbidden_zone` | Safety và benchmark. |
+| Object frame | `object_01`, `tag_board`, `bin_left` | Grasping và scene representation. |
+| Simulation frame | `mujoco_world`, `gazebo_world`, `sim_camera_01` | Digital twin và sim-real bridge. |
+
+## 02.6. Clean code và clean comment
+
+Framework phải tuân thủ clean code/comment theo skill kèm trong `skills/skill_clean_code_comment_robotics.md`.
+
+Các nguyên tắc bắt buộc:
+
+1. Tên biến có đơn vị vật lý: `_rad`, `_deg`, `_m`, `_mm`, `_s`, `_ms`, `_hz`.
+2. Hàm `compute_*`, `solve_*`, `estimate_*` không gửi lệnh hardware.
+3. Hàm `send_*`, `write_*`, `execute_*`, `publish_*` được phép có side effect và phải thể hiện rõ trong tên.
+4. Boundary check tập trung trong một nơi, không rải magic number.
+5. ROS 2 node chỉ compose logic, không chứa toàn bộ serial, IK, retry và benchmark.
+6. Kinematics layer không gọi hardware.
+7. Driver layer không biết planner internals.
+8. Comment chỉ giải thích intent, constraint, warning, workaround, source, TODO hoặc public API contract.
+
+::: {.callout-warning}
+## Không dùng comment để che code khó hiểu
+
+Nếu comment lặp lại code, hãy xóa. Nếu comment giải thích tên biến xấu, hãy đổi tên. Nếu comment giải thích logic rối, hãy tách hàm/class. Nếu comment giải thích hardware behavior, timing, safety hoặc workaround, hãy giữ và viết thật chính xác.
+:::

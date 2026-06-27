@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 23. Robot Control
-
-![23. Robot Control](assets/images/23-robot-control.svg){#fig-23-robot-control width=85%}
-
 Robot control là lớp biến mục tiêu chuyển động thành input cho actuator. *Modern Robotics* phân biệt motion control, force control, hybrid motion-force control và impedance control [@lynch2017modernrobotics].
 
 ## Các kiểu control chính

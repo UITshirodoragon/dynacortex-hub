@@ -8,9 +8,7 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 07. Exponential Coordinates và Lie Algebra
 
-![07. Exponential Coordinates và Lie Algebra](assets/images/07-exponential-coordinates-lie-algebra.svg){#fig-07-exponential-coordinates-lie-algebra width=85%}
 
 *Modern Robotics* dùng exponential coordinates để mô tả rotation và rigid-body motion một cách thống nhất [@lynch2017modernrobotics]. Ý tưởng chính: một chuyển động nhỏ trong Lie algebra có thể được map sang một pose hữu hạn bằng exponential map.
 

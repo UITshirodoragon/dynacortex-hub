@@ -1,0 +1,96 @@
+---
+title: "11. AI agent coding và maintenance"
+description: "Quy tắc cho AI coding agent, clean code/comment, workflow sửa tài liệu/code, đọc tài liệu và skills và ghi changelog."
+categories: [ai-agent, coding-standard, clean-code, maintenance, ci]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 11. AI agent coding và maintenance
+
+## 11.1. Mục tiêu
+
+AI coding agent được dùng để hỗ trợ viết code, docs, config, test và benchmark. Tuy nhiên agent phải tuân thủ boundary và không được tạo shortcut phá kiến trúc.
+
+## 11.2. File phải đọc trước khi sửa
+
+Trước khi sửa, đọc:
+
+1. `README.md`
+2. `CHANGELOG.md`
+3. Trang docs liên quan.
+4. `skills/skill_clean_code_comment_robotics.md`
+5. `skills/skill_quarto_docs.md`
+6. Config schema liên quan trong `config/`.
+
+## 11.3. Rule code bắt buộc
+
+- Không đưa raw `write_coords()`/`write_angles()` vào application production path.
+- Không hard-code joint limit, timeout, benchmark count trong code nếu đã có config.
+- Không để ROS 2 node chứa toàn bộ IK/FK/controller/serial/retry/benchmark logic.
+- Không để kinematics gọi hardware.
+- Không để driver biết planner internals.
+- Không đặt tên biến vật lý thiếu đơn vị.
+- Không tạo retry vô hạn.
+- Không thêm online visualization mặc định nếu có thể tăng latency.
+
+## 11.4. Comment policy
+
+Comment tốt giải thích:
+
+- intent;
+- hardware/timing constraint;
+- safety warning;
+- workaround firmware/API;
+- nguồn công thức/reference implementation;
+- TODO có owner/issue/next step;
+- public API contract.
+
+Comment xấu:
+
+- lặp lại code;
+- che tên biến/hàm xấu;
+- để code cũ bị comment-out;
+- ghi `hack`, `fix later`, `be careful` mà không có điều kiện cụ thể.
+
+## 11.5. CI/lint định hướng
+
+Python:
+
+```bash
+python -m compileall src
+ruff check .
+pytest
+```
+
+ROS 2:
+
+```bash
+colcon build --symlink-install
+colcon test
+colcon test-result --verbose
+```
+
+Docs:
+
+```bash
+python 01-system-foundations/myarm_m750_controller_framework/.agents/tools/check_quarto_docs.py
+quarto render
+```
+
+## 11.6. Changelog rule
+
+Mọi thay đổi sau phải ghi `CHANGELOG.md`:
+
+- đổi kiến trúc;
+- đổi public API;
+- đổi config schema;
+- đổi benchmark count/protocol;
+- thêm/bỏ adapter;
+- đổi default runtime/debug profile;
+- đổi safety limit;
+- đổi ROS 2 interface;
+- đổi quy tắc clean code/comment.

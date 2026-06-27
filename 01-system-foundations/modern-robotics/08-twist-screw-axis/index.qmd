@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 08. Twist và Screw Axis
-
-![08. Twist và Screw Axis](assets/images/08-twist-screw-axis.svg){#fig-08-twist-screw-axis width=85%}
 
 Twist là vector 6 chiều mô tả vận tốc không gian của rigid body:
 

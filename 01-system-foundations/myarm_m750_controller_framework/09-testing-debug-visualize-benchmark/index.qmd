@@ -1,0 +1,552 @@
+---
+title: "09. Testing, debug, visualize và benchmark"
+description: "Thiết kế unit test, fake/replay, logging/tracing bật tắt theo tầng, process isolation và benchmark T1–T4 với số lần chốt."
+categories: [testing, debug, visualization, benchmark, logging, tracing]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 09. Testing, debug, visualize và benchmark
+
+## 09.1. Testing pyramid
+
+Framework cần test ở nhiều mức:
+
+| Mức | Mục tiêu | Hardware cần không? |
+|---|---|---|
+| Unit test | Domain object, validation, frame transform, config schema | Không |
+| Adapter contract test | Fake/mock/replay adapter tuân port | Không |
+| Integration dry-run | IK/planner/controller với fake hardware | Không |
+| Hardware smoke test | Đọc joint, stop, home, một target đơn giản | Có |
+| Benchmark T1–T4 | So sánh path cũ/mới, đo stability | Có, hoặc replay/sim tùy task |
+
+## 09.2. Debug profile bật/tắt theo tầng
+
+Debug phải cấu hình được để tránh tăng latency hoặc lưu quá nhiều observation.
+
+| Tầng | Có thể bật/tắt | Lý do |
+|---|---|---|
+| Application | command log, request/response log | Trace use case. |
+| Runtime | process supervisor, watchdog, network trace | Debug crash/freeze. |
+| Core SDK | validation, IK/planner result, state machine transition | Debug decision. |
+| Port | call latency, adapter selection, capability query | Debug boundary. |
+| Adapter | API call summary, exception, timeout | Debug hardware/sim/replay. |
+| Visualization | online plot/RViz2/dashboard | Tắt khi benchmark timing nhạy. |
+| Observation recording | image/video/tag/log | Tắt nếu không cần để giảm IO/latency. |
+
+Debug levels đề xuất:
+
+```text
+none       # production minimal
+minimal    # command/result/status only
+benchmark  # command + status + metric + selected observations
+trace      # full debug, chỉ dùng ngắn hạn
+```
+
+## 09.3. Logging schema tối thiểu
+
+```text
+timestamp_monotonic_s
+run_id
+trial_id
+task_id
+architecture_path
+runtime_profile
+command_id
+state_machine_state
+q_target_rad
+q_measured_rad
+pose_target_frame
+ik_status
+planner_status
+controller_status
+hardware_status
+api_call_latency_ms
+motion_started
+motion_completed
+timeout
+reset_required
+manual_intervention_required
+external_pose_error_mm
+external_orientation_error_deg
+```
+
+Không bắt buộc log byte-level serial. Ưu tiên adapter-level summary.
+
+## 09.4. Process isolation và watchdog
+
+Benchmark phải thiết kế để dễ hủy process khi driver/firmware đứng.
+
+```{mermaid}
+flowchart TD
+    SUP[Benchmark Supervisor] --> TRIAL[Trial Process]
+    TRIAL --> CTRL[Controller Process]
+    TRIAL --> OBS[Observer Process]
+    TRIAL --> LOG[Logger]
+    SUP -->|timeout| KILL[Graceful stop -> hard kill]
+    SUP -->|restart| CTRL2[Restart Controller]
+    SUP --> REPORT[Trial Result]
+```
+
+Nguyên tắc:
+
+1. Mỗi trial có timeout cứng.
+2. Controller process có thể restart giữa trial nếu profile yêu cầu.
+3. Camera/observer có thể chạy process riêng để không block controller.
+4. Khi robot đứng, supervisor thử stop an toàn rồi kill process.
+5. Nếu lỗi liên tiếp vượt ngưỡng, đánh dấu `MANUAL_RESET_REQUIRED`.
+
+## 09.5. Benchmark T1 — Joint Waypoint Stability
+
+Mục tiêu: kiểm tra joint-control baseline.
+
+Số lần v0.0.3:
+
+```text
+30 test case × 2 lần = 60 trials
+```
+
+Metric chính:
+
+- FFSR: fault-free success rate;
+- timeout rate;
+- no-motion rate;
+- hard reset/process kill count;
+- joint final error;
+- command latency/jitter.
+
+## 09.6. Benchmark T2 — Safe Coord-Pose Stress Test
+
+Mục tiêu: so sánh coordinate path cũ với software IK → joint path mới trên pose an toàn.
+
+Số lần v0.0.3:
+
+```text
+30 test case × 2 lần = 60 trials
+```
+
+Protocol:
+
+1. Sinh joint safe hoặc chọn pose safe đã được kiểm chứng.
+2. Tính FK ra $T_i$.
+3. Legacy path: convert $T_i$ sang Euler firmware và gọi coord short path.
+4. New path: $T_i \rightarrow IK \rightarrow joint trajectory$.
+5. So sánh success/fail/timeout/no-motion/external error.
+
+## 09.7. Benchmark T3 — Unsafe Pose Safe-Fail Test
+
+Mục tiêu: đo khả năng reject/fail sạch với unsafe/out-of-reach/singularity/joint-limit pose.
+
+Số lần v0.0.3:
+
+```text
+30 test case × 2 lần = 60 trials
+```
+
+Metric chính:
+
+- safe reject rate;
+- recovery rate;
+- hard reset count;
+- wrong execution count;
+- reason coverage: `OUT_OF_REACH`, `JOINT_LIMIT`, `SINGULARITY_RISK`, `IK_FAIL`, `PLANNER_FAIL`.
+
+::: {.callout-warning}
+## T3 ưu tiên dry-run
+
+Unsafe target không được ép robot chạy thật nếu validation đã reject. Chỉ target gần biên nhưng vẫn an toàn mới được chạy thật, tốc độ thấp và workspace trống.
+:::
+
+## 09.8. Benchmark T4 — Complex Path Stability
+
+Mục tiêu: kiểm tra path-level behavior với translation + orientation.
+
+Số lần v0.0.3:
+
+```text
+mỗi path chạy 10 lần
+```
+
+Path đề xuất:
+
+1. Hard straight line with orientation.
+2. Rectangle with slowly varying orientation.
+3. Arc/curved path with tangential/look-at orientation.
+4. Spherical/spiral view path inspired by multi-view grasping.
+
+Metric chính:
+
+- FFSR;
+- path RMS error;
+- pose RMS error;
+- joint jerk RMS;
+- command jitter RMS;
+- timeout/no-motion/reset count.
+
+## 09.9. External observer bằng 2 camera
+
+Setup:
+
+- `camera_01_wrist`: hỗ trợ object/scene observation.
+- `camera_02_shoulder`: external pose observer chính.
+- AprilTag/Aruco/chessboard: calibration và tool/object pose measurement.
+
+Pipeline:
+
+```text
+camera calibration
+  -> T_base_camera_02_shoulder
+  -> tag detection on tool/object
+  -> T_base_tool_measured
+  -> compare with FK software T_base_tool_fk
+```
+
+Payload detection và compensation evaluation chỉ là concept/future work trong v0.0.3, chưa đưa vào benchmark bắt buộc.
+
+## 09.10. Report output
+
+Mỗi benchmark run tạo:
+
+```text
+runs/<run_id>/
+├── manifest.yaml
+├── config_resolved.yaml
+├── trials.csv
+├── events.jsonl
+├── metrics_summary.yaml
+├── plots/
+├── observations/   # optional, có thể tắt
+└── report.qmd      # optional generated report
+```
+
+
+## Nội dung benchmark
+
+Dưới đây mô tả phương pháp còn số lần đã được quuyêt định ở trên
+
+## Mục tiêu benchmark
+
+Benchmark không nhằm kết luận robot MyArm M750 chính xác hơn phần cứng gốc. Mục tiêu là đo **độ ổn định của control-stack** khi so sánh:
+
+```text
+Old architecture:
+application -> pymycobot coordinate API -> firmware FK/IK/planner blackbox
+
+New architecture:
+application -> Python Core SDK -> software FK/IK/planner -> joint trajectory -> hardware adapter
+```
+
+Bộ benchmark T1–T4 được chốt ở mức giải pháp. Số lượt test, số waypoint, threshold và vùng workspace sẽ được cập nhật sau.
+
+## Tổng quan task
+
+| ID | Tên benchmark | Mục tiêu chính |
+|---|---|---|
+| T1 | Joint Waypoint Stability | Kiểm tra đường joint-control cơ bản: command có ổn định, timeout/reset/freeze không |
+| T2 | Safe Coord-Pose Stress Test | Sinh pose $(x,y,z,r,p,y)$ đa dạng nhưng an toàn để stress test coordinate path cũ và path mới |
+| T3 | Unsafe Pose Safe-Fail Test | Đánh giá reject/recover khi goal vi phạm workspace, joint limit, singularity hoặc planner không giải được |
+| T4 | Complex Path Stability | Chạy path phức tạp có cả translation + orientation: line, rectangle, arc, spherical/spiral |
+
+## Metric nhóm chính
+
+| Metric | Task | Ý nghĩa |
+|---|---|---|
+| FFSR | T1–T4 | Fault-Free Success Rate |
+| Pose Error RMS | T1, T2 | Sai số pose cuối, tách position/orientation |
+| Path Error RMS | T4 | Sai số theo toàn bộ trajectory |
+| Jerk RMS | T4 | Độ mượt trajectory |
+| Jitter RMS | T1–T4 | Độ ổn định timing/control loop |
+| Timeout Rate | T1–T4 | Tỷ lệ command timeout |
+| SafeRejectRate | T3 | Tỷ lệ goal xấu bị reject trước khi motion |
+| RecoveryRate | T3 | Tỷ lệ fault phục hồi về READY/IDLE |
+
+## T1 — Joint Waypoint Stability
+
+T1 là baseline. Nếu joint command chưa ổn định, chưa nên đánh giá Cartesian/path phức tạp.
+
+Sinh cấu hình joint an toàn:
+
+$$
+q_i \in [q_{min}+\delta,\ q_{max}-\delta]
+$$
+
+Thêm điều kiện tránh vùng nguy hiểm:
+
+$$
+w(q_i)>w_{min},\quad \kappa(J(q_i))<\kappa_{max}
+$$
+
+Metric chính:
+
+$$
+\mathrm{FFSR} =
+\frac{1}{N}\sum_{i=1}^N
+\mathbf{1}[S_i=1 \land TO_i=0 \land HR_i=0]
+$$ {#eq-ffsr}
+
+Trong đó $S_i$ là success, $TO_i$ là timeout, $HR_i$ là hard reset/kill process.
+
+## T2 — Safe Coord-Pose Stress Test
+
+Cách sinh pose công bằng:
+
+1. Sinh joint an toàn $q_i$.
+2. Tính FK: $T_i=FK(q_i)$.
+3. Chuyển $T_i$ thành $(x_i,y_i,z_i,roll_i,pitch_i,yaw_i)$ cho firmware coord.
+4. Kiến trúc cũ dùng `write_coords`.
+5. Kiến trúc mới dùng $SE(3)$ target → IK → joint trajectory.
+
+Nhóm T2:
+
+| Nhóm | Nội dung |
+|---|---|
+| T2A Safe Pose Diversity | near-body, mid-workspace, far-but-safe, high-z, low-z, mixed orientation |
+| T2B Euler Alias / Variant | cùng $R$ nhưng nhiều RPY tương đương hoặc perturbation nhỏ |
+
+Metric:
+
+$$
+\mathrm{SafePoseSuccessRate} =
+\frac{N_{success\_no\_fault}}{N_{safe\_pose}}
+$$
+
+$$
+R_{timeout} = \frac{N_{timeout}}{N_{cmd}}
+$$
+
+## T3 — Unsafe Pose Safe-Fail Test
+
+T3 đo khả năng fail sạch. Với target nguy hiểm, ưu tiên dry-run planner/IK/reachability; chỉ chạy robot thật với target gần biên nhưng vẫn an toàn.
+
+Nhóm unsafe:
+
+| Nhóm | Điều kiện |
+|---|---|
+| Out-of-reach | $\|p_{target}-p_{base}\| > r_{max}$ |
+| Joint limit violation | $q_j<q_{j,min}$ hoặc $q_j>q_{j,max}$ |
+| Near singularity | $w(q)<w_{min}$ hoặc $\kappa(J)>\kappa_{max}$ |
+
+Metric:
+
+$$
+\mathrm{SafeRejectRate} =
+\frac{N_{reject\_before\_motion}}{N_{invalid}}
+$$ {#eq-safe-reject-rate}
+
+$$
+\mathrm{RecoveryRate} =
+\frac{N_{recovered\_to\_READY}}{N_{fault}}
+$$ {#eq-recovery-rate}
+
+Reason code cần log:
+
+```text
+OUT_OF_REACH
+JOINT_LIMIT
+SINGULARITY_RISK
+IK_FAIL
+PLANNER_FAIL
+FIRMWARE_TIMEOUT
+NO_MOTION_FAULT
+```
+
+## T4 — Complex Path Stability
+
+T4 đánh giá path-level behavior có translation + orientation.
+
+### Hard straight line with orientation
+
+$$
+p(s)=p_0+s(p_1-p_0),\quad s\in[0,1]
+$$
+
+$$
+R(s)=R_0\exp(\log(R_0^TR_1)s)
+$$
+
+### Rectangle with slowly varying orientation
+
+Path gồm 4 cạnh:
+
+```text
+P0 -> P1 -> P2 -> P3 -> P0
+```
+
+Orientation thay đổi chậm theo từng cạnh.
+
+### Arc / curved path with tangential orientation
+
+$$
+p(s)=c+
+\begin{bmatrix}
+r\cos\theta(s) \\
+r\sin\theta(s) \\
+z(s)
+\end{bmatrix}
+$$
+
+Orientation có thể nhìn theo tiếp tuyến hoặc nhìn về tâm.
+
+### Spherical / spiral view path
+
+$$
+p(s)=c+r
+\begin{bmatrix}
+\sin\phi(s)\cos\theta(s) \\
+\sin\phi(s)\sin\theta(s) \\
+\cos\phi(s)
+\end{bmatrix}
+$$
+
+Dùng look-at orientation:
+
+$$
+z_{tcp}(s)=\frac{c-p(s)}{\|c-p(s)\|}
+$$
+
+## Pose Error RMS
+
+Với pose target $T_d=(R_d,p_d)$ và measured $T_m=(R_m,p_m)$:
+
+$$
+e_p=\|p_d-p_m\|_2
+$$
+
+$$
+e_R=\left\|\log(R_m^TR_d)\right\|_2
+$$
+
+Báo cáo tách hai metric:
+
+$$
+E_{p,rms}=\sqrt{\frac{1}{N}\sum_{i=1}^N \|p_{d,i}-p_{m,i}\|_2^2}
+$$
+
+$$
+E_{R,rms}=\sqrt{\frac{1}{N}\sum_{i=1}^N e_{R,i}^2}
+$$
+
+Đơn vị: mm và degree.
+
+## Path Error RMS
+
+$$
+E_{p,path}=\sqrt{\frac{1}{K}\sum_{k=1}^K \|p_d(t_k)-p_m(t_k)\|_2^2}
+$$
+
+$$
+E_{R,path}=\sqrt{\frac{1}{K}\sum_{k=1}^K e_R(t_k)^2}
+$$
+
+## Jerk RMS
+
+Với dữ liệu joint sampled đều $\Delta t$:
+
+$$
+\dddot q_k \approx
+\frac{q_k-3q_{k-1}+3q_{k-2}-q_{k-3}}{\Delta t^3}
+$$
+
+$$
+J_{rms}=\sqrt{\frac{1}{K-3}\sum_{k=4}^K \|\dddot q_k\|_2^2}
+$$
+
+Jerk theo TCP chỉ dùng khi external pose measurement đủ ổn định, vì camera noise dễ phóng đại đạo hàm bậc ba.
+
+## Jitter RMS
+
+$$
+\Delta t_k=t_k-t_{k-1},\quad e_{t,k}=\Delta t_k-\Delta t^*
+$$
+
+$$
+J_t=\sqrt{\frac{1}{K-1}\sum_{k=2}^K (\Delta t_k-\Delta t^*)^2}
+$$
+
+Nên đo ba loại jitter:
+
+```text
+cmd_publish_jitter
+state_read_jitter
+camera_measure_jitter
+```
+
+## Log schema tối thiểu
+
+```yaml
+run_id: ""
+trial_id: ""
+software_version: "0.0.0"
+git_commit: ""
+architecture: "old_coord | new_joint | moveit2"
+task_id: "T1 | T2 | T3 | T4"
+timestamp_monotonic: 0.0
+command:
+  command_id: ""
+  type: "joint | pose | trajectory"
+  q_target_rad: []
+  pose_target_se3: []
+state:
+  state_before: ""
+  state_after: ""
+  error_code: ""
+measurement:
+  q_measured_rad: []
+  pose_fk_se3: []
+  pose_external_se3: []
+metrics:
+  success: false
+  timeout: false
+  hard_reset: false
+  pose_error_mm: 0.0
+  orientation_error_deg: 0.0
+  path_error_mm: 0.0
+  jerk_rms: 0.0
+  jitter_rms_ms: 0.0
+```
+
+
+# External Observer Benchmark
+
+## Mục tiêu
+
+External observer benchmark dùng camera và fiducial marker để đo robot từ thế giới ngoài. Mục tiêu là phát hiện:
+
+- robot có thật sự di chuyển sau khi command không;
+- FK software có khớp pose ngoài đời không;
+- path thật có bám path target không;
+- payload gây sag bao nhiêu;
+- compensation có giảm sai số không.
+
+## Setup phần cứng
+
+| Thiết bị | Vai trò |
+|---|---|
+| Logitech C922 wrist camera | Quan sát object/scene từ end-effector |
+| Logitech C922 third-person camera | External observer đo tool/object/path |
+| AprilTag/Aruco trên tool | Suy ra pose tool từ camera third-person |
+| AprilTag/Aruco hoặc chessboard/Charuco board | Calibrate camera/base/world |
+| Thước/cữ cơ khí đơn giản | Kiểm tra scale và mount ban đầu |
+
+## Calibration pipeline
+
+```{mermaid}
+flowchart TB
+    A[Camera Intrinsics
+Chessboard/Charuco] --> B[Third Camera Extrinsics
+T_base_camera]
+    A --> C[Wrist Camera Hand-Eye
+T_tool_camera]
+    B --> D[Tool Tag Calibration
+T_tool_tag]
+    C --> E[Runtime Observation]
+    D --> E
+    E --> F[External Pose Measurement]
+    F --> G[Benchmark Metrics]
+```
+
+## Công thức đo tool pose từ camera third-person
+

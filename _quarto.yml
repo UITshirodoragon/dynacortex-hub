@@ -2,6 +2,14 @@ project:
   type: website
   output-dir: docs
 
+
+render:
+  - "*.qmd"
+  - "!*.md"
+  - "!README.md"
+  - "!CHANGELOG.md"
+
+
 website:
   title: "DynaCortex"
   description: "Project Hub for Dynamic Cortex in Embodied AI and Robotics at MMLab UIT"
@@ -35,10 +43,30 @@ website:
       - section: "01. System Foundations"
         contents:
           - 01-system-foundations/index.qmd
+
+          - section: "MyArm Master 750 Controller Framework"
+            contents:
+            - 01-system-foundations/myarm_m750_controller_framework/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/00-overview/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/01-requirements/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/02-architecture-principles/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/03-repo-and-docs-organization/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/04-domain-model-ports-and-adapters/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/05-kinematics-planning-and-controller/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/06-hardware-port-and-observation/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/07-ros2-nonros-runtime-and-network/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/08-config-system/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/09-testing-debug-visualize-benchmark/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/10-simulation-digital-twin/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/11-ai-agent-coding-and-maintenance/index.qmd
+            - 01-system-foundations/myarm_m750_controller_framework/12-versioning-and-changelog/index.qmd 
+            - 01-system-foundations/myarm_m750_controller_framework/skills/clean-code-clean-comment-robotics.qmd
+            
+
+
           - section: "Modern Robotics"
             contents:
               - 01-system-foundations/modern-robotics/index.qmd
-              - 01-system-foundations/modern-robotics/00-learning-roadmap/index.qmd
               - 01-system-foundations/modern-robotics/01-notation-units-conventions/index.qmd
               - 01-system-foundations/modern-robotics/02-configuration-space/index.qmd
               - 01-system-foundations/modern-robotics/03-task-space-workspace/index.qmd

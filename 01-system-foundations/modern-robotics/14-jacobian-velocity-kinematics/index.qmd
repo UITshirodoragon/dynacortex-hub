@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 14. Jacobian và Velocity Kinematics
-
-![14. Jacobian và Velocity Kinematics](assets/images/14-jacobian-velocity-kinematics.svg){#fig-14-jacobian-velocity-kinematics width=85%}
 
 Jacobian là ma trận phụ thuộc cấu hình $q$, ánh xạ joint velocity sang twist end-effector:
 

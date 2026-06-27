@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 02. Configuration Space
-
-![02. Configuration Space](assets/images/02-configuration-space.svg){#fig-02-configuration-space width=85%}
-
 **Configuration** là mô tả đầy đủ vị trí của mọi điểm trên robot. Với robot arm nối tiếp, ta thường không cần mô tả từng điểm; chỉ cần vector biến khớp $q$ là đủ để xác định hình dạng robot nếu mô hình link/joint đã biết [@lynch2017modernrobotics].
 
 $$

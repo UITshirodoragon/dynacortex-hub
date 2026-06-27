@@ -1,0 +1,180 @@
+---
+title: "04. Domain model, ports và adapters"
+description: "Thiết kế domain model, application boundary, port contract và adapter/plugin tương ứng cho MyArm M750 Controller Framework."
+categories: [domain-model, ports-adapters, plugin, api-design]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 04. Domain model, ports và adapters
+
+## 04.1. Domain model cốt lõi
+
+Core SDK cần có các value object rõ ràng. Không truyền primitive soup như `x, y, z, rx, ry, rz, speed` xuyên nhiều tầng.
+
+| Domain object | Nội dung | Ghi chú |
+|---|---|---|
+| `JointState` | `name`, `position_rad`, `velocity_rad_s`, `effort_optional`, timestamp | Effort có thể không có. |
+| `JointTarget` | target joint position rad, tolerance, motion profile | Production command chính. |
+| `CartesianPose` | position m, orientation quaternion, frame id | Không dùng Euler làm representation nội bộ chính. |
+| `TransformStamped` | parent frame, child frame, $T \in SE(3)$, timestamp | Dùng cho frame tree. |
+| `MotionProfile` | max velocity/accel hint, duration, interpolation mode | Với MyArm speed có thể chỉ là hint. |
+| `IkRequest` | target pose, seed joint, constraints | Không gửi hardware. |
+| `IkResult` | success/failure, q solution, residual, reason | Có reason rõ. |
+| `Trajectory` | sequence of joint/pose samples, time_from_start | Dùng cho controller/benchmark. |
+| `HardwareStatus` | connected, enabled, fault, firmware status, device statuses | Tổng hợp từ hardware adapters. |
+| `ObservationFrame` | image, tag detection, joint feedback, status, sim data | Thuộc HardwarePort. |
+| `CommandResult` | accepted, rejected, timeout, completed, fault reason | Dùng cho state machine/benchmark. |
+
+## 04.2. Application boundary API
+
+Application dùng API framework-level:
+
+```python
+robot.get_joint_state()
+robot.get_hardware_status()
+robot.move_to_joint_target(target)
+robot.move_to_pose(pose)
+robot.plan_to_pose(pose)
+robot.register_custom_frame(frame_spec)
+robot.get_transform(parent_frame, child_frame)
+robot.get_observation(query)
+robot.start_runtime_profile("benchmark_t1")
+robot.stop()
+```
+
+Application không gọi trực tiếp raw firmware API trong production path. Nếu cần benchmark legacy path, phải đi qua `BenchmarkLegacyFirmwareAdapter` với config rõ ràng.
+
+## 04.3. Port danh sách chính
+
+| Port | Trách nhiệm | Ví dụ adapter |
+|---|---|---|
+| `FrameGraphPort` | Quản lý frame, transform, custom workspace/environment. | Internal frame graph, ROS TF adapter, replay transform adapter. |
+| `KinematicsPort` | FK, Jacobian, IK, singularity/manipulability. | Pinocchio, PoE, FirmwareCoordLegacy, MoveIt2 kinematics client, mock. |
+| `PlannerPort` | Sinh path/trajectory, check feasibility. | Internal joint trajectory, MoveIt2 planner, simple Cartesian sampler, replay planner, mock. |
+| `ControllerPort` | Execute trajectory/target theo policy. | Position joint controller, legacy firmware coord controller, ros2_control bridge, fake controller. |
+| `HardwarePort` | Actuator, sensor, camera, encoder, firmware status, simulated/replay devices. | MyArmMControl real, MyArmM real, Logitech camera, fake hardware, replay, Gazebo, MuJoCo. |
+| `RuntimePort` | Chạy application runtime và communication. | Python direct, ROS 2 node, WebSocket server, gRPC server, ZMQ bridge. |
+| `DebugPort` | Logging, tracing, visualization, report. | No-op, JSONL logger, rosbag2, CSV/Parquet, online plot, offline plot. |
+| `BenchmarkPort` | Sinh test case, chạy trial, supervise process, score metric. | T1/T2/T3/T4 runners, dry-run runner, replay runner. |
+
+## 04.4. Adapter 0..N và capability-based design
+
+`HardwarePort` không giả định lúc nào cũng có đủ robot, camera, sensor. Một runtime có thể gắn 0..N adapter.
+
+Ví dụ runtime headless chỉ có robot:
+
+```yaml
+hardware_port:
+  adapters:
+    - id: robot_arm_01_m750
+      role: manipulator
+      adapter: myarm_mcontrol_real
+```
+
+Ví dụ benchmark external observer:
+
+```yaml
+hardware_port:
+  adapters:
+    - id: robot_arm_01_m750
+      role: manipulator
+      adapter: myarm_mcontrol_real
+    - id: camera_01_wrist
+      role: wrist_rgb_camera
+      adapter: logitech_c922_v4l2
+    - id: camera_02_shoulder
+      role: shoulder_rgb_camera
+      adapter: logitech_c922_v4l2
+    - id: tag_detector_01
+      role: external_pose_observer
+      adapter: apriltag_opencv
+```
+
+Ví dụ CI không có hardware:
+
+```yaml
+hardware_port:
+  adapters:
+    - id: robot_arm_01_fake
+      role: manipulator
+      adapter: fake_joint_robot
+    - id: camera_01_replay
+      role: wrist_rgb_camera
+      adapter: replay_image_folder
+```
+
+## 04.5. Plugin registry
+
+Plugin registry không nhất thiết phải phức tạp ở v0.0.3. Có thể bắt đầu bằng YAML + factory mapping.
+
+```yaml
+kinematics_plugins:
+  pinocchio_default:
+    class: myarm_m750_sdk.kinematics.PinocchioKinematicsAdapter
+    config: config/core_sdk/kinematics.pinocchio.yaml
+  poe_crosscheck:
+    class: myarm_m750_sdk.kinematics.PoeKinematicsAdapter
+    config: config/core_sdk/kinematics.poe.yaml
+
+hardware_plugins:
+  myarm_mcontrol_real:
+    class: myarm_m750_sdk.hardware.MyArmMControlAdapter
+    config: config/adapters/myarm_mcontrol_real.yaml
+  fake_joint_robot:
+    class: myarm_m750_sdk.hardware.FakeJointRobotAdapter
+    config: config/adapters/fake_hardware.yaml
+```
+
+## 04.6. Error handling ở port boundary
+
+Port không nên throw exception tùy tiện ra application nếu có thể trả về result object có reason rõ.
+
+Ví dụ `IkResult.reason`:
+
+```text
+SUCCESS
+OUT_OF_REACH
+JOINT_LIMIT
+SINGULARITY_RISK
+MAX_ITERATION
+NUMERICAL_FAILURE
+INVALID_FRAME
+ADAPTER_UNAVAILABLE
+```
+
+Ví dụ `CommandResult.reason`:
+
+```text
+ACCEPTED
+REJECTED_BUSY
+REJECTED_UNSAFE
+REJECTED_PROFILE
+MOTION_TIMEOUT
+NO_MOTION_DETECTED
+HARDWARE_FAULT
+ADAPTER_EXCEPTION
+MANUAL_RESET_REQUIRED
+```
+
+## 04.7. Raw firmware short path như một adapter riêng
+
+Raw firmware path không bị xóa hoàn toàn vì cần benchmark so sánh.
+
+```text
+Application benchmark runner
+  -> BenchmarkPort
+  -> LegacyFirmwareCoordAdapter
+  -> pymycobot write_coords/get_coords
+```
+
+Quy tắc:
+
+1. Tên adapter phải có `legacy` hoặc `raw`.
+2. Config mặc định tắt.
+3. Chỉ benchmark/diagnostic profile được bật.
+4. Mọi command phải có timeout và process watchdog.
+5. Không dùng adapter này trong production profile.

@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 24. Bản đồ debug thực dụng từ Modern Robotics
-
-![24. Bản đồ debug thực dụng từ Modern Robotics](assets/images/24-practical-debugging-map.svg){#fig-24-practical-debugging-map width=85%}
 
 Trang này gom các lỗi thực dụng và ánh xạ về phần Modern Robotics cần dùng để phân tích.
 

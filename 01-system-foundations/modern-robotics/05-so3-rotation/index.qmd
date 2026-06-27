@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 05. Rotation Matrix và SO(3)
-
-![05. Rotation Matrix và SO(3)](assets/images/05-so3-rotation.svg){#fig-05-so3-rotation width=85%}
 
 Ma trận quay $R$ mô tả hướng của một frame so với frame khác. Tập các ma trận quay 3D hợp lệ là nhóm $SO(3)$:
 

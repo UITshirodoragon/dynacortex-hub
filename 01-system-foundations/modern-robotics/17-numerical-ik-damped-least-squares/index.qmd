@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 17. Numerical IK và Damped Least Squares
-
-![17. Numerical IK và Damped Least Squares](assets/images/17-numerical-ik-damped-least-squares.svg){#fig-17-numerical-ik-damped-least-squares width=85%}
-
 Numerical IK lặp từ một cấu hình ban đầu $q_k$, tính lỗi pose $e_k$, rồi cập nhật $q$ bằng Jacobian.
 
 Dạng pseudoinverse cơ bản:

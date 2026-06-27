@@ -1,0 +1,173 @@
+---
+title: "05. Kinematics, planning và controller"
+description: "Thiết kế FK/IK/Jacobian/planning/controller theo position-only scope, dùng Pinocchio/PoE/MoveIt2 adapter và tránh phụ thuộc firmware coord blackbox."
+categories: [kinematics, planning, controller, pinocchio, moveit2]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 05. Kinematics, planning và controller
+
+## 05.1. Representation nội bộ
+
+Core SDK dùng các representation sau:
+
+$$
+T =
+\begin{bmatrix}
+R & p \\
+0 & 1
+\end{bmatrix},
+\quad R \in SO(3), \quad p \in \mathbb{R}^3
+$$ {#eq-se3}
+
+- Pose nội bộ: `CartesianPose(position_m, orientation_quat_xyzw, frame_id)`.
+- Transform nội bộ: homogeneous matrix $T \in SE(3)$ hoặc object tương đương.
+- Orientation nội bộ: quaternion hoặc rotation matrix.
+- Euler chỉ dùng tại adapter boundary nếu firmware/API bắt buộc.
+
+::: {.callout-warning}
+## Euler không làm representation trung tâm
+
+Euler/RPY có thể có nhiều branch và discontinuity. Nếu firmware cần Euler, adapter chịu trách nhiệm convert ở boundary và log convention rõ ràng.
+:::
+
+## 05.2. Kinematics backends
+
+Framework có 3 nhóm backend:
+
+| Backend | Vai trò | Dùng trong production? |
+|---|---|---|
+| `PinocchioKinematicsAdapter` | FK, Jacobian, IK bằng URDF/model. | Có, primary. |
+| `PoeKinematicsAdapter` | Cross-check FK/teaching/regression. | Có thể dùng phụ. |
+| `FirmwareCoordLegacyAdapter` | So sánh với `get_coords/write_coords` firmware. | Không, chỉ benchmark/diagnostic. |
+| `MoveIt2KinematicsClientAdapter` | Khi ROS 2 path bật, dùng MoveIt2 kinematics/planning scene nếu cần. | Tùy profile. |
+| `MockKinematicsAdapter` | CI/unit test. | Test only. |
+
+Pinocchio được dùng như adapter vì giúp tiết kiệm thời gian xây FK/Jacobian/IK trên URDF và đã được cộng đồng kiểm chứng. Core chỉ phụ thuộc `KinematicsPort`, không phụ thuộc Pinocchio trực tiếp.
+
+## 05.3. Planner backends
+
+| Planner adapter | Vai trò |
+|---|---|
+| `JointTrajectoryPlanner` | Sinh joint-space trajectory cơ bản, production v0.x. |
+| `CartesianWaypointPlanner` | Sinh waypoint SE(3), sau đó IK từng sample. |
+| `MoveIt2PlannerAdapter` | Dùng MoveIt2/OMPL/Pilz khi ROS 2 path bật. |
+| `ReplayPlannerAdapter` | Replay trajectory từ log. |
+| `MockPlannerAdapter` | Unit test và CI. |
+
+Planner phải trả về reason khi fail:
+
+```text
+SUCCESS
+INVALID_START_STATE
+INVALID_GOAL_FRAME
+IK_FAIL
+JOINT_LIMIT
+SINGULARITY_RISK
+COLLISION_RISK
+TIMEOUT
+ADAPTER_UNAVAILABLE
+```
+
+## 05.4. Controller scope v0.0.3
+
+Controller production ban đầu là **position-based joint execution**.
+
+```text
+Trajectory / JointTarget
+  -> validate
+  -> command arbitration
+  -> position command adapter
+  -> measured joint feedback
+  -> completion / timeout / fault
+```
+
+Không triển khai:
+
+- torque command;
+- velocity controller thật;
+- computed torque control;
+- impedance/admittance control thật;
+- gravity compensation động lực học.
+
+Lý do: API Python hiện tại chủ yếu expose position command và speed hint. Nếu chưa có torque/effort command rõ ràng, đưa torque/gravity compensation vào controller sẽ tạo kỳ vọng sai và làm kiến trúc khó kiểm chứng.
+
+## 05.5. Speed hint
+
+Các API firmware có tham số speed nhưng semantics có thể không rõ. Framework gọi nó là `speed_hint` thay vì `velocity_rad_s` nếu chưa đo được mapping.
+
+```yaml
+motion_profile:
+  command_mode: joint_position
+  speed_hint:
+    firmware_scale: 40
+    semantic: vendor_defined
+  max_joint_step_rad: 0.035
+  completion_timeout_s: 8.0
+```
+
+## 05.6. Backlash, payload và empirical compensation
+
+Backlash compensation, payload detection và empirical gravity/payload compensation chưa đưa vào controller chính v0.0.3. Chỉ giữ concept:
+
+1. Đo sai số bằng external observer.
+2. Phân loại payload nếu có tín hiệu đủ tin cậy.
+3. Học/fit correction ở position target nếu cần.
+4. Không gọi là gravity compensation động lực học nếu không có torque interface.
+
+::: {.callout-note}
+## Concept future work
+
+Empirical compensation có thể hữu ích sau khi FK/IK, trajectory, state machine, benchmark và external observer đã ổn định. Không nên bù khi model/zero/tool frame/camera calibration còn chưa được kiểm chứng.
+:::
+
+## 05.7. Controller state machine
+
+State machine nằm trong Core SDK, không chỉ trong ROS node.
+
+```text
+DISCONNECTED
+CONNECTED
+POWERED_OFF
+IDLE
+ENABLED
+HOLDING
+MOVING_JOINT_TRAJ
+PAUSED
+RECOVERING
+SAFE_HOMING
+ERROR
+E_STOP
+CALIBRATION
+```
+
+Command arbitration rule cơ bản:
+
+| State | Command mới | Policy mặc định |
+|---|---|---|
+| `IDLE/ENABLED` | motion command | Accept nếu validate pass. |
+| `MOVING_JOINT_TRAJ` | motion command khác | Reject, trừ khi profile cho preempt. |
+| `CALIBRATION` | motion command | Reject. |
+| `ERROR/E_STOP` | motion command | Reject. |
+| `PAUSED` | resume/stop | Accept. |
+
+## 05.8. Minimal controller API
+
+```python
+def validate_joint_target(target: JointTarget) -> ValidationResult:
+    """Validate target without hardware side effects."""
+
+
+def plan_joint_trajectory(request: TrajectoryRequest) -> TrajectoryResult:
+    """Plan a trajectory; does not send commands."""
+
+
+def execute_trajectory(trajectory: Trajectory) -> CommandResult:
+    """Execute a validated trajectory through ControllerPort."""
+```
+
+Tên hàm thể hiện side effect theo clean code rule: `validate_*` và `plan_*` không gửi hardware; `execute_*` có side effect.

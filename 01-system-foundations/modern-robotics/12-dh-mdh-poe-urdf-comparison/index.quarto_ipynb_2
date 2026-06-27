@@ -1,0 +1,82 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"12. D-H, M-DH, PoE và URDF\"\n",
+        "description: \"So sánh các biểu diễn động học serial robot.\"\n",
+        "categories: [modern-robotics, robotics-math, system-foundations]\n",
+        "status: draft\n",
+        "date: last-modified\n",
+        "date-format: DD/MM/YYYY HH:mm:ssZ[Z]\n",
+        "author: \"Nguyen Hoang Dang Khoa\"\n",
+        "---\n",
+        "\n",
+        "\n",
+        "D-H, Modified D-H, PoE và URDF đều có thể dùng để mô tả quan hệ hình học của robot arm, nhưng chúng phục vụ các bối cảnh khác nhau.\n",
+        "\n",
+        "## Classic D-H\n",
+        "\n",
+        "$$\n",
+        "{}^{i-1}T_i = R_z(\\theta_i)T_z(d_i)T_x(a_i)R_x(\\alpha_i)\n",
+        "$$ {#eq-classic-dh}\n",
+        "\n",
+        "## Modified D-H\n",
+        "\n",
+        "Một convention M-DH phổ biến là:\n",
+        "\n",
+        "$$\n",
+        "{}^{i-1}T_i = R_x(\\alpha_{i-1})T_x(a_{i-1})R_z(\\theta_i)T_z(d_i)\n",
+        "$$ {#eq-modified-dh}\n",
+        "\n",
+        "::: callout-warning\n",
+        "Không được lấy bảng D-H classic đưa vào công thức M-DH, hoặc ngược lại. Hai bảng có thể dùng ký hiệu giống nhau nhưng frame convention khác nhau.\n",
+        ":::\n",
+        "\n",
+        "## So sánh thực dụng\n",
+        "\n",
+        "| Biểu diễn | Điểm mạnh | Điểm yếu |\n",
+        "|---|---|---|\n",
+        "| D-H | gọn, dễ đưa vào bảng | phụ thuộc frame convention |\n",
+        "| M-DH | thuận tiện trong một số mô hình công nghiệp | rất dễ nhầm với D-H classic |\n",
+        "| PoE | tốt cho $SE(3)$, Jacobian, IK, calibration | khó học hơn |\n",
+        "| URDF | hợp ROS/MoveIt/visual/collision/inertial | không phải bảng tham số tối thiểu |"
+      ],
+      "id": "5c62601e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| eval: false\n",
+        "import pandas as pd\n",
+        "pd.read_csv(\"assets/tables/kinematic_representation_comparison.csv\")"
+      ],
+      "id": "f4863f79",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Kết luận thực dụng\n",
+        "\n",
+        "D-H/M-DH phù hợp để đọc tài liệu, kiểm tra nhanh và viết báo cáo. PoE phù hợp để học bản chất động học hiện đại. URDF/Xacro phù hợp làm mô tả robot trong ROS/MoveIt. Nội dung so sánh này cũng được mở rộng từ ghi chú D-H/M-DH/PoE người dùng cung cấp trong phiên làm việc này."
+      ],
+      "id": "a3989f68"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/khoa/.local/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

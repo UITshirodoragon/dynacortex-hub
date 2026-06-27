@@ -1,0 +1,741 @@
+---
+title: "Phân tích và đánh giá cánh tay robot Bridge Data Robot của RobonetV2"
+description: "Đây là tài liệu phân tích và đánh giá giải pháp điều khiển cho cánh tay robot Bridge Data Robot của RobonetV2"
+categories: [reference, lerobot, bridge-data-robot, python-sdk, ros2-sdk, api, python, kinematics, dynamics, specification, information, controller, analysis, deployment]
+status: standard
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+author: "Nguyen Hoang Dang Khoa"
+---
+
+## 1. Bức tranh kiến trúc tổng thể
+
+Repo được chia thành 3 tầng chính:
+
+```text
+bridge_data_robot/
+├── docker-compose.yml
+├── widowx_envs/
+│   ├── widowx_envs/              # Python SDK / Gym-like environment / data collection
+│   ├── widowx_controller/        # ROS package điều khiển robot, service, gripper, VR controller
+│   ├── multicam_server/          # ROS package camera streaming
+│   ├── experiments/bridge_data_v2/conf.py
+│   └── Dockerfile
+```
+
+Luồng điều khiển thực tế là:
+
+```text
+Policy / VR / Demo repo
+        ↓
+Python Env: WidowXEnv / BridgeDataRailRLPrivateWidowX
+        ↓
+RobotBaseEnv.step(action)
+        ↓
+WidowX_Controller.move_to_eep()
+        ↓
+Interbotix SDK + Modern Robotics FK/IK
+        ↓
+ROS 1 topics/services
+        ↓
+Dynamixel / WidowX hardware
+```
+
+Về mặt robotics, repo này đi theo hướng **policy không điều khiển trực tiếp servo**, mà chỉ gửi **action tương đối trong end-effector/task-space**. Tầng `widowx_envs` chuyển action đó thành pose mục tiêu, rồi `widowx_controller` giải IK và gửi lệnh joint xuống Interbotix. Đây là điểm rất đáng học cho MyArm M750.
+
+Trong Modern Robotics, forward kinematics của open-chain thường được biểu diễn bằng Product of Exponentials và Jacobian liên hệ joint velocity với twist end-effector; repo này sử dụng đúng tinh thần đó thông qua `FKinSpace`, `JacobianSpace`, `MatrixLog6`, `Adjoint`, `se3ToVec`. 
+
+## 2. Python SDK: `widowx_envs`
+
+Đây là phần quan trọng nhất nếu ta muốn học cách thiết kế tầng giữa cho policy/VLA.
+
+### 2.1. `BaseEnv` và `RobotBaseEnv`
+
+`BaseEnv` là abstract interface tối giản, định nghĩa các method như:
+
+```text
+step(action)
+current_obs()
+reset()
+valid_rollout()
+render()
+adim
+sdim
+```
+
+File: `widowx_envs/widowx_envs/base/base_env.py`.
+
+`RobotBaseEnv` mới là lớp thật sự biến robot thành một môi trường kiểu Gym. Trong `__init__`, nó đọc hyperparams, setup workspace boundary, khởi tạo controller, khởi tạo camera recorder, mở gripper, xác định action/state dimension. Điểm quan trọng:
+
+```python
+self._controller = self._hp.robot_controller(...)
+self._cameras = [CameraRecorder(t, False, False) for t in self._hp.camera_topics]
+```
+
+File: `widowx_envs/widowx_envs/base/robot_base_env.py`, khoảng dòng 36–94.
+
+`action_space` mặc định là 7 chiều:
+
+```text
+[dx, dy, dz, droll, dpitch, dyaw, gripper]
+```
+
+với giới hạn gần đúng:
+
+```text
+translation: ±0.05 m mỗi step
+rotation: ±0.25 rad mỗi step
+gripper: 0.0 → 1.0
+```
+
+Repo cũng hỗ trợ mode rút gọn:
+
+```text
+3trans      → [dx, dy, dz, gripper]
+3trans1rot  → [dx, dy, dz, dyaw, gripper]
+3trans3rot  → [dx, dy, dz, droll, dpitch, dyaw, gripper]
+```
+
+Đây là thiết kế rất phù hợp cho VLA/policy: policy không cần biết joint-level robot model, chỉ cần sinh delta trong task-space.
+
+### 2.2. Cách `step(action)` hoạt động
+
+Trong `RobotBaseEnv.step()`:
+
+1. Kiểm tra shape action.
+2. Clip action theo giới hạn an toàn.
+3. Nếu action mode thiếu rotation thì chèn zero vào roll/pitch/yaw.
+4. Chuyển action thành `delta_transform`.
+5. Tính `next_transform = delta_transform @ previous_target_transform`.
+6. Clip vị trí XYZ vào workspace boundary.
+7. Gửi gripper command.
+8. Publish TF `commanded_transform`.
+9. Gọi controller:
+
+```python
+self._controller.move_to_eep(new_transform, duration=self._hp.move_duration, blocking=blocking)
+```
+
+10. Cập nhật `_previous_target_qpos`.
+11. Trả observation.
+
+File: `widowx_envs/widowx_envs/base/robot_base_env.py`, khoảng dòng 182–266.
+
+Đây là một pattern rất quan trọng cho MyArm M750: **policy sinh action tương đối**, nhưng tầng controller quản lý FK/IK, workspace, gripper, timing, observation và safety.
+
+### 2.3. Observation design
+
+`current_obs()` trả về:
+
+```text
+qpos              joint angles
+qvel              joint velocities
+joint_effort      joint efforts
+full_state        [x, y, z, roll, pitch, yaw, gripper]
+state             state rút gọn theo action mode
+desired_state     target trước đó
+eef_transform     4x4 SE(3)
+images            camera images
+depth_images      nếu có depth camera
+high_bound/low_bound
+env_done
+t_get_obs
+```
+
+File: `robot_base_env.py`, khoảng dòng 280–318.
+
+Điểm hay: repo không chỉ trả ảnh cho policy, mà trả cả proprioception và target state. Với MyArm M750, nên học theo hướng này:
+
+```text
+observation = {
+  "joint_position": q,
+  "joint_velocity": dq,
+  "tcp_pose": T_base_tcp,
+  "commanded_tcp_pose": T_cmd,
+  "gripper_state": g,
+  "images": camera_obs,
+  "timestamp": t
+}
+```
+
+### 2.4. `WidowXEnv` và các biến thể
+
+`WidowXEnv` kế thừa `RobotBaseEnv`, bổ sung logic reset/start state. Nó lấy robot name từ biến môi trường:
+
+```python
+ROBONETV2_ARM=wx250s
+```
+
+File: `widowx_envs/widowx_envs/widowx_env.py`, khoảng dòng 25–48.
+
+Các lớp đáng chú ý:
+
+```text
+WidowXEnv
+VR_WidowX
+VR_WidowX_DAgger
+StateReachingWidowX
+ImageReachingWidowX
+BridgeDataRailRLPrivateWidowX
+BridgeDataRailRLPrivateVRWidowX
+FinetuningBridgeDataWidowX
+```
+
+`BridgeDataRailRLPrivateWidowX` là wrapper quan trọng cho demo/eval. Nó trả image dạng CHW float32, state, joints, full image, env_done. File: `widowx_env.py`, khoảng dòng 418–492.
+
+Đây chính là lớp “bridge” giữa robot thật và các repo policy như `bridge_data_v2`.
+
+## 3. ROS package / “ROS SDK”: `widowx_controller`
+
+Dù người dùng gọi ROS2 SDK, trong zip này `widowx_controller` là **ROS 1 package**.
+
+### 3.1. Interface trừu tượng
+
+`controller_base.py` định nghĩa hai abstract base class:
+
+```text
+GripperControllerBase
+RobotControllerBase
+```
+
+`RobotControllerBase` yêu cầu các method:
+
+```text
+move_to_state()
+set_moving_time()
+move_to_eep()
+set_joint_angles()
+move_to_neutral()
+get_joint_angles()
+get_joint_effort()
+get_joint_angles_velocity()
+get_cartesian_pose()
+get_state()
+open_gripper()
+close_gripper()
+```
+
+File: `widowx_controller/src/widowx_controller/controller_base.py`.
+
+Đây là thiết kế tốt: tầng env không cần biết controller thật là Interbotix, MyArm, ROS service hay remote client. Với MyArm M750, nên giữ pattern này và viết:
+
+```text
+RobotControllerBase
+├── MyArmSerialController
+├── MyArmROS2ControlController
+├── MyArmSimController
+└── MyArmRemoteClientController
+```
+
+### 3.2. `WidowX_Controller`
+
+`WidowX_Controller` là controller chính. Nó wrap Interbotix SDK:
+
+```python
+self.bot = ModifiedInterbotixManipulatorXS(robot_model=robot_name)
+```
+
+File: `widowx_controller.py`, khoảng dòng 162–171.
+
+Nó subscribe:
+
+```python
+/{robot_name}/joint_states
+```
+
+và lưu:
+
+```text
+_angles
+_velocities
+_effort
+```
+
+File: `widowx_controller.py`, khoảng dòng 192–200 và 319–354.
+
+Nó lấy FK bằng:
+
+```python
+pose = FKinSpace(self.bot.arm.robot_des.M,
+                 self.bot.arm.robot_des.Slist,
+                 joint_positions)
+```
+
+File: `widowx_controller.py`, khoảng dòng 356–363.
+
+Điểm này rất quan trọng: **FK không lấy từ firmware blackbox**, mà lấy từ model `M`, `Slist`, `q`. Đây rất gần với mục tiêu của MyArm M750 nếu ta chuyển FK/IK ra ngoài firmware.
+
+### 3.3. IK: `ModifiedIKinSpace`
+
+Repo copy/modify logic IK từ Modern Robotics:
+
+```python
+ModifiedIKinSpace(Slist, M, T, thetalist0, eomg, ev, maxiterations=40)
+```
+
+Nó dùng:
+
+```text
+FKinSpace
+MatrixLog6
+Adjoint
+JacobianSpace
+pinv(JacobianSpace)
+```
+
+để lặp Newton-style IK. File: `widowx_controller.py`, dòng 50–79.
+
+`ModifiedInterbotixArmXSInterface.set_ee_pose_matrix_fast()` dùng IK này, kiểm tra joint limit, rồi publish joint positions nhanh qua `JointGroupCommand`. File: `widowx_controller.py`, dòng 115–158.
+
+Ý nghĩa kỹ thuật:
+
+```text
+target T_sd
+    ↓
+IK với seed = current joint angles
+    ↓
+theta_list
+    ↓
+joint limit check
+    ↓
+publish_positions_fast(theta_list)
+```
+
+Đây là chiến lược đúng cho robot arm nhỏ: dùng seed hiện tại để IK hội tụ ổn định hơn. Modern Robotics cũng nhấn mạnh numerical IK cần initial guess đủ gần và thường dùng nghiệm timestep trước làm seed cho timestep sau. 
+
+### 3.4. Move command
+
+`move_to_state(target_xyz, target_zangle)` tạo pose 4x4 từ XYZ + yaw quanh Z, sau đó gọi `move_to_eep()`.
+
+`move_to_eep()` có hai mode:
+
+```text
+step + non-blocking:
+    dùng set_ee_pose_matrix_fast()
+
+normal/blocking:
+    dùng Interbotix set_ee_pose_matrix()
+```
+
+File: `widowx_controller.py`, khoảng dòng 232–274.
+
+Đây là cách họ phân biệt:
+
+```text
+data collection / policy step cần nhanh
+manual move / reset có thể dùng blocking + trajectory time
+```
+
+Với MyArm M750, ta có thể thiết kế tương tự:
+
+```text
+move_to_tcp_pose_fast(T, seed_q, blocking=False)
+move_to_tcp_pose_planned(T, planner=MoveIt2, blocking=True)
+move_to_joint_positions(q, duration)
+```
+
+### 3.5. Gripper controller
+
+`custom_gripper_controller.py` điều khiển gripper bằng PWM kiểu proportional control:
+
+```python
+ctrl = (des_pos - gripper_pos) * 300
+pwm = self.get_gripper_pwm(ctrl)
+publish JointSingleCommand('gripper', pwm)
+```
+
+Nó chạy timer 0.02 giây, tức khoảng 50 Hz. File: `custom_gripper_controller.py`, khoảng dòng 20–39 và 94–115.
+
+Điểm hay: gripper có interface normalized:
+
+```text
+0.0 = close
+1.0 = open
+```
+
+và nội bộ tự denormalize về giới hạn cơ khí `lower_limit`, `upper_limit`. Với MyArm M750, nên học cách này: policy không nên biết pulse/angle thô của gripper.
+
+## 4. Control loop
+
+Repo có nhiều control loop ở các tầng khác nhau.
+
+### 4.1. High-level rollout loop
+
+`BlockingLoop.rollout()`:
+
+```text
+reset env
+policy.reset()
+while not done:
+    pi_t = policy.act(...)
+    env.step(pi_t["actions"], blocking=True)
+    cache obs
+```
+
+File: `control_loops.py`, dòng 218–286.
+
+`TimedLoop.rollout()` dùng `move_duration` để chạy theo nhịp thời gian:
+
+```python
+step_duration = self.env._hp.move_duration
+if time.time() > last_tstep + step_duration:
+    pi_t = policy.act(...)
+    obs = self.env.step(pi_t['actions'], tstamp_return_obs, blocking=False)
+```
+
+File: `control_loops.py`, dòng 413–447.
+
+Trong config demo, `move_duration = 0.2`, nghĩa là high-level policy loop khoảng **5 Hz**. File: `experiments/bridge_data_v2/conf.py`, dòng 22–24.
+
+### 4.2. VR teleop policy loop
+
+`VRTeleopPolicy` đọc pose Oculus, lấy reference transform khi người dùng giữ nút handle, tính delta VR transform, map sang robot transform, rồi chuyển thành action tương đối:
+
+```python
+delta_robot_transform = new_robot_transform @ TransInv(prev_target_pos)
+actions = transform2action_local(...)
+```
+
+File: `vr_teleop_policy.py`, dòng 54–128.
+
+Điểm hay: VR không gửi trực tiếp pose tuyệt đối về robot, mà dùng **reference pose + relative transform**. Điều này giúp thao tác ổn định hơn và giảm phụ thuộc calibration tuyệt đối.
+
+### 4.3. VR controller server loop
+
+`VR_WidowX_ControllerServer.update_robot_cmds()` đọc Oculus liên tục, tạo `new_robot_transform`, rồi gọi:
+
+```python
+self.bot.arm.set_ee_pose_matrix_fast(new_robot_transform,
+                                     custom_guess=self.get_joint_angles())
+```
+
+File: `vr_controller_server.py`, dòng 126–191.
+
+Nó cảnh báo nếu loop chậm hơn 20 ms. Đây là control loop thực dụng cho teleop, nhưng chưa phải real-time control đúng nghĩa.
+
+### 4.4. Velocity controller
+
+`velocity_controller.py` có inverse velocity kinematics:
+
+```python
+theta_vel = pinv(JacobianSpace(Slist, thetalist)) @ Vs
+```
+
+File: `velocity_controller.py`, dòng 34–51.
+
+Nhưng đầu file ghi rõ:
+
+```text
+This VelocityController is not working,
+mainly serves as a backup from the original code.
+```
+
+File: `velocity_controller.py`, dòng 1–7.
+
+Vì vậy không nên lấy module này làm mẫu chính. Nó có ý tưởng đúng về mặt Jacobian velocity control, nhưng implementation còn lỗi/legacy.
+
+## 5. Robot description, FK, IK, planning, visualize, sim
+
+### Robot description
+
+Repo **không chứa URDF/XACRO riêng** của WidowX. Nó dựa vào Interbotix:
+
+```xml
+<include file="$(find interbotix_xsarm_control)/launch/xsarm_control.launch">
+    <arg name="robot_model" value="$(env ROBONETV2_ARM)"/>
+    <arg name="use_rviz" value="False"/>
+</include>
+```
+
+File: `widowx_controller/launch/launch.launch`, dòng 8–11.
+
+Robot model lấy từ:
+
+```text
+ROBONETV2_ARM=wx250s
+```
+
+trong `Dockerfile`, dòng 71.
+
+Nghĩa là mô tả robot, joint limits, `Slist`, `M`, URDF đều đến từ Interbotix stack, không nằm trực tiếp trong repo này.
+
+### FK
+
+FK dùng `modern_robotics.FKinSpace` với `M` và `Slist` từ Interbotix robot description. Đây là PoE-based FK.
+
+### IK
+
+IK có 2 nguồn:
+
+```text
+1. InterbotixArmXSInterface.set_ee_pose_matrix()
+2. ModifiedIKinSpace() tự sửa từ Modern Robotics
+```
+
+Repo ưu tiên IK nhanh trong `set_ee_pose_matrix_fast()` để tránh set velocity profile register nhiều lần.
+
+### Planning
+
+Repo **không dùng MoveIt/MoveIt2 planning**. Không có OMPL, collision scene, trajectory planner, planning pipeline. Nó chủ yếu làm:
+
+```text
+task-space delta command
+→ IK
+→ joint position command
+```
+
+Không có collision avoidance. Không có global motion planning.
+
+### Visualization
+
+Visualization rất hạn chế:
+
+```text
+publish_transform(commanded_transform)
+publish_transform(currentvr_robotsystem)
+publish_transform(reference_vr_transform)
+publish_transform(des_robot_transform)
+```
+
+Tức là có thể xem TF trong RViz, nhưng launch mặc định `use_rviz=False`.
+
+### Simulation
+
+Không có Gazebo/MuJoCo simulation thật trong zip. `control_loops.py` còn comment “MuJoCo” nhưng đây là dấu vết legacy từ visual MPC, không phải sim stack hoàn chỉnh.
+
+## 6. Camera SDK: `multicam_server`
+
+`multicam_server` là ROS package xử lý camera.
+
+Có 2 mode:
+
+```text
+python_node=false:
+    dùng video_stream_opencv/camera.launch
+
+python_node=true:
+    dùng streamer.py tự viết bằng OpenCV VideoCapture
+```
+
+Launch chính: `multicam_server/launch/cameras.launch`.
+
+`start_streamers.py` đọc USB connector chart, map USB ID sang `/dev/videoX`, rồi spawn nhiều streamer. File: `start_streamers.py`, dòng 20–76 và 90–118.
+
+`CameraRecorder` subscribe image topic, convert bằng `cv_bridge`, cache latest image, kiểm tra repeated image, hỗ trợ tracking và video recording. File: `camera_recorder.py`.
+
+Đây là điểm rất thực dụng cho data collection: policy/env không trực tiếp mở camera; camera được publish qua ROS topic, env chỉ subscribe.
+
+Tuy nhiên, nếu dùng `streamer.py` Python node, có một điểm đáng nghi: frame timestamp đang dùng `rospy.Time()` thay vì `rospy.Time.now()` ở dòng 73. Nếu chạy mode này, timestamp có thể sai. Mặc định trong `run.sh`, họ đặt `python_node:=false`, nên thường đi qua `video_stream_opencv`.
+
+## 7. Demo repo / ứng dụng SDK
+
+Trong zip có 2 cách ứng dụng chính.
+
+### 7.1. Demo data collection với VR
+
+Config nằm ở:
+
+```text
+widowx_envs/experiments/bridge_data_v2/conf.py
+```
+
+Nó định nghĩa:
+
+```python
+env = (VR_WidowX, env_params)
+agent = TimedLoop
+policy = VRTeleopPolicy
+T = 500
+image_height = 480
+image_width = 640
+```
+
+File: `conf.py`, dòng 7–53.
+
+Luồng chạy:
+
+```text
+run_data_collection.py
+    ↓
+DataCollectionManager
+    ↓
+TrajectoryCollector
+    ↓
+TimedLoop
+    ↓
+VR_WidowX
+    ↓
+VRTeleopPolicy
+    ↓
+RobotBaseEnv.step()
+    ↓
+WidowX_Controller.move_to_eep()
+```
+
+Dữ liệu được lưu bởi `RawSaver`:
+
+```text
+raw/traj_groupX/trajY/
+├── images0/im_0.jpg ...
+├── images1/im_0.jpg ...
+├── depth_images0/im_0.png ...
+├── agent_data.pkl
+├── obs_dict.pkl
+└── policy_out.pkl
+```
+
+File: `raw_saver.py`, dòng 17–74.
+
+### 7.2. Demo policy evaluation qua `bridge_data_v2`
+
+README mô tả 2 cách:
+
+```text
+1. Docker compose service method
+2. Server-client method
+```
+
+Cách mới hơn là server-client.
+
+Server robot chạy:
+
+```bash
+widowx_env_service --server
+```
+
+Client/policy repo cài `widowx_envs`, rồi gọi:
+
+```python
+WidowXClient.init(...)
+WidowXClient.get_observation()
+WidowXClient.step_action(action)
+WidowXClient.move(...)
+WidowXClient.move_gripper(...)
+```
+
+File: `widowx_env_service.py`, dòng 234–323.
+
+Đây là kiến trúc rất đáng học: **policy dependencies tách khỏi robot dependencies**. Robot có thể chạy trên máy điều khiển riêng; policy/VLA có thể chạy ở máy khác, chỉ cần gửi action và nhận observation qua network.
+
+Với MyArm M750, mô hình tương ứng là:
+
+```text
+Jetson:
+    myarm_control_server
+    ROS2 control
+    camera nodes
+    kinematics node
+
+Host PC / Server:
+    VLA policy
+    evaluation script
+    visualization
+```
+
+## 8. Điểm mạnh của repo
+
+1. **Tách policy khỏi hardware tương đối tốt.** Policy chỉ thấy `env.step(action)` và `obs`, không cần biết Interbotix/Dynamixel.
+
+2. **Action space thân thiện với learning.** Dùng delta end-effector + gripper thay vì joint command trực tiếp.
+
+3. **FK/IK nằm ngoài firmware.** FK dùng `FKinSpace`, IK dùng Modern Robotics/Interbotix model. Đây đúng hướng với mục tiêu thay FK/IK blackbox của MyArm M750.
+
+4. **Có server-client mode.** Phù hợp cho robot chạy trên máy điều khiển riêng và policy chạy ở máy AI khác.
+
+5. **Có camera abstraction.** Multi-camera được đóng gói thành ROS topics và `CameraRecorder`.
+
+6. **Có data collection pipeline.** VR teleop → trajectory → image/state/action/policy_out.
+
+## 9. Điểm yếu / rủi ro kỹ thuật
+
+1. **Không phải ROS 2.** Muốn áp dụng cho MyArm M750 + ROS 2 phải port lại từ `rospy/catkin/roslaunch` sang `rclpy/rclcpp/ament/launch.py`.
+
+2. **Không có `ros_control` / `ros2_control`.** Lệnh đi qua Interbotix SDK và topic/service riêng, không theo chuẩn `hardware_interface`, `controller_manager`, `joint_trajectory_controller`.
+
+3. **Không có MoveIt/MoveIt2 planning.** Chỉ IK trực tiếp, không collision checking, không planning scene.
+
+4. **Không có simulator hoàn chỉnh.** Không có Gazebo/MuJoCo/PyBullet robot model trong repo.
+
+5. **Nhiều đoạn legacy/bug.** Ví dụ `velocity_controller.py` tự ghi là không hoạt động; có biến undefined như `max_effort_abs_values`; có broad `except`; shutdown dùng `os.kill(pid, 9)`.
+
+6. **Control loop chưa real-time.** Dựa vào Python, `time.sleep`, ROS service/topic thường. Sách ROS 2 cũng nhấn mạnh execution, executor, latency và real-time là phần cần thiết kế riêng, không tự nhiên có sẵn chỉ vì dùng ROS 2. 
+
+## 10. Bài học trực tiếp cho MyArm M750
+
+Từ repo này, tôi đề xuất không copy nguyên code, mà copy **kiến trúc**:
+
+```text
+myarm_m750_stack/
+├── myarm_description/          # URDF/XACRO, meshes, joint limits
+├── myarm_kinematics/           # Pinocchio FK/IK/Jacobian
+├── myarm_hardware/             # serial/USB hardware driver
+├── myarm_controller/           # high-level controller API
+├── myarm_envs/                 # Gym-like env for policy/VLA
+├── myarm_camera/               # camera topics, sync, calibration
+├── myarm_remote/               # server-client API
+├── myarm_bringup/              # launch Jetson
+└── myarm_benchmarks/           # repeatability, latency, IK success
+```
+
+Lớp nên học theo Bridge Data:
+
+```text
+Policy/VLA
+    ↓
+MyArmEnv.step(action)
+    ↓
+ActionLimiter + WorkspaceLimiter
+    ↓
+MyArmKinematics.solve_ik(T_target, q_seed)
+    ↓
+Trajectory/Safety Filter
+    ↓
+ros2_control JointTrajectoryController
+    ↓
+MyArm hardware driver
+```
+
+Với MyArm M750, khác biệt quan trọng là nên thay:
+
+```text
+InterbotixArmXSInterface + Modern Robotics IK
+```
+
+bằng:
+
+```text
+Pinocchio model + custom IK / MoveIt2 IK / damped least squares IK
+```
+
+và thay:
+
+```text
+ROS 1 service/topic riêng
+```
+
+bằng:
+
+```text
+ROS 2 actions/services/topics chuẩn:
+- sensor_msgs/JointState
+- trajectory_msgs/JointTrajectory
+- control_msgs/FollowJointTrajectory
+- tf2
+- robot_state_publisher
+- controller_manager
+```
+
+## 11. Kết luận ngắn gọn
+
+`bridge_data_robot` là một repo rất đáng tham khảo cho **tầng giữa policy ↔ robot thật**, đặc biệt ở các ý tưởng:
+
+```text
+relative end-effector action
+Gym-like robot env
+external FK/IK
+multi-camera observation
+VR/data collection pipeline
+server-client evaluation
+```
+
+Nhưng nó không phải mẫu tốt để copy nguyên cho MyArm M750 vì vẫn là ROS 1, chưa có `ros2_control`, chưa có MoveIt2, chưa có simulation/planning chuẩn, và còn nhiều đoạn legacy. Với dự án MyArm M750, hướng đúng là lấy kiến trúc env/controller/server-client của Bridge Data, nhưng triển khai lại bằng ROS 2 + Pinocchio + ros2_control + MoveIt2.

@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 06. Homogeneous Transform và SE(3)
-
-![06. Homogeneous Transform và SE(3)](assets/images/06-se3-homogeneous-transform.svg){#fig-06-se3-homogeneous-transform width=85%}
-
 Một pose trong không gian 3D thường được viết bằng homogeneous transform:
 
 $$

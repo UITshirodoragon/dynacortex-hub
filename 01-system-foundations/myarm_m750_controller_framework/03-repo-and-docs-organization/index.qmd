@@ -1,0 +1,473 @@
+---
+title: "03. Tổ chức docs module và project repo"
+description: "Phân biệt rõ docs-only module đang đóng zip với project repo/runtime repo sẽ được tạo sau cho MyArm M750 Controller Framework."
+categories: [repo, quarto, docs, git, ros2, ai-agent, project-structure]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 03. Tổ chức docs module và project repo
+
+## 03.1. Quyết định chính của v0.0.3
+
+Bản **v0.0.3** tiếp tục là bản **docs-only**. Zip phát hành trong giai đoạn này chỉ chứa phần tài liệu QMD và skills để port vào Quarto site hoặc knowledge hub hiện có.
+
+Điểm sửa quan trọng so với v0.0.2 là tách rõ hai khái niệm:
+
+| Khái niệm | Ý nghĩa | Có trong zip v0.0.3? |
+|---|---|---|
+| **Docs module** | Gói tài liệu QMD nằm trong `01-system-foundations/myarm_m750_controller_framework/`. Đây là thứ đang được đóng zip để import vào hệ thống docs. | Có |
+| **Project repo** | Repo triển khai phần mềm thật gồm ROS 2 workspace, Python SDK, config, tools, plugins, benchmark, scripts, tests, docs và skills. Đây là cấu trúc mục tiêu để coding sau này. | Không |
+
+::: {.callout-important}
+## Phạm vi của zip v0.0.3
+
+Zip v0.0.3 **không phải** ROS 2 workspace và **không phải** skeleton project. Nó chỉ là docs module. Tuy nhiên, trang này vẫn mô tả cấu trúc **project repo mục tiêu** để developer hoặc AI coding agent có cơ sở tạo skeleton ở bước sau.
+:::
+
+## 03.2. Cấu trúc docs module được đóng zip
+
+Cấu trúc release docs-only v0.0.3:
+
+```text
+01-system-foundations/myarm_m750_controller_framework/
+├── CHANGELOG.md
+├── 00-overview/
+│   └── index.qmd
+├── 01-requirements/
+│   └── index.qmd
+├── 02-architecture-principles/
+│   └── index.qmd
+├── 03-repo-and-docs-organization/
+│   └── index.qmd
+├── 04-domain-model-ports-and-adapters/
+│   └── index.qmd
+├── 05-kinematics-planning-and-controller/
+│   └── index.qmd
+├── 06-hardware-port-and-observation/
+│   └── index.qmd
+├── 07-ros2-nonros-runtime-and-network/
+│   └── index.qmd
+├── 08-config-system/
+│   └── index.qmd
+├── 09-testing-debug-visualize-benchmark/
+│   └── index.qmd
+├── 10-simulation-digital-twin/
+│   └── index.qmd
+├── 11-ai-agent-coding-and-maintenance/
+│   └── index.qmd
+├── 12-versioning-and-changelog/
+│   └── index.qmd
+├── README.md
+├── index.qmd
+└── skills/
+    ├── clean-code-clean-comment-robotics.qmd
+    ├── skill_clean_code_comment_robotics.md
+    └── skill_quarto_docs.md
+```
+
+Docs module không kèm `_quarto.yml`. Khi port vào Quarto site, `_quarto.yml` sẽ nằm ở project Quarto cha.
+
+## 03.3. Vai trò của từng nhóm tài liệu trong docs module
+
+| Mục | Vai trò |
+|---|---|
+| `index.qmd` | Trang entry point cho toàn bộ tài liệu framework. |
+| `00-overview/` | Tổng quan dự án, hardware setup, OS/runtime và mục tiêu control-stack. |
+| `01-requirements/` | Yêu cầu chức năng, phi chức năng, benchmark count, non-goals. |
+| `02-architecture-principles/` | Nguyên tắc kiến trúc lai: layered, hexagonal/ports-adapters, plugin architecture, clean boundary. |
+| `03-repo-and-docs-organization/` | Phân biệt docs module và project repo; quy tắc port, Git, release, AI agent. |
+| `04-domain-model-ports-and-adapters/` | Domain model, ports, adapters, plugin registry và application boundary. |
+| `05-kinematics-planning-and-controller/` | FK/IK/Jacobian/planning/controller position-only. |
+| `06-hardware-port-and-observation/` | HardwarePort tổng hợp actuator, camera, encoder, firmware status, fake/replay/sim adapters. |
+| `07-ros2-nonros-runtime-and-network/` | ROS 2 DDS path, non-ROS WebSocket/gRPC/ZMQ path, host Jetson/PC. |
+| `08-config-system/` | Config ngoài code, chia theo tầng Application → Runtime → Core SDK → Port → Adapter → Firmware/Hardware. |
+| `09-testing-debug-visualize-benchmark/` | Unit/integration/hardware tests, logging, visualization, watchdog, benchmark T1–T4. |
+| `10-simulation-digital-twin/` | Gazebo, MuJoCo, fake observation, replay và sim/real switching. |
+| `11-ai-agent-coding-and-maintenance/` | Quy tắc AI coding agent, clean code/comment, maintenance workflow. |
+| `12-versioning-and-changelog/` | Quy tắc versioning và changelog. |
+| `skills/` | Skill hướng dẫn sửa docs/code; dùng được cả trong docs repo và project repo. |
+
+## 03.4. Cách port docs module vào Quarto site
+
+Khi đưa docs module này vào knowledge hub hoặc Quarto site chính, copy nguyên thư mục:
+
+```text
+01-system-foundations/myarm_m750_controller_framework/
+```
+
+vào cùng vị trí tương ứng trong Quarto project cha, sau đó thêm vào sidebar/navbar của `_quarto.yml` bên ngoài.
+
+Ví dụ sidebar:
+
+```yaml
+- section: "MyArm M750 Controller Framework"
+  contents:
+    - 01-system-foundations/myarm_m750_controller_framework/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/00-overview/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/01-requirements/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/02-architecture-principles/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/03-repo-and-docs-organization/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/04-domain-model-ports-and-adapters/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/05-kinematics-planning-and-controller/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/06-hardware-port-and-observation/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/07-ros2-nonros-runtime-and-network/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/08-config-system/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/09-testing-debug-visualize-benchmark/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/10-simulation-digital-twin/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/11-ai-agent-coding-and-maintenance/index.qmd
+    - 01-system-foundations/myarm_m750_controller_framework/12-versioning-and-changelog/index.qmd
+```
+
+::: {.callout-warning}
+Không sửa HTML output trong `_site/` hoặc `docs/` render output bằng tay. Chỉ sửa source `.qmd`, `README.md`, `CHANGELOG.md`, skills và asset source nếu có.
+:::
+
+## 03.5. Cấu trúc project repo mục tiêu
+
+Project repo thật sau này nên là một repo duy nhất có thể dùng như **ROS 2 workspace**, nhưng vẫn cho phép Python Core SDK chạy độc lập không cần ROS 2. Trong project repo, docs và skills vẫn phải tồn tại để developer/AI agent đọc trước khi code.
+
+Cấu trúc mục tiêu:
+
+```text
+myarm_m750_controller_framework/
+├── README.md
+├── CHANGELOG.md
+├── VERSION
+├── LICENSE
+├── .gitignore
+├── .pre-commit-config.yaml
+├── pyproject.toml
+├── setup.cfg
+├── colcon.meta
+├── docs/
+│   └── 01-system-foundations/
+│       └── myarm_m750_controller_framework/
+│           ├── index.qmd
+│           ├── 00-overview/
+│           ├── 01-requirements/
+│           ├── 02-architecture-principles/
+│           ├── 03-repo-and-docs-organization/
+│           ├── 04-domain-model-ports-and-adapters/
+│           ├── 05-kinematics-planning-and-controller/
+│           ├── 06-hardware-port-and-observation/
+│           ├── 07-ros2-nonros-runtime-and-network/
+│           ├── 08-config-system/
+│           ├── 09-testing-debug-visualize-benchmark/
+│           ├── 10-simulation-digital-twin/
+│           ├── 11-ai-agent-coding-and-maintenance/
+│           ├── 12-versioning-and-changelog/
+│           └── skills/
+├── skills/
+│   ├── skill_clean_code_comment_robotics.md
+│   ├── skill_quarto_docs.md
+│   └── project_agent_workflow.md
+├── config/
+│   ├── application/
+│   ├── runtime/
+│   ├── core_sdk/
+│   ├── ports/
+│   ├── adapters/
+│   ├── firmware_hardware/
+│   ├── benchmark/
+│   └── debug_profiles/
+├── requirements/
+│   ├── base-py38.txt
+│   ├── robotics-py38.txt
+│   ├── vision-py38.txt
+│   ├── dev.txt
+│   └── ros2-foxy.txt
+├── docker/
+│   ├── ubuntu20_ros2_foxy.Dockerfile
+│   ├── compose.jetson.yml
+│   └── compose.host.yml
+├── scripts/
+│   ├── env/
+│   ├── bringup/
+│   ├── benchmark/
+│   └── maintenance/
+├── src/
+│   ├── myarm_m750_sdk/
+│   ├── myarm_m750_description/
+│   ├── myarm_m750_msgs/
+│   ├── myarm_m750_driver/
+│   ├── myarm_m750_bringup/
+│   ├── myarm_m750_moveit_config/
+│   ├── myarm_m750_ros2_control/
+│   ├── myarm_m750_benchmarks/
+│   └── myarm_m750_tools/
+├── plugins/
+│   ├── kinematics/
+│   ├── planners/
+│   ├── controllers/
+│   ├── hardware_adapters/
+│   ├── visualizers/
+│   └── benchmark_metrics/
+├── tools/
+│   ├── calibration/
+│   ├── visualization/
+│   ├── logging/
+│   ├── tracing/
+│   ├── dataset/
+│   └── repo_checks/
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── hardware_in_loop/
+│   └── regression/
+├── launch/
+│   ├── jetson/
+│   ├── host/
+│   ├── simulation/
+│   └── benchmark/
+├── data/
+│   ├── calibration/
+│   ├── benchmark_cases/
+│   └── replay_samples/
+├── logs/
+└── artifacts/
+```
+
+Trong đó `logs/`, phần lớn `artifacts/`, rosbag, video, image sequence, file benchmark output lớn phải được `.gitignore`, trừ khi có lý do version control rõ ràng.
+
+## 03.6. Mapping project repo theo tầng kiến trúc
+
+Cấu trúc project repo phải phản ánh dependency direction. Không để application gọi raw firmware API trực tiếp trong production path.
+
+```text
+Application
+  -> Runtime
+  -> Core SDK
+  -> Ports
+  -> Adapters
+  -> Firmware/Hardware
+```
+
+Mapping đề xuất:
+
+| Tầng | Thư mục chính | Trách nhiệm |
+|---|---|---|
+| Application | `src/myarm_m750_tools/`, `scripts/`, app bên ngoài repo | GUI, benchmark runner, task runtime, policy runtime, teleop, experiment scripts. |
+| Runtime | `src/myarm_m750_bringup/`, `launch/`, `config/runtime/` | Chọn profile chạy: real, fake, replay, sim, ROS 2, non-ROS, debug. |
+| Core SDK | `src/myarm_m750_sdk/` | Domain model, frame/transform API, FK/IK request/result, planner/controller interfaces, state machine, command arbitration. |
+| Ports | `src/myarm_m750_sdk/ports/`, `config/ports/` | Contract cho kinematics, planner, controller, hardware, logger, visualizer, benchmark metric. |
+| Adapters | `plugins/`, `src/*_driver`, `src/*_ros2_control`, `tools/*` | Pinocchio, MoveIt2, pymycobot, fake/replay/sim, camera, AprilTag/Aruco, OpenCV, visualizer. |
+| Firmware/Hardware | `config/firmware_hardware/`, adapter implementation | MyArm M750, firmware coordinate/shake, serial USB, camera Logitech C922, Jetson, Host PC. |
+
+::: {.callout-note}
+`src/` đồng thời là thư mục chuẩn của ROS 2 workspace. Các package ROS 2 nằm trong `src/`, nhưng Python Core SDK vẫn phải có entry point để chạy độc lập khi không source ROS 2 workspace.
+:::
+
+## 03.7. Cấu trúc `docs/` trong project repo
+
+Trong project repo thật, docs nên nằm trong:
+
+```text
+myarm_m750_controller_framework/docs/
+└── 01-system-foundations/
+    └── myarm_m750_controller_framework/
+```
+
+Lý do:
+
+1. Repo chính không bị lẫn source code với docs module.
+2. Dễ port docs module từ zip v0.0.3 vào project repo bằng copy thư mục.
+3. Dễ dùng Quarto riêng cho project repo nếu sau này muốn render docs độc lập.
+4. AI agent có thể đọc `docs/` và `skills/` trước khi sửa code.
+
+Nếu project repo có Quarto riêng, `_quarto.yml` nên nằm tại:
+
+```text
+myarm_m750_controller_framework/docs/_quarto.yml
+```
+
+hoặc root repo nếu muốn render toàn bộ docs từ root. Quyết định này sẽ chốt khi tạo skeleton project thật.
+
+## 03.8. Cấu trúc `config/` trong project repo
+
+Config phải nằm ngoài code và chia theo tầng:
+
+```text
+config/
+├── application/
+│   ├── benchmark_runner.yaml
+│   ├── teleop.yaml
+│   └── policy_runtime.yaml
+├── runtime/
+│   ├── jetson_real.yaml
+│   ├── host_visualization.yaml
+│   ├── sim_gazebo.yaml
+│   ├── sim_mujoco.yaml
+│   └── replay.yaml
+├── core_sdk/
+│   ├── frames.yaml
+│   ├── transforms.yaml
+│   ├── robot_model.yaml
+│   ├── state_machine.yaml
+│   └── command_arbitration.yaml
+├── ports/
+│   ├── kinematics_port.yaml
+│   ├── planner_port.yaml
+│   ├── controller_port.yaml
+│   ├── hardware_port.yaml
+│   └── debug_port.yaml
+├── adapters/
+│   ├── pymycobot_myarm_mcontrol.yaml
+│   ├── fake_hardware.yaml
+│   ├── replay_hardware.yaml
+│   ├── pinocchio_kinematics.yaml
+│   ├── moveit2_planning.yaml
+│   ├── camera_01_wrist.yaml
+│   └── camera_02_shoulder.yaml
+├── firmware_hardware/
+│   ├── myarm_m750_serial.yaml
+│   ├── firmware_coord_legacy.yaml
+│   └── jetson_host_network.yaml
+├── benchmark/
+│   ├── t1_joint_waypoint_stability.yaml
+│   ├── t2_safe_coord_pose_stress.yaml
+│   ├── t3_unsafe_pose_safe_fail.yaml
+│   └── t4_complex_path_stability.yaml
+└── debug_profiles/
+    ├── off.yaml
+    ├── minimal.yaml
+    ├── benchmark.yaml
+    ├── online_visual.yaml
+    └── full_trace.yaml
+```
+
+Quy tắc:
+
+- Không hard-code serial port, baudrate, camera id, frame id, benchmark count hoặc safety limit trong code.
+- Mọi giá trị vật lý phải có unit rõ: `_rad`, `_deg`, `_m`, `_mm`, `_s`, `_ms`, `_hz`.
+- Debug/log/visualization phải bật/tắt qua profile, tránh tăng latency hoặc chiếm tài nguyên Jetson khi chạy headless.
+
+## 03.9. Cấu trúc `src/` trong project repo
+
+`src/` là ROS 2 workspace source folder. Mỗi package phải có trách nhiệm rõ:
+
+| Package | Vai trò |
+|---|---|
+| `myarm_m750_sdk` | Python Core SDK, chạy được độc lập không cần ROS 2. |
+| `myarm_m750_description` | URDF/Xacro/Mesh/SRDF/MoveIt robot model source. |
+| `myarm_m750_msgs` | Custom messages/services/actions nếu cần. |
+| `myarm_m750_driver` | ROS 2 driver node bọc Core SDK và HardwarePort. |
+| `myarm_m750_bringup` | Launch/config composition cho Jetson/Host/sim. |
+| `myarm_m750_moveit_config` | MoveIt2 config, planning group, kinematics plugin config. |
+| `myarm_m750_ros2_control` | ros2_control SystemInterface/controller config ở phase sau. |
+| `myarm_m750_benchmarks` | Benchmark runner, test case generator, metrics exporter. |
+| `myarm_m750_tools` | CLI/tool hỗ trợ calibration, visualization, report, replay. |
+
+Không nhồi tất cả vào một ROS 2 node. ROS 2 node nên compose logic từ Core SDK; không tự chứa toàn bộ serial, IK, FK, retry policy, benchmark, visualization.
+
+## 03.10. Cấu trúc `skills/` và `.agents/` trong project repo
+
+Trong project repo thật, nên có cả:
+
+```text
+skills/
+.agents/
+```
+
+`skills/` chứa quy tắc con người và AI agent phải đọc:
+
+```text
+skills/
+├── skill_clean_code_comment_robotics.md
+├── skill_quarto_docs.md
+├── project_agent_workflow.md
+├── ros2_package_rules.md
+├── config_schema_rules.md
+└── benchmark_protocol_rules.md
+```
+
+`.agents/` chứa tool/checker dành cho coding agent:
+
+```text
+.agents/
+├── README.md
+├── tools/
+│   ├── check_quarto_docs.py
+│   ├── check_config_schema.py
+│   ├── check_ros2_package_layout.py
+│   ├── check_clean_code_markers.py
+│   └── create_quarto_topic.py
+└── prompts/
+    ├── code_review.md
+    ├── architecture_review.md
+    └── benchmark_review.md
+```
+
+Trong zip docs-only v0.0.3, chỉ giữ `skills/` vì người dùng đang yêu cầu phần tài liệu để port vào sau. `.agents/` sẽ thuộc skeleton project tương lai.
+
+## 03.11. Git workflow cho docs module
+
+Với docs module, branch/commit nên nhỏ và rõ:
+
+```text
+docs/myarm-v003-repo-organization
+docs/myarm-architecture-clarification
+docs/myarm-benchmark-protocol
+docs/myarm-config-system
+```
+
+Checklist trước khi đóng zip docs-only:
+
+- [ ] Cấu trúc thư mục chỉ chứa QMD, README, CHANGELOG và skills.
+- [ ] Không có `src/`, `config/`, `tools/`, `plugins/`, `requirements/`, `.agents/` trong zip docs-only.
+- [ ] Link nội bộ không trỏ sai sang `docs/<topic>/` nếu docs module đang nằm trực tiếp dưới `myarm_m750_controller_framework/`.
+- [ ] `CHANGELOG.md` có entry version mới.
+- [ ] Trang `03-repo-and-docs-organization/index.qmd` phân biệt rõ docs module và project repo.
+
+## 03.12. Git workflow cho project repo tương lai
+
+Với project repo thật, workflow nên chặt hơn:
+
+```text
+feature/core-sdk-frame-api
+feature/hardware-port-fake-adapter
+feature/pymycobot-mcontrol-adapter
+feature/ros2-driver-node
+feature/benchmark-t1-runner
+feature/calibration-camera-intrinsics
+```
+
+Checklist trước khi merge code:
+
+- [ ] Developer/agent đã đọc docs và skills liên quan.
+- [ ] Không vi phạm dependency direction.
+- [ ] Không gọi raw firmware API từ application production path.
+- [ ] Config mới nằm ngoài code.
+- [ ] Hardware command có validation và timeout hữu hạn.
+- [ ] Có fake/mock/replay path nếu module liên quan hardware.
+- [ ] Có unit test hoặc integration test tương ứng.
+- [ ] Có cập nhật `CHANGELOG.md` nếu đổi behavior, config schema, benchmark protocol hoặc interface.
+
+## 03.13. Quy tắc không nhầm giữa docs-only và project skeleton
+
+Quy tắc đặt tên artifact:
+
+```text
+myarm_m750_controller_framework_vX_Y_Z.zip
+```
+
+Nếu artifact là docs-only, nội dung zip chỉ nên có:
+
+```text
+01-system-foundations/myarm_m750_controller_framework/
+```
+
+Nếu artifact là project skeleton hoặc source repo, nội dung zip phải có root:
+
+```text
+myarm_m750_controller_framework/
+```
+
+và trong đó mới có `docs/`, `src/`, `config/`, `requirements/`, `tools/`, `plugins/`, `.agents/`.
+
+::: {.callout-important}
+Trong v0.0.3, artifact vẫn là **docs-only**. Cấu trúc project repo trong trang này là tài liệu thiết kế, chưa phải file/folder thực sự trong zip.
+:::

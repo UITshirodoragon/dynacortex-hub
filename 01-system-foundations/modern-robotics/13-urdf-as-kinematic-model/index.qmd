@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 13. URDF dưới góc nhìn động học
-
-![13. URDF dưới góc nhìn động học](assets/images/13-urdf-as-kinematic-model.svg){#fig-13-urdf-as-kinematic-model width=85%}
 
 URDF không phải là D-H table. URDF mô tả robot bằng các `link`, `joint`, `origin`, `axis`, geometry và inertial. Dưới góc nhìn động học, mỗi joint tạo ra một transform từ parent link sang child link.
 

@@ -1,0 +1,176 @@
+---
+title: "06. Hardware port và observation"
+description: "Thiết kế HardwarePort gộp actuator, sensor, camera, encoder, firmware state, fake/mock/replay/sim adapter và observation ROS/non-ROS."
+categories: [hardware-port, observation, camera, adapters, fake, replay]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 06. Hardware port và observation
+
+## 06.1. Quyết định gộp observation vào HardwarePort
+
+Trong v0.0.3 không dùng port riêng tên `ObservationPort`. Lý do: observation không chỉ là camera/depth sensor. Observation còn là:
+
+- joint encoder feedback;
+- firmware status;
+- robot moving/paused/error state;
+- servo temperature/current/voltage/status nếu có;
+- camera frame;
+- tag detection;
+- simulated sensor;
+- replay log;
+- fake state trong CI.
+
+Vì vậy mọi actuator/sensor/feedback/sim/replay device đều đi qua `HardwarePort`.
+
+```{mermaid}
+flowchart LR
+    CORE[Core SDK] --> HP[HardwarePort]
+    HP --> ARM[robot_arm_01_m750 / MyArmMControl Real]
+    HP --> CAM1[camera_01_wrist / Logitech C922]
+    HP --> CAM2[camera_02_shoulder / Logitech C922]
+    HP --> TAG[tag_detector_01 / AprilTag-Aruco]
+    HP --> FAKE[fake_joint_robot]
+    HP --> REPLAY[replay_log_adapter]
+    HP --> SIM[Gazebo/MuJoCo Adapter]
+```
+
+## 06.2. Device naming convention
+
+Tên device dùng format:
+
+```text
+<device_type>_<index>_<role>
+```
+
+Ví dụ:
+
+| Device id | Role | Ghi chú |
+|---|---|---|
+| `robot_arm_01_m750` | manipulator | MyArm M750 thật. |
+| `camera_01_wrist` | wrist RGB camera | Gắn gần tool/end-effector. |
+| `camera_02_shoulder` | shoulder/third-person RGB camera | Camera cố định/góc nhìn ngoài. |
+| `tag_detector_01_external` | external pose observer | Detect tag từ camera shoulder. |
+| `camera_01_wrist_replay` | replay wrist camera | Replay video/image folder. |
+| `robot_arm_01_fake` | fake manipulator | CI/unit test. |
+
+::: {.callout-note}
+## Shoulder camera
+
+`camera_02_shoulder` dùng để chỉ camera góc nhìn thứ ba/cố định/observer, không nhất thiết gắn đúng tại vai robot.
+:::
+
+## 06.3. HardwarePort capabilities
+
+Adapter khai báo capability, không ép mọi adapter đều implement đủ method.
+
+```yaml
+capabilities:
+  actuator_joint_position: true
+  read_joint_state: true
+  read_firmware_status: true
+  read_servo_telemetry: optional
+  rgb_camera: false
+  tag_detection: false
+  replay: false
+  simulation: false
+```
+
+Core query capability trước khi dùng:
+
+```python
+if hardware.has_capability("rgb_camera", device_id="camera_01_wrist"):
+    frame = hardware.read_rgb_frame("camera_01_wrist")
+```
+
+## 06.4. Real adapters
+
+| Adapter | Capability chính | Ghi chú |
+|---|---|---|
+| `MyArmMControlRealAdapter` | joint position command, joint state, firmware status | Backend chính ban đầu. |
+| `MyArmMRealAdapter` | shake/joint-servo path nếu cần | Backend phụ. |
+| `LogitechC922V4L2Adapter` | RGB frame | Non-ROS camera path. |
+| `ROS2CameraNodeAdapter` | camera topic/image transport | ROS path. |
+| `AprilTagArucoAdapter` | tag pose detection | External benchmark/calibration. |
+
+## 06.5. Fake, mock và replay adapters
+
+| Adapter | Dùng cho |
+|---|---|
+| `FakeJointRobotAdapter` | Unit test, CI, dry-run state machine. |
+| `MockHardwareFaultAdapter` | Inject timeout, no-motion, stale feedback, adapter exception. |
+| `ReplayJointLogAdapter` | Replay joint state và command history. |
+| `ReplayImageFolderAdapter` | Replay camera frames. |
+| `ReplayTagPoseAdapter` | Replay external pose detections. |
+| `NullCameraAdapter` | Runtime không có camera nhưng API vẫn không crash. |
+
+Mock/fake không phải phần phụ. Đây là điều kiện để benchmark và CI chạy được trước khi robot thật sẵn sàng.
+
+## 06.6. Simulation adapters
+
+| Adapter | Vai trò |
+|---|---|
+| `GazeboClassicAdapter` | ROS 2/Gazebo Classic path trong Docker Ubuntu 20.04. |
+| `MuJoCoAdapter` | Non-ROS sim path, Python 3.10+ nếu cần. |
+| `FakeCameraSimAdapter` | Sinh camera frame giả hoặc đọc từ simulator. |
+| `DigitalTwinReplayAdapter` | Chạy lại log thật trong sim/offline. |
+
+Simulation adapter cũng cắm vào `HardwarePort`, nghĩa là application không cần biết robot là real, fake hay sim nếu capability giống nhau.
+
+## 06.7. Camera ROS và non-ROS
+
+Camera phải hỗ trợ hai path:
+
+### Non-ROS path
+
+```text
+Python Core SDK
+  -> HardwarePort
+  -> LogitechC922V4L2Adapter
+  -> OpenCV frame
+```
+
+Dùng cho:
+
+- headless benchmark;
+- MuJoCo/non-ROS GUI;
+- calibration script độc lập;
+- offline recording.
+
+### ROS 2 path
+
+```text
+ROS 2 camera node
+  -> image_raw / camera_info
+  -> image_transport/compressed
+  -> RViz2 / rosbag2 / tag node
+```
+
+Dùng cho:
+
+- RViz2 visualization;
+- ROS 2 calibration tools;
+- rosbag recording;
+- distributed camera stream qua DDS.
+
+## 06.8. Hardware call logging không đụng sâu vendor API
+
+Không bắt buộc log byte-level serial như `serial_tx_count`, `serial_rx_count`, `firmware_reply`. v0.0.3 ưu tiên adapter-level logging:
+
+```text
+api_call_name
+api_call_latency_ms
+api_return_value_summary
+api_exception_type
+api_timeout_count
+command_id
+motion_started
+motion_completed
+hardware_status_snapshot
+```
+
+Điều này tránh sửa sâu vào pymycobot/protocol layer nhưng vẫn đủ debug ở boundary.

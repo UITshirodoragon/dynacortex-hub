@@ -8,9 +8,7 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 22. Motion Planning trong C-space
 
-![22. Motion Planning trong C-space](assets/images/22-motion-planning-cspace.svg){#fig-22-motion-planning-cspace width=85%}
 
 Motion planning tìm một path hợp lệ từ cấu hình đầu đến cấu hình đích, thường trong C-space. Với robot arm, planner cần xét joint limit, self-collision, environment collision và đôi khi constraint task-space [@lynch2017modernrobotics].
 

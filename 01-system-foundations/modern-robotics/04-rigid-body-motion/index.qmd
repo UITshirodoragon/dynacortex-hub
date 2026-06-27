@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 04. Rigid-Body Motion
-
-![04. Rigid-Body Motion](assets/images/04-rigid-body-motion.svg){#fig-04-rigid-body-motion width=85%}
-
 Robot arm được mô hình hóa như một chuỗi các **rigid bodies** liên kết bằng joint. Một link được xem là rigid nếu khoảng cách giữa mọi cặp điểm trên link không đổi theo thời gian. Khi đó chuyển động của link có thể mô tả bằng pose của một frame gắn cứng lên link [@lynch2017modernrobotics].
 
 ## Pose của một rigid body

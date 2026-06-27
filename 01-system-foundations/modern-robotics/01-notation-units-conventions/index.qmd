@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 01. Quy ước ký hiệu, đơn vị và frame
-
-![01. Quy ước ký hiệu, đơn vị và frame](assets/images/01-notation-units-conventions.svg){#fig-01-notation-units-conventions width=85%}
-
 Quy ước ký hiệu là nền để tránh sai sót khi chuyển giữa sách, code, URDF và log. Một lỗi nhỏ như dùng độ thay vì radian hoặc mm thay vì m có thể làm FK/IK sai hoàn toàn.
 
 ## Ký hiệu cốt lõi
@@ -19,7 +15,7 @@ Quy ước ký hiệu là nền để tránh sai sót khi chuyển giữa sách,
 | Ký hiệu | Ý nghĩa | Ghi chú |
 |---|---|---|
 | $q$ | vector cấu hình khớp | thường là joint angles/displacements |
-| $	heta_i$ | biến khớp quay | đơn vị chuẩn là rad |
+| $\theta_i$ | biến khớp quay | đơn vị chuẩn là rad |
 | $d_i$ | biến khớp tịnh tiến hoặc offset | đơn vị chuẩn là m |
 | $R$ | rotation matrix | $R \in SO(3)$ |
 | $p$ | translation vector | $p \in \mathbb{R}^3$ |

@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 09. Wrench, Spatial Force và Statics
-
-![09. Wrench, Spatial Force và Statics](assets/images/09-wrench-spatial-force-statics.svg){#fig-09-wrench-spatial-force-statics width=85%}
 
 Wrench là vector 6 chiều gom moment và lực:
 

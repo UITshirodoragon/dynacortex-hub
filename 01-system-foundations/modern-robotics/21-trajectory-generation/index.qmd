@@ -8,9 +8,7 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 21. Trajectory Generation
 
-![21. Trajectory Generation](assets/images/21-trajectory-generation.svg){#fig-21-trajectory-generation width=85%}
 
 **Path** là mô tả hình học của đường đi. **Trajectory** là path cộng với time scaling.
 

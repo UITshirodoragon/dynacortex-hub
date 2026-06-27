@@ -1,0 +1,140 @@
+---
+title: "01. Yêu cầu hệ thống"
+description: "Yêu cầu chức năng, phi chức năng, safety, benchmark và maintainability cho MyArm M750 Controller Framework."
+categories: [requirements, safety, benchmark, architecture]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 01. Yêu cầu hệ thống
+
+## 01.1. Yêu cầu chức năng
+
+### 01.1.1. Điều khiển robot
+
+Framework phải hỗ trợ các use case tối thiểu:
+
+1. Đọc joint state từ MyArm M750.
+2. Gửi joint position command qua adapter real hardware.
+3. Sinh joint trajectory an toàn từ target joint hoặc target pose.
+4. Tính FK từ joint state bằng software backend.
+5. Tính IK từ target pose bằng software backend.
+6. Kiểm tra joint limit, workspace limit, singularity risk trước khi gửi lệnh.
+7. Stop/pause/recover ở mức adapter nếu backend hỗ trợ.
+8. Chạy production path không phụ thuộc `write_coords()`.
+
+::: {.callout-important}
+## Position-only control scope
+
+Controller ban đầu chỉ dựa trên **joint position command**. Speed trong API nhà sản xuất được xem là `speed_hint` hoặc `motion_profile_hint`, không được xem là velocity controller chuẩn nếu chưa được đo/định nghĩa rõ.
+:::
+
+### 01.1.2. Frame và transform API cho application
+
+Application boundary không chỉ là `move_to_pose()` hoặc `move_to_joint()`. Framework phải cung cấp API để application định nghĩa và truy vấn không gian quanh robot:
+
+- frame chuẩn: `world`, `base_link`, `tool0`, `end_effector`, camera frames;
+- custom frame: `workspace_box_01`, `object_table`, `tag_board`, `bin_left`, `bin_right`;
+- transform matrix $T \in SE(3)$;
+- quaternion orientation;
+- relative transform giữa các frame;
+- workspace constraint theo frame;
+- tool transform tùy biến theo end-effector/gripper/camera;
+- object/environment frame phục vụ vision grasping hoặc benchmark.
+
+Ví dụ application có thể định nghĩa:
+
+```yaml
+custom_frames:
+  workspace_box_01:
+    parent: base_link
+    translation_m: [0.25, 0.00, 0.18]
+    orientation_quat_xyzw: [0.0, 0.0, 0.0, 1.0]
+  tag_board:
+    parent: camera_02_shoulder_optical
+    source: apriltag_board_detection
+```
+
+### 01.1.3. ROS 2 và non-ROS runtime
+
+Framework phải hỗ trợ hai đường runtime:
+
+1. **ROS 2 native path**: ROS 2 node, topic, service, action, TF, RViz2, Gazebo, MoveIt2, rosbag2.
+2. **Non-ROS path**: Python SDK trực tiếp, MuJoCo, GUI custom, WebSocket/gRPC/ZMQ, offline replay.
+
+Cả hai path đều phải đi qua cùng domain model và core boundary, không duplicate logic IK/FK/safety ở mỗi application.
+
+### 01.1.4. Benchmark
+
+Benchmark bắt buộc gồm T1–T4:
+
+| ID | Tên | Số lượng v0.0.3 |
+|---|---|---|
+| T1 | Joint Waypoint Stability | 30 test case, mỗi test case 2 lần. |
+| T2 | Safe Coord-Pose Stress Test | 30 test case, mỗi test case 2 lần. |
+| T3 | Unsafe Pose Safe-Fail Test | 30 test case, mỗi test case 2 lần. |
+| T4 | Complex Path Stability | Mỗi path chạy 10 lần. |
+
+Benchmark phải có khả năng kill/restart process vì real robot hoặc firmware adapter có thể đứng bất kỳ lúc nào.
+
+## 01.2. Yêu cầu phi chức năng
+
+### 01.2.1. Debuggability
+
+Mỗi command phải trace được:
+
+```text
+application request
+  -> runtime profile
+  -> validation
+  -> kinematics/planning/controller decision
+  -> hardware adapter call
+  -> hardware feedback / timeout / status
+  -> benchmark result
+```
+
+Debug phải bật/tắt được theo tầng để tránh tăng latency hoặc lưu observation quá lớn.
+
+### 01.2.2. Replaceability
+
+Các backend phải thay được bằng config/plugin:
+
+- Pinocchio FK/IK thay cho PoE hoặc solver khác;
+- real robot thay bằng fake/mock/replay/sim;
+- ROS 2 visualization thay bằng WebSocket dashboard;
+- real camera thay bằng replay video hoặc simulated camera;
+- MoveIt2 planning thay bằng internal trajectory planner.
+
+### 01.2.3. Testability
+
+Core SDK phải test được không cần robot thật:
+
+- unit test domain object;
+- unit test transform/frame tree;
+- unit test FK/IK adapter bằng fixture;
+- unit test command arbitration;
+- fake hardware adapter cho CI;
+- replay adapter cho regression bug;
+- benchmark dry-run cho T3 unsafe target.
+
+### 01.2.4. Resource awareness
+
+Jetson là runtime chính và có thể headless. Online visualization, camera recording, high-rate logging và ROS 2 image transport phải bật/tắt được. Mặc định production runtime chỉ bật logging tối thiểu và status cần thiết.
+
+## 01.3. Non-goals của v0.0.3
+
+Các phần sau **không phải mục tiêu triển khai bắt buộc** trong v0.0.3:
+
+- torque control;
+- computed torque control;
+- impedance/admittance control thật;
+- gravity compensation động lực học ở torque level;
+- payload estimation chính xác theo lực/mô-men;
+- backlash compensation production;
+- full ros2_control SystemInterface production;
+- ISO 9283 đầy đủ.
+
+Các phần này có thể được nhắc như concept/future work nhưng không đưa vào controller chính hoặc benchmark bắt buộc.

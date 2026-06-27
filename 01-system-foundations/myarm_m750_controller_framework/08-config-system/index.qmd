@@ -1,0 +1,974 @@
+---
+title: "08. Hệ thống config"
+description: "Config ngoài code theo use case, tầng phần mềm, adapter, profile và variant để bảo đảm an toàn, tái lập và dễ mở rộng."
+categories: [config, yaml, runtime, safety, benchmark, use-case, adapter, profile]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: DD/MM/YYYY HH:mm:ssZ[Z]
+---
+
+# 08. Hệ thống config
+
+## 08.0. Mục tiêu
+
+Hệ thống config của `myarm_m750_controller_framework` có mục tiêu tách cấu hình khỏi code, chuẩn hóa từng use case vận hành, đồng thời vẫn giữ khả năng cấu hình nhỏ theo từng tầng, từng adapter và từng profile phần cứng.
+
+Dự án không dùng một file YAML khổng lồ cho toàn bộ hệ thống. Thay vào đó, dự án dùng mô hình:
+
+```text
+Use Case Manifest
+  -> chọn các micro config theo tầng
+  -> chọn adapter/profile/variant
+  -> merge thành resolved config
+  -> validate trước khi chạy robot
+```
+
+Trong mô hình này:
+
+* **Use case** là điểm vào của runtime, benchmark hoặc debug.
+* **Micro config** là config nhỏ cho từng tầng, từng adapter hoặc từng chính sách safety.
+* **Variant** là phiên bản cụ thể của một micro config, ví dụ `conservative`, `low_rate`, `serial`, `rviz_gui`, `fake_joint`.
+* **Resolved config** là file config cuối cùng sau khi merge, dùng để chạy thực tế hoặc lưu lại trong artifact benchmark.
+
+Nguyên tắc quan trọng nhất:
+
+> Code không tự quyết định runtime behavior. Code chỉ đọc config đã validate.
+
+---
+
+## 08.1. Nguyên tắc thiết kế
+
+Config phải nằm ngoài code. Code không hard-code safety limit, workspace limit, benchmark count, device id, serial port, ROS topic, path log, camera role hoặc GUI mode.
+
+Các giá trị vật lý phải có đơn vị rõ ràng trong tên field:
+
+```text
+timeout_s
+rate_hz
+position_m
+position_mm
+angle_rad
+angle_deg
+velocity_rad_s
+acceleration_rad_s2
+```
+
+Không dùng tên mơ hồ như:
+
+```text
+timeout
+rate
+speed
+position
+angle
+limit
+```
+
+Hệ thống config phải đảm bảo các yêu cầu sau:
+
+1. **An toàn**: robot thật chỉ được enable sau khi config đã validate joint limit, workspace limit, command rate và safe-fail policy.
+2. **Tái lập**: mọi lần benchmark hoặc hardware run phải lưu lại `resolved_config.yaml`.
+3. **Dễ đọc**: use case manifest phải cho biết rõ dùng path nào, adapter nào, runtime nào, input nào.
+4. **Dễ mở rộng**: thêm use case mới bằng cách compose config có sẵn, không copy nguyên một master YAML dài.
+5. **Không trộn trách nhiệm**: config của adapter không chứa logic application; config của use case không chứa toàn bộ chi tiết adapter.
+6. **Local override không commit**: các thông tin phụ thuộc máy cá nhân như serial port thật, IP máy, camera index, path local phải nằm trong `config/local/`.
+
+---
+
+## 08.2. Tầng config tổng quát
+
+Dự án vẫn giữ phân lớp config theo kiến trúc:
+
+```text
+Application
+  -> Runtime
+  -> Core SDK
+  -> Ports
+  -> Adapters
+  -> Firmware/Hardware
+```
+
+Ý nghĩa từng tầng:
+
+**Application** định nghĩa boundary của ứng dụng: có cho phép gọi raw firmware API không, có cho phép chạy baseline firmware coordinate không, use case nào thuộc production, diagnostic hoặc benchmark.
+
+**Runtime** định nghĩa cách hệ thống chạy: native Python, ROS2, RViz2, WebSocket GUI, process supervisor, logging, replay hoặc benchmark runner.
+
+**Core SDK** định nghĩa phần lõi dùng chung: frame convention, kinematics policy, controller policy, safety validation, trajectory sampling, workspace model.
+
+**Ports** định nghĩa interface trừu tượng: hardware port, kinematics port, planner port, controller port, observation/debug port.
+
+**Adapters** định nghĩa implementation cụ thể: real MyArmMControl adapter, fake hardware adapter, replay adapter, ROS2 adapter, RViz2 adapter, WebSocket adapter.
+
+**Firmware/Hardware** định nghĩa thông tin gần hardware: serial transport, baudrate, firmware capability, camera device, robot profile, calibration.
+
+---
+
+## 08.3. Kiến trúc thư mục config đề xuất
+
+```text
+config/
+├── use_cases/
+│   ├── uc01_native_joint_hw_teleop.yaml
+│   ├── uc02_native_coord_hw_teleop.yaml
+│   ├── uc03_native_joint_hw_replay.yaml
+│   ├── uc04_native_coord_hw_replay.yaml
+│   ├── uc05_ros2_fake_joint_rviz.yaml
+│   ├── uc06_ros2_fake_joint_gui_rviz.yaml
+│   ├── uc07_ros2_fake_coord_gui_rviz.yaml
+│   ├── uc08_ros2_hw_joint_gui_rviz.yaml
+│   └── uc09_ros2_hw_coord_gui_rviz.yaml
+│
+├── application/
+│   ├── boundary.default.yaml
+│   ├── boundary.diagnostic_raw.yaml
+│   └── profiles.yaml
+│
+├── runtime/
+│   ├── native_python.local.yaml
+│   ├── native_python.websocket_host.yaml
+│   ├── ros2_foxy.rviz.yaml
+│   ├── ros2_foxy.rviz_gui.yaml
+│   ├── process_supervisor.default.yaml
+│   └── process_supervisor.benchmark.yaml
+│
+├── core_sdk/
+│   ├── frames.default.yaml
+│   ├── kinematics.firmware_blackbox.yaml
+│   ├── kinematics.python_fk_only.yaml
+│   ├── kinematics.python_fk_ik.yaml
+│   ├── controller.firmware_joint.yaml
+│   ├── controller.firmware_coord.yaml
+│   ├── controller.external_joint_position.yaml
+│   ├── safety.joint_limits_conservative.yaml
+│   ├── safety.workspace_lab_table.yaml
+│   ├── safety.command_rate_low.yaml
+│   └── safety.safe_fail_default.yaml
+│
+├── ports/
+│   ├── hardware_port.default.yaml
+│   ├── kinematics_port.default.yaml
+│   ├── planner_port.default.yaml
+│   ├── controller_port.default.yaml
+│   ├── observation_port.default.yaml
+│   └── debug_port.default.yaml
+│
+├── adapters/
+│   ├── hardware.myarm_mcontrol_real.yaml
+│   ├── hardware.fake_joint.yaml
+│   ├── hardware.fake_coord.yaml
+│   ├── hardware.replay_joint.yaml
+│   ├── hardware.replay_coord.yaml
+│   ├── input.keyboard_terminal.yaml
+│   ├── input.websocket_gui.yaml
+│   ├── input.fake_command_source.yaml
+│   ├── input.replay_command_source.yaml
+│   ├── ros2.rviz_joint_state.yaml
+│   ├── ros2.rviz_pose_marker.yaml
+│   └── visualization.none.yaml
+│
+├── firmware_hardware/
+│   ├── robot.myarm_m750_default.yaml
+│   ├── robot.myarm_m750_lab_unit_01.yaml
+│   ├── serial.myarm_m750_1mbps.yaml
+│   ├── firmware.myarm_mcontrol.yaml
+│   ├── firmware.coord_legacy.yaml
+│   └── cameras.yaml
+│
+├── benchmark/
+│   ├── t1_joint_waypoint_stability.yaml
+│   ├── t2_safe_coord_pose_stress.yaml
+│   ├── t3_unsafe_pose_safe_fail.yaml
+│   └── t4_complex_path_stability.yaml
+│
+├── debug_profiles/
+│   ├── logging.default.yaml
+│   ├── logging.benchmark_minimal.yaml
+│   ├── tracing.disabled.yaml
+│   ├── tracing.ros2_debug.yaml
+│   └── visualization.rviz_debug.yaml
+│
+├── profiles/
+│   ├── machine.jetson_local.yaml
+│   ├── machine.host_pc.yaml
+│   ├── machine.docker_foxy.yaml
+│   ├── network.none.yaml
+│   ├── network.localhost.yaml
+│   └── network.lan_direct.yaml
+│
+├── local/
+│   ├── README.md
+│   └── .gitignore
+│
+├── _schema/
+│   ├── use_case.schema.yaml
+│   ├── adapter.schema.yaml
+│   ├── runtime.schema.yaml
+│   └── safety.schema.yaml
+│
+└── _resolved/
+    └── .gitkeep
+```
+
+Ghi chú:
+
+* `config/use_cases/` là nơi bắt đầu khi chạy một use case.
+* `config/_resolved/` không commit file sinh ra, trừ `.gitkeep`.
+* `config/local/` chứa override cá nhân và không commit.
+* `config/_schema/` dùng để validate shape của config trước khi robot được enable.
+
+---
+
+## 08.4. Use case manifest
+
+Use case manifest là file YAML nhỏ, dùng để chọn các config variant tương ứng với một kịch bản chạy cụ thể.
+
+Use case manifest không nên chứa toàn bộ parameter chi tiết. Nó chỉ nên chứa:
+
+* id, name, safety level
+* runtime mode
+* hardware mode
+* danh sách config variant cần dùng
+* path package, launch, script, log, artifact
+* quality gate cần chạy
+* resolved config output
+
+Ví dụ cấu trúc tổng quát:
+
+```yaml
+schema_version: 1
+
+use_case:
+  id: ucxx_example
+  name: Example use case
+  safety_level: sim_only | hardware_manual | hardware_benchmark
+  ros2: true
+  simulation: false
+  hardware: false
+
+defaults:
+  - application: boundary.default
+  - runtime: ros2_foxy.rviz_gui
+  - core_sdk/frames: default
+  - core_sdk/kinematics: python_fk_ik
+  - core_sdk/controller: external_joint_position
+  - core_sdk/safety_joint_limits: conservative
+  - core_sdk/safety_workspace: lab_table
+  - core_sdk/safety_command_rate: low
+  - core_sdk/safety_safe_fail: default
+  - ports/hardware: default
+  - ports/kinematics: default
+  - ports/controller: default
+  - adapters/hardware: fake_joint
+  - adapters/input: websocket_gui
+  - adapters/visualization: rviz_joint_state
+  - firmware_hardware/robot: myarm_m750_default
+  - profiles/machine: host_pc
+  - profiles/network: localhost
+  - debug_profiles/logging: default
+
+overrides: {}
+
+paths:
+  packages: []
+  entrypoints: {}
+  launch: {}
+  configs:
+    resolved: config/_resolved/ucxx_example.resolved.yaml
+  logs:
+    output_dir: logs/use_cases/ucxx_example
+  artifacts:
+    output_dir: artifacts/use_cases/ucxx_example
+
+quality_gates:
+  required: []
+```
+
+---
+
+## 08.5. Danh sách use case chuẩn
+
+Dự án hiện chuẩn hóa 9 use case ban đầu.
+
+| ID                              | Mô tả                                                                        | Runtime            | Hardware | Control mode   | Input/UI                    | ROS2/RViz |
+| ------------------------------- | ---------------------------------------------------------------------------- | ------------------ | -------- | -------------- | --------------------------- | --------- |
+| `uc01_native_joint_hw_teleop`   | Điều khiển khớp theo firmware gốc, phần cứng thật, native Python             | Native Python      | Real     | Firmware joint | Terminal hoặc WebSocket GUI | Không     |
+| `uc02_native_coord_hw_teleop`   | Điều khiển tọa độ theo firmware gốc, phần cứng thật, native Python           | Native Python      | Real     | Firmware coord | Terminal hoặc WebSocket GUI | Không     |
+| `uc03_native_joint_hw_replay`   | Điều khiển khớp theo firmware gốc bằng fake/replay command, phần cứng thật   | Native Python      | Real     | Firmware joint | Fake/replay                 | Không     |
+| `uc04_native_coord_hw_replay`   | Điều khiển tọa độ theo firmware gốc bằng fake/replay command, phần cứng thật | Native Python      | Real     | Firmware coord | Fake/replay                 | Không     |
+| `uc05_ros2_fake_joint_rviz`     | Điều khiển fake khớp, không hardware thật, dùng ROS2 DDS và RViz2            | ROS2 + Python core | Fake     | Joint          | Fake                        | Có        |
+| `uc06_ros2_fake_joint_gui_rviz` | Điều khiển fake khớp, ROS2, RViz2, GUI chỉnh khớp                            | ROS2 + Python core | Fake     | Joint          | GUI                         | Có        |
+| `uc07_ros2_fake_coord_gui_rviz` | Điều khiển fake tọa độ, ROS2, RViz2, GUI chỉnh tọa độ                        | ROS2 + Python core | Fake     | Coord          | GUI                         | Có        |
+| `uc08_ros2_hw_joint_gui_rviz`   | Điều khiển khớp với hardware thật, ROS2, RViz2, GUI chỉnh khớp               | ROS2 + Python core | Real     | Joint          | GUI                         | Có        |
+| `uc09_ros2_hw_coord_gui_rviz`   | Điều khiển tọa độ với hardware thật, ROS2, RViz2, GUI chỉnh tọa độ           | ROS2 + Python core | Real     | Coord          | GUI                         | Có        |
+
+Ghi chú cho `uc08` và `uc09`: nếu có chữ “fake” trong input thì hiểu là fake/replay command source hoặc GUI command source, không phải fake hardware. Vì hai use case này sử dụng phần cứng thật.
+
+---
+
+## 08.6. Ví dụ use case native joint hardware teleop
+
+```yaml
+schema_version: 1
+
+use_case:
+  id: uc01_native_joint_hw_teleop
+  name: Native Python firmware joint teleop with real hardware
+  safety_level: hardware_manual
+  ros2: false
+  simulation: false
+  hardware: true
+
+defaults:
+  - application: boundary.default
+  - runtime: native_python.local
+
+  - core_sdk/frames: default
+  - core_sdk/kinematics: firmware_blackbox
+  - core_sdk/controller: firmware_joint
+  - core_sdk/safety_joint_limits: conservative
+  - core_sdk/safety_workspace: lab_table
+  - core_sdk/safety_command_rate: low
+  - core_sdk/safety_safe_fail: default
+
+  - ports/hardware: default
+  - ports/controller: default
+  - ports/observation: default
+
+  - adapters/hardware: myarm_mcontrol_real
+  - adapters/input: keyboard_terminal
+  - adapters/visualization: none
+
+  - firmware_hardware/robot: myarm_m750_default
+  - firmware_hardware/serial: myarm_m750_1mbps
+  - firmware_hardware/firmware: myarm_mcontrol
+
+  - profiles/machine: jetson_local
+  - profiles/network: none
+  - debug_profiles/logging: default
+
+overrides:
+  runtime:
+    require_manual_enable: true
+
+paths:
+  packages:
+    - src/myarm_m750_sdk
+    - src/myarm_m750_driver
+    - src/myarm_m750_tools
+
+  entrypoints:
+    terminal:
+      script: scripts/bringup/native_joint_keyboard_teleop.py
+    websocket:
+      script: scripts/bringup/native_joint_websocket_gui.py
+
+  configs:
+    resolved: config/_resolved/uc01_native_joint_hw_teleop.resolved.yaml
+
+  logs:
+    output_dir: logs/use_cases/uc01_native_joint_hw_teleop
+
+  artifacts:
+    output_dir: artifacts/use_cases/uc01_native_joint_hw_teleop
+
+quality_gates:
+  required:
+    - python3 tools/repo_checks/check_use_case_config.py config/use_cases/uc01_native_joint_hw_teleop.yaml
+    - python3 -m compileall src scripts tools
+```
+
+---
+
+## 08.7. Ví dụ use case ROS2 fake joint RViz GUI
+
+```yaml
+schema_version: 1
+
+use_case:
+  id: uc06_ros2_fake_joint_gui_rviz
+  name: ROS2 fake joint GUI control with RViz2
+  safety_level: sim_only
+  ros2: true
+  simulation: false
+  hardware: false
+
+defaults:
+  - application: boundary.default
+  - runtime: ros2_foxy.rviz_gui
+
+  - core_sdk/frames: default
+  - core_sdk/kinematics: python_fk_only
+  - core_sdk/controller: external_joint_position
+  - core_sdk/safety_joint_limits: conservative
+  - core_sdk/safety_workspace: lab_table
+  - core_sdk/safety_command_rate: low
+  - core_sdk/safety_safe_fail: default
+
+  - ports/hardware: default
+  - ports/kinematics: default
+  - ports/controller: default
+  - ports/observation: default
+
+  - adapters/hardware: fake_joint
+  - adapters/input: websocket_gui
+  - adapters/ros2: rviz_joint_state
+  - adapters/visualization: rviz_joint_state
+
+  - firmware_hardware/robot: myarm_m750_default
+
+  - profiles/machine: host_pc
+  - profiles/network: localhost
+  - debug_profiles/logging: default
+
+overrides:
+  ros2:
+    use_sim_time: false
+    namespace: /myarm_m750
+
+paths:
+  packages:
+    - src/myarm_m750_description
+    - src/myarm_m750_bringup
+    - src/myarm_m750_tools
+    - src/myarm_m750_msgs
+
+  launch:
+    entrypoint: launch/host/ros2_fake_joint_gui_rviz.launch.py
+
+  configs:
+    resolved: config/_resolved/uc06_ros2_fake_joint_gui_rviz.resolved.yaml
+    ros2_params: config/_resolved/uc06_ros2_fake_joint_gui_rviz.ros2_params.yaml
+
+  logs:
+    output_dir: logs/use_cases/uc06_ros2_fake_joint_gui_rviz
+
+  artifacts:
+    output_dir: artifacts/use_cases/uc06_ros2_fake_joint_gui_rviz
+
+quality_gates:
+  required:
+    - python3 tools/repo_checks/check_use_case_config.py config/use_cases/uc06_ros2_fake_joint_gui_rviz.yaml
+    - colcon build --symlink-install
+```
+
+---
+
+## 08.8. Quy tắc default, variant và override
+
+Mỗi config group có thể có nhiều variant. Không đặt tên kiểu `default1`, `default2`, `custom2`. Tên variant phải mô tả ý nghĩa kỹ thuật.
+
+Ví dụ tốt:
+
+```text
+safety.joint_limits_conservative.yaml
+safety.command_rate_low.yaml
+runtime.ros2_foxy.rviz_gui.yaml
+hardware.fake_joint.yaml
+hardware.myarm_mcontrol_real.yaml
+kinematics.python_fk_ik.yaml
+```
+
+Ví dụ không nên dùng:
+
+```text
+default1.yaml
+default2.yaml
+custom.yaml
+test.yaml
+new.yaml
+```
+
+Quy tắc chọn nơi đặt config:
+
+| Tình huống                                       | Cách quản lý                                                        |
+| ------------------------------------------------ | ------------------------------------------------------------------- |
+| Cấu hình dùng lại bởi nhiều use case             | Tạo micro config variant                                            |
+| Cấu hình chỉ khác 1–3 giá trị trong một use case | Dùng `overrides` trong use case                                     |
+| Cấu hình khác behavior rõ ràng                   | Tạo variant mới                                                     |
+| Cấu hình phụ thuộc từng con robot                | Đặt trong `firmware_hardware/robot.*.yaml` hoặc `data/calibration/` |
+| Cấu hình phụ thuộc máy cá nhân                   | Đặt trong `config/local/`, không commit                             |
+| Cấu hình benchmark cần tái lập                   | Lưu `resolved_config.yaml` vào `artifacts/`                         |
+| Cấu hình ROS2 node                               | Generate thành ROS2 param YAML sau khi resolve                      |
+
+---
+
+## 08.9. Config application boundary
+
+```yaml
+application_boundary:
+  production_disallow_raw_firmware_api: true
+  allow_raw_firmware_short_path: false
+
+  allowed_raw_profiles:
+    - benchmark_legacy_coord
+    - diagnostic_raw_joint
+    - diagnostic_raw_coord
+
+  frame_api:
+    allow_custom_frames: true
+    allow_workspace_frames: true
+    allow_environment_frames: true
+
+  use_case_policy:
+    production_use_cases:
+      - uc05_ros2_fake_joint_rviz
+      - uc06_ros2_fake_joint_gui_rviz
+      - uc07_ros2_fake_coord_gui_rviz
+      - uc08_ros2_hw_joint_gui_rviz
+      - uc09_ros2_hw_coord_gui_rviz
+
+    baseline_or_diagnostic_use_cases:
+      - uc01_native_joint_hw_teleop
+      - uc02_native_coord_hw_teleop
+      - uc03_native_joint_hw_replay
+      - uc04_native_coord_hw_replay
+```
+
+Giải thích:
+
+* Native firmware use case được giữ để diagnostic, baseline và vận hành đơn giản.
+* Hướng phát triển chính vẫn là tách core SDK, safety, kinematics, controller và adapter ra khỏi firmware blackbox.
+* Raw firmware API không nên đi xuyên qua application layer nếu không có profile được cho phép.
+
+---
+
+## 08.10. Config runtime process supervisor
+
+```yaml
+process_supervisor:
+  enabled: true
+  trial_process_isolation: true
+  kill_on_timeout: true
+
+  graceful_stop_timeout_s: 2.0
+  hard_kill_timeout_s: 5.0
+
+  restart_controller_between_trials: optional
+  max_consecutive_faults_before_manual_reset: 3
+
+  hardware_run:
+    require_manual_enable: true
+    require_emergency_stop_ready: true
+    require_resolved_config_saved: true
+```
+
+Process supervisor đặc biệt quan trọng cho benchmark và hardware run. Nếu một trial bị timeout, process phải dừng có kiểm soát, không để command cũ tiếp tục tác động đến robot.
+
+---
+
+## 08.11. Config safety
+
+```yaml
+safety:
+  joint_limits:
+    unit: rad
+    source: project_conservative_default
+    reject_out_of_limit: true
+    clamp_command: false
+    joints:
+      joint_1:
+        min_rad: -2.800
+        max_rad: 2.800
+        max_velocity_rad_s: 0.300
+      joint_2:
+        min_rad: -1.400
+        max_rad: 1.400
+        max_velocity_rad_s: 0.300
+
+  workspace_limits:
+    frame: base_link
+    unit: m
+    reject_out_of_workspace: true
+    box:
+      x_min_m: -0.350
+      x_max_m: 0.350
+      y_min_m: -0.350
+      y_max_m: 0.350
+      z_min_m: 0.020
+      z_max_m: 0.450
+
+  command_rate:
+    max_command_rate_hz: 20.0
+    max_joint_step_rad: 0.080
+    max_pose_step_m: 0.010
+    max_orientation_step_rad: 0.050
+
+  safe_fail:
+    stop_on_validation_error: true
+    stop_on_timeout: true
+    hold_last_command_on_timeout: false
+    require_manual_reset_after_fault: true
+```
+
+Safety config là bắt buộc cho cả native Python, ROS2, fake hardware, replay và hardware thật.
+
+---
+
+## 08.12. Config adapter phần cứng thật
+
+```yaml
+adapter:
+  name: myarm_mcontrol_real
+  type: hardware_adapter
+  implementation: pymycobot_myarmmcontrol_adapter
+
+hardware:
+  real_hardware: true
+  requires_manual_enable: true
+  dry_run_default: false
+
+serial:
+  port: ${local.serial.port}
+  baudrate: 1000000
+  read_timeout_s: 0.050
+  write_timeout_s: 0.050
+  retry_count: 1
+
+firmware:
+  preferred_api: MyArmMControl
+  allow_joint_api: true
+  allow_coord_api: false
+  blackbox_fk_ik: false
+
+observation:
+  poll_joint_state: true
+  poll_error_state: true
+  poll_rate_hz: 20.0
+```
+
+Ghi chú:
+
+* `port` nên lấy từ `config/local/` để không commit đường dẫn cá nhân.
+* Nếu use case là baseline coordinate firmware thì `allow_coord_api` có thể bật trong variant khác.
+* Adapter thật phải luôn có manual enable khi chạy hardware.
+
+---
+
+## 08.13. Config adapter firmware coordinate baseline
+
+```yaml
+adapter:
+  name: coord_firmware_legacy
+  type: hardware_adapter
+  implementation: pymycobot_coord_adapter
+
+hardware:
+  real_hardware: true
+  requires_manual_enable: true
+  dry_run_default: false
+
+firmware:
+  preferred_api: coordinate_firmware
+  allow_joint_api: false
+  allow_coord_api: true
+  blackbox_fk_ik: true
+
+safety:
+  require_workspace_validation_before_send: true
+  require_joint_limit_validation_after_observation: true
+
+usage_policy:
+  allowed_use_cases:
+    - uc02_native_coord_hw_teleop
+    - uc04_native_coord_hw_replay
+    - uc09_ros2_hw_coord_gui_rviz
+  recommended_for_new_features: false
+```
+
+Coordinate firmware được giữ lại để vận hành đơn giản, diagnostic và benchmark baseline. Không xem đây là hướng triển khai chính cho controller framework dài hạn.
+
+---
+
+## 08.14. Config fake/replay adapter
+
+```yaml
+adapter:
+  name: fake_joint
+  type: fake_hardware_adapter
+  implementation: fake_joint_adapter
+
+hardware:
+  real_hardware: false
+  dry_run_default: true
+
+fake_joint:
+  initial_position_rad: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  publish_rate_hz: 30.0
+  simulate_latency_s: 0.010
+  simulate_joint_limit: true
+  simulate_workspace_limit: true
+
+observation:
+  publish_joint_state: true
+  publish_status: true
+```
+
+```yaml
+adapter:
+  name: replay_joint
+  type: replay_adapter
+  implementation: replay_joint_command_source
+
+hardware:
+  real_hardware: false
+
+replay:
+  source_file: data/replay_samples/joint_commands_example.yaml
+  loop: false
+  playback_rate: 1.0
+  respect_original_timing: true
+```
+
+Fake và replay adapter phải chạy được mà không cần hardware thật. Đây là default cho CI và development ban đầu.
+
+---
+
+## 08.15. Config ROS2/RViz runtime
+
+```yaml
+runtime:
+  mode: ros2
+  ros_distro: foxy
+  use_rviz2: true
+  use_gazebo: false
+  use_gui: true
+
+ros2:
+  domain_id: ${local.ros2.domain_id}
+  namespace: /myarm_m750
+  use_sim_time: false
+
+nodes:
+  joint_state_publisher:
+    enabled: true
+    rate_hz: 30.0
+
+  gui_bridge:
+    enabled: true
+    transport: websocket
+    host: 0.0.0.0
+    port: ${local.websocket.port}
+
+  rviz2:
+    enabled: true
+    config_file: config/runtime/rviz/myarm_m750_default.rviz
+```
+
+Sau khi merge, runtime ROS2 có thể sinh thêm file ROS2 parameter theo format `ros__parameters`.
+
+Ví dụ output:
+
+```yaml
+myarm_m750_fake_joint_node:
+  ros__parameters:
+    rate_hz: 30.0
+    use_sim_time: false
+
+myarm_m750_gui_bridge:
+  ros__parameters:
+    host: 0.0.0.0
+    port: 8765
+```
+
+---
+
+## 08.16. Config debug profile
+
+```yaml
+debug_profile:
+  name: benchmark_minimal
+
+  logging:
+    enabled: true
+    level: INFO
+    command_log: true
+    hardware_call_log: true
+    frame_log: false
+    image_recording: false
+
+  tracing:
+    enabled: false
+
+  online_visualization:
+    enabled: false
+
+  offline_report:
+    enabled: true
+```
+
+Debug profile không nên nằm lẫn trong use case nếu có thể dùng lại. Use case chỉ chọn debug profile phù hợp.
+
+---
+
+## 08.17. Config benchmark counts
+
+```yaml
+benchmark_counts:
+  t1_joint_waypoint_stability:
+    test_cases: 30
+    runs_per_case: 2
+
+  t2_safe_coord_pose_stress:
+    test_cases: 30
+    runs_per_case: 2
+
+  t3_unsafe_pose_safe_fail:
+    test_cases: 30
+    runs_per_case: 2
+
+  t4_complex_path_stability:
+    runs_per_path: 10
+```
+
+Benchmark config phải lưu lại trong artifact cùng `resolved_config.yaml`.
+
+Ví dụ artifact layout:
+
+```text
+artifacts/runs/2026-06-26_1430_uc05/
+├── resolved_config.yaml
+├── ros2_params.yaml
+├── benchmark_cases.yaml
+├── run.log
+├── metrics.csv
+└── notes.md
+```
+
+---
+
+## 08.18. Config camera devices
+
+```yaml
+cameras:
+  camera_01_wrist:
+    role: wrist_rgb_camera
+    model: Logitech C922
+    resolution_options:
+      - [1280, 720, 30]
+      - [640, 480, 30]
+    default_resolution: [640, 480, 30]
+    ros2_node_enabled: true
+    non_ros_v4l2_enabled: true
+
+  camera_02_shoulder:
+    role: shoulder_rgb_camera
+    model: Logitech C922
+    default_resolution: [1280, 720, 30]
+    ros2_node_enabled: true
+    non_ros_v4l2_enabled: true
+```
+
+Camera config là hardware config nhưng có thể được runtime ROS2 hoặc native Python cùng sử dụng. Do đó không nên hard-code camera index trong node.
+
+---
+
+## 08.19. Config merge policy
+
+Runtime final config được merge theo thứ tự:
+
+```text
+1. application boundary
+2. robot profile
+3. machine profile
+4. network profile
+5. firmware/hardware config
+6. core SDK config
+7. port config
+8. adapter config
+9. runtime config
+10. benchmark/debug profile
+11. use-case overrides
+12. local override
+```
+
+Kết quả merge tạo ra:
+
+```text
+config/_resolved/<use_case_id>.resolved.yaml
+```
+
+Nếu là ROS2 use case, sinh thêm:
+
+```text
+config/_resolved/<use_case_id>.ros2_params.yaml
+```
+
+Mọi config sau merge phải được validate trước khi robot được enable.
+
+---
+
+## 08.20. Local override
+
+`config/local/` dùng cho giá trị phụ thuộc máy cá nhân và không commit.
+
+Ví dụ:
+
+```yaml
+local:
+  serial:
+    port: /dev/ttyUSB0
+
+  ros2:
+    domain_id: 42
+
+  websocket:
+    port: 8765
+
+  paths:
+    lab_root: /home/jetson/lab
+```
+
+`.gitignore` trong `config/local/`:
+
+```text
+*.yaml
+*.yml
+!.gitignore
+!README.md
+```
+
+Không đưa secret, token, mật khẩu hoặc thông tin nhạy cảm vào config project.
+
+---
+
+## 08.21. Validation policy
+
+Trước khi chạy hardware thật, hệ thống phải validate:
+
+```text
+- use case id hợp lệ
+- tất cả config path tồn tại
+- không thiếu local override bắt buộc
+- joint limit có min/max hợp lệ
+- workspace limit có frame và unit rõ ràng
+- command rate không vượt giới hạn use case
+- hardware thật yêu cầu manual enable
+- coordinate firmware chỉ được dùng trong use case được phép
+- resolved_config.yaml đã được sinh
+```
+
+Nếu validation fail, robot không được enable.
+
+---
+
+## 08.22. Quy tắc chốt
+
+Quy tắc vận hành config của dự án:
+
+```text
+1. Use case manifest là điểm vào của runtime.
+2. Micro config chia theo tầng và adapter.
+3. Mỗi micro config có default và semantic variants.
+4. Không dùng tên default1/default2/custom2.
+5. Use case chỉ compose config, không chứa toàn bộ parameter chi tiết.
+6. Config khác ít thì dùng overrides.
+7. Config khác behavior thì tạo variant mới.
+8. Hardware thật luôn cần safety config và manual enable.
+9. Local override không commit.
+10. Mỗi run quan trọng phải lưu resolved_config.yaml.
+```
+
+Mô hình này giúp dự án giữ được sự đơn giản khi mới phát triển, nhưng vẫn đủ chặt để mở rộng sang ROS2, RViz2, hardware thật, fake/replay, benchmark và các adapter khác trong tương lai.

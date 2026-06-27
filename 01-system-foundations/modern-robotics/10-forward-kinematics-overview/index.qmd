@@ -8,10 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 10. Forward Kinematics
-
-![10. Forward Kinematics](assets/images/10-forward-kinematics-overview.svg){#fig-10-forward-kinematics-overview width=85%}
-
 Forward kinematics, viết tắt FK, là bài toán:
 
 $$

@@ -801,7 +801,7 @@ def write_coords(self, coords, speed, mode=None):
 
 `mode` ở đây chỉ là payload bổ sung của `SEND_COORDS`; source không giải thích chi tiết hơn trong function body. `set_movement_type(move_type)` là method khác, với docstring `1 - movel, 0 - moveJ` tại `myarmm_control.py:L800-L807`.
 
-### 6.4. Method catalog theo nhóm — format rút gọn dễ đọc
+### 6.4. Method catalog theo nhóm
 
 Các method của `MyArmMControl` dưới đây là bề mặt API của Coordinate firmware. Format được rút gọn giống `MyArmM`: ý nghĩa kỹ thuật, protocol/code, validation, encode/decode và return/reply. Catalog CSV nằm ở `assets/tables/myarmmcontrol_method_catalog_v008.csv`.
 

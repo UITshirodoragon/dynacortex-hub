@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nguyen Hoang Dang Khoa">
+<meta name="description" content="Checklist đối chiếu khi viết, review và refactor code tầng firmware, MCU, driver, ROS2 controller và kinematics.">
+
+<title>Clean Code &amp; Clean Comment cho Robotics, Firmware và ROS2 – DynaCortex</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../01-system-foundations/modern-robotics/index.html" rel="next">
+<link href="../../../01-system-foundations/myarm_m750_controller_framework/12-versioning-and-changelog/index.html" rel="prev">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-825cd8b09f6a8ada71d4eccd558aee18.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-4b9b1df4d04147674f0da2f0d64a41b3.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-825cd8b09f6a8ada71d4eccd558aee18.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">DynaCortex</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../../../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../01-system-foundations/index.html"> 
+<span class="menu-text">Foundations</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../02-implementation/index.html"> 
+<span class="menu-text">Implementation</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../03-experiments/index.html"> 
+<span class="menu-text">Experiments</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../04-reference/index.html"> 
+<span class="menu-text">Reference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../examples/index.html"> 
+<span class="menu-text">Examples</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../01-system-foundations/index.html">01. System Foundations</a></li><li class="breadcrumb-item"><a href="../../../01-system-foundations/myarm_m750_controller_framework/index.html">MyArm Master 750 Controller Framework</a></li><li class="breadcrumb-item"><a href="../../../01-system-foundations/myarm_m750_controller_framework/skills/clean-code-clean-comment-robotics.html">Clean Code &amp; Clean Comment cho Robotics, Firmware và ROS2</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DynaCortex</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">01. System Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">01. System Foundations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">MyArm Master 750 Controller Framework</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MyArm M750 Controller Framework</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/00-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">00. Tổng quan dự án</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/01-requirements/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">01. Yêu cầu hệ thống</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/02-architecture-principles/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">02. Kiến trúc và nguyên tắc thiết kế</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/03-repo-and-docs-organization/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">03. Tổ chức docs module và project repo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/04-domain-model-ports-and-adapters/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">04. Domain model, ports và adapters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/05-kinematics-planning-and-controller/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">05. Kinematics, planning và controller</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/06-hardware-port-and-observation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">06. Hardware port và observation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/07-ros2-nonros-runtime-and-network/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">07. ROS 2, non-ROS runtime và network</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/08-config-system/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">08. Hệ thống config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/09-testing-debug-visualize-benchmark/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">09. Testing, debug, visualize và benchmark</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/10-simulation-digital-twin/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. Simulation pipeline và digital twin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/11-ai-agent-coding-and-maintenance/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">11. AI agent coding và maintenance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/12-versioning-and-changelog/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">12. Versioning và changelog</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/myarm_m750_controller_framework/skills/clean-code-clean-comment-robotics.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Clean Code &amp; Clean Comment cho Robotics, Firmware và ROS2</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Modern Robotics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Modern Robotics Core</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/01-notation-units-conventions/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">01. Quy ước ký hiệu, đơn vị và frame</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/02-configuration-space/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">02. Configuration Space</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/03-task-space-workspace/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">03. Task Space và Workspace</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/04-rigid-body-motion/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">04. Rigid-Body Motion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/05-so3-rotation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">05. Rotation Matrix và SO(3)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/06-se3-homogeneous-transform/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">06. Homogeneous Transform và SE(3)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/07-exponential-coordinates-lie-algebra/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">07. Exponential Coordinates và Lie Algebra</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/08-twist-screw-axis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">08. Twist và Screw Axis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/09-wrench-spatial-force-statics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">09. Wrench, Spatial Force và Statics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/10-forward-kinematics-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">10. Forward Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/11-product-of-exponentials/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">11. Product of Exponentials</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/12-dh-mdh-poe-urdf-comparison/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">12. D-H, M-DH, PoE và URDF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/13-urdf-as-kinematic-model/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">13. URDF dưới góc nhìn động học</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/14-jacobian-velocity-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">14. Jacobian và Velocity Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/15-singularity-manipulability/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">15. Singularity và Manipulability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/16-inverse-kinematics/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">16. Inverse Kinematics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/17-numerical-ik-damped-least-squares/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">17. Numerical IK và Damped Least Squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/18-dynamics-open-chain-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">18. Dynamics of Open Chains</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/19-mass-coriolis-gravity/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">19. Mass Matrix, Coriolis và Gravity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/20-inverse-dynamics-rnea/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">20. Inverse Dynamics và RNEA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/21-trajectory-generation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">21. Trajectory Generation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/22-motion-planning-cspace/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">22. Motion Planning trong C-space</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/23-robot-control/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">23. Robot Control</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/modern-robotics/24-practical-debugging-map/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">24. Bản đồ debug thực dụng từ Modern Robotics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">ROS 2 Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ROS 2 Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/ros2-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ROS 2 là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/computation-graph/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computation Graph</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/node/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Node</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/topic-message/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Topic và Message</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/service/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Service</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/action/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Action</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/parameter-launch/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parameter và Launch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/tf2-frame-tree/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TF2 và Frame Tree</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/dds-qos/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DDS và QoS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/executor-callback/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Executor và Callback</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/ros2-control/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ros2_control</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/ros-2-concepts/rviz2-gazebo/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RViz2 và Gazebo</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">MoveIt 2 Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MoveIt 2 Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/moveit2-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MoveIt 2 là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/robot-model-urdf-srdf/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Robot Model, URDF, SRDF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/planning-group-state/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Group và Robot State</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/planning-scene-collision/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Scene và Collision Checking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/kinematics-solver/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kinematics Solver</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/planning-pipeline-ompl/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Planning Pipeline và OMPL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/moveit-2-concepts/trajectory-execution/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Trajectory và Execution</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Pinocchio Concepts</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pinocchio Concepts</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/pinocchio-overview/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pinocchio là gì</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/model-data-geometry/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Model, Data và Geometry</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/joint-frame-placement/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Joint, Frame và Placement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/fk-jacobian/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FK và Jacobian</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/dynamics-rnea-crba/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Dynamics, RNEA và CRBA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/pinocchio-concepts/solver-support/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solver Support</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">Source-informed Core Map</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Source-informed Core Map</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/pymycobot-sdk-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pymycobot SDK observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/myarm-ros2-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">myarm_ros2 observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/rebotarm-control-py-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reBotArm_control_py observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/rebotarm-ros2-observations/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">reBotArmController_ROS2 observations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../01-system-foundations/source-informed-core-map/theory-to-source-traceability/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Theory to Source Traceability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+ <span class="menu-text">02. Implementation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../02-implementation/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Implementation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../02-implementation/flash-os-auvidea-jetson-agx-xavier-on-nvme/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cài đặt hệ điều hành cho Jetson AGX Xavier trên custom carrier board Auvidea X221-AI trên NVME</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+ <span class="menu-text">03. Experiments</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../03-experiments/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Experiments</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">04. Reference</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reference</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/elephant-robotics-myarm-master-750-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot MyArm Master 750 của Elephant Robotics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng phần cứng, thông số kỹ thuật và động học của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng Python SDK và firmware API của MyArm Master 750</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/elephant-robotics-myarm-master-750-analysis/elephant-robotics-myarm-master-750-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Hiện trạng ROS2 SDK và URDF/Xacro của MyArm Master 750</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot reBot B601-DM của seeed studio</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích và đánh giá cánh tay robot reBot B601-DM của Seeed Studio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-hardware-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích phần cứng cánh tay robot reBot B601-DM của Seeed Studio</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-python-api-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích Python SDK và tầng điều khiển reBot B601-DM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-ros2-sdk-specification/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích ROS 2 SDK, MoveIt 2 và RViz2 cho reBot B601-DM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../04-reference/seeedstudio-rebot-b601-dm-analysis/seeedstudio-rebot-b601-dm-analysis-demo/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Phân tích demo ứng dụng reBot B601-DM: Visual Grasping và LeRobot</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
+ <span class="menu-text">05. Literature</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../05-literature/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Literature</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
+ <span class="menu-text">06. Reports</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../06-reports/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reports</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
+ <span class="menu-text">07. Inbox</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../07-inbox/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inbox</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false">
+ <span class="menu-text">08. Notes</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../08-notes/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Notes</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-17" role="navigation" aria-expanded="false">
+ <span class="menu-text">09. Troubleshooting</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-17" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-17" class="collapse list-unstyled sidebar-section depth1 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../09-troubleshooting/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Troubleshooting</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../examples/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">QMD Syntax Examples</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#mục-tiêu" id="toc-mục-tiêu" class="nav-link active" data-scroll-target="#mục-tiêu"><span class="header-section-number">1</span> Mục tiêu</a></li>
+  <li><a href="#rule-hierarchy" id="toc-rule-hierarchy" class="nav-link" data-scroll-target="#rule-hierarchy"><span class="header-section-number">2</span> Rule hierarchy</a></li>
+  <li><a href="#clean-code-rules" id="toc-clean-code-rules" class="nav-link" data-scroll-target="#clean-code-rules"><span class="header-section-number">3</span> Clean Code Rules</a>
+  <ul class="collapse">
+  <li><a href="#tên-phải-mang-domain-và-đơn-vị" id="toc-tên-phải-mang-domain-và-đơn-vị" class="nav-link" data-scroll-target="#tên-phải-mang-domain-và-đơn-vị"><span class="header-section-number">3.1</span> 1. Tên phải mang domain và đơn vị</a></li>
+  <li><a href="#không-dùng-magic-number-cho-giới-hạn-vật-lý" id="toc-không-dùng-magic-number-cho-giới-hạn-vật-lý" class="nav-link" data-scroll-target="#không-dùng-magic-number-cho-giới-hạn-vật-lý"><span class="header-section-number">3.2</span> 2. Không dùng magic number cho giới hạn vật lý</a></li>
+  <li><a href="#hàm-nhỏ-một-mức-trừu-tượng" id="toc-hàm-nhỏ-một-mức-trừu-tượng" class="nav-link" data-scroll-target="#hàm-nhỏ-một-mức-trừu-tượng"><span class="header-section-number">3.3</span> 3. Hàm nhỏ, một mức trừu tượng</a></li>
+  <li><a href="#tách-computation-khỏi-side-effect" id="toc-tách-computation-khỏi-side-effect" class="nav-link" data-scroll-target="#tách-computation-khỏi-side-effect"><span class="header-section-number">3.4</span> 4. Tách computation khỏi side effect</a></li>
+  <li><a href="#boundary-condition-phải-tập-trung-một-chỗ" id="toc-boundary-condition-phải-tập-trung-một-chỗ" class="nav-link" data-scroll-target="#boundary-condition-phải-tập-trung-một-chỗ"><span class="header-section-number">3.5</span> 5. Boundary condition phải tập trung một chỗ</a></li>
+  <li><a href="#tránh-flag-argument" id="toc-tránh-flag-argument" class="nav-link" data-scroll-target="#tránh-flag-argument"><span class="header-section-number">3.6</span> 6. Tránh flag argument</a></li>
+  <li><a href="#dùng-value-object-thay-vì-primitive-rời-rạc" id="toc-dùng-value-object-thay-vì-primitive-rời-rạc" class="nav-link" data-scroll-target="#dùng-value-object-thay-vì-primitive-rời-rạc"><span class="header-section-number">3.7</span> 7. Dùng value object thay vì primitive rời rạc</a></li>
+  <li><a href="#tránh-negative-conditional" id="toc-tránh-negative-conditional" class="nav-link" data-scroll-target="#tránh-negative-conditional"><span class="header-section-number">3.8</span> 8. Tránh negative conditional</a></li>
+  <li><a href="#state-machine-phải-explicit" id="toc-state-machine-phải-explicit" class="nav-link" data-scroll-target="#state-machine-phải-explicit"><span class="header-section-number">3.9</span> 9. State machine phải explicit</a></li>
+  <li><a href="#dependency-direction-phải-rõ" id="toc-dependency-direction-phải-rõ" class="nav-link" data-scroll-target="#dependency-direction-phải-rõ"><span class="header-section-number">3.10</span> 10. Dependency direction phải rõ</a></li>
+  </ul></li>
+  <li><a href="#clean-comment-rules" id="toc-clean-comment-rules" class="nav-link" data-scroll-target="#clean-comment-rules"><span class="header-section-number">4</span> Clean Comment Rules</a>
+  <ul class="collapse">
+  <li><a href="#comment-không-lặp-lại-code" id="toc-comment-không-lặp-lại-code" class="nav-link" data-scroll-target="#comment-không-lặp-lại-code"><span class="header-section-number">4.1</span> 1. Comment không lặp lại code</a></li>
+  <li><a href="#comment-không-thay-cho-tên-biến-xấu" id="toc-comment-không-thay-cho-tên-biến-xấu" class="nav-link" data-scroll-target="#comment-không-thay-cho-tên-biến-xấu"><span class="header-section-number">4.2</span> 2. Comment không thay cho tên biến xấu</a></li>
+  <li><a href="#comment-nên-giải-thích-intentwhy" id="toc-comment-nên-giải-thích-intentwhy" class="nav-link" data-scroll-target="#comment-nên-giải-thích-intentwhy"><span class="header-section-number">4.3</span> 3. Comment nên giải thích intent/why</a></li>
+  <li><a href="#comment-workaround-phải-có-điều-kiện-xóa" id="toc-comment-workaround-phải-có-điều-kiện-xóa" class="nav-link" data-scroll-target="#comment-workaround-phải-có-điều-kiện-xóa"><span class="header-section-number">4.4</span> 4. Comment workaround phải có điều kiện xóa</a></li>
+  <li><a href="#comment-cảnh-báo-phải-nói-hậu-quả" id="toc-comment-cảnh-báo-phải-nói-hậu-quả" class="nav-link" data-scroll-target="#comment-cảnh-báo-phải-nói-hậu-quả"><span class="header-section-number">4.5</span> 5. Comment cảnh báo phải nói hậu quả</a></li>
+  <li><a href="#comment-cho-hardwaremcu-nên-nói-rõ-timing-register-bit-và-errata" id="toc-comment-cho-hardwaremcu-nên-nói-rõ-timing-register-bit-và-errata" class="nav-link" data-scroll-target="#comment-cho-hardwaremcu-nên-nói-rõ-timing-register-bit-và-errata"><span class="header-section-number">4.6</span> 6. Comment cho hardware/MCU nên nói rõ timing, register, bit và errata</a></li>
+  <li><a href="#comment-nguồn-thuật-toáncông-thức" id="toc-comment-nguồn-thuật-toáncông-thức" class="nav-link" data-scroll-target="#comment-nguồn-thuật-toáncông-thức"><span class="header-section-number">4.7</span> 7. Comment nguồn thuật toán/công thức</a></li>
+  <li><a href="#todo-phải-có-owner-hoặc-issue" id="toc-todo-phải-có-owner-hoặc-issue" class="nav-link" data-scroll-target="#todo-phải-có-owner-hoặc-issue"><span class="header-section-number">4.8</span> 8. TODO phải có owner hoặc issue</a></li>
+  <li><a href="#không-comment-out-code" id="toc-không-comment-out-code" class="nav-link" data-scroll-target="#không-comment-out-code"><span class="header-section-number">4.9</span> 9. Không comment-out code</a></li>
+  </ul></li>
+  <li><a href="#comment-taxonomy" id="toc-comment-taxonomy" class="nav-link" data-scroll-target="#comment-taxonomy"><span class="header-section-number">5</span> Comment taxonomy</a></li>
+  <li><a href="#public-api-documentation" id="toc-public-api-documentation" class="nav-link" data-scroll-target="#public-api-documentation"><span class="header-section-number">6</span> Public API documentation</a>
+  <ul class="collapse">
+  <li><a href="#cc-doxygen-style" id="toc-cc-doxygen-style" class="nav-link" data-scroll-target="#cc-doxygen-style"><span class="header-section-number">6.1</span> C/C++ Doxygen style</a></li>
+  <li><a href="#python-docstring-style" id="toc-python-docstring-style" class="nav-link" data-scroll-target="#python-docstring-style"><span class="header-section-number">6.2</span> Python docstring style</a></li>
+  </ul></li>
+  <li><a href="#firmwaremcu-style-rules-đáng-học" id="toc-firmwaremcu-style-rules-đáng-học" class="nav-link" data-scroll-target="#firmwaremcu-style-rules-đáng-học"><span class="header-section-number">7</span> Firmware/MCU-style rules đáng học</a>
+  <ul class="collapse">
+  <li><a href="#register-và-bit-mask-phải-rõ-nghĩa" id="toc-register-và-bit-mask-phải-rõ-nghĩa" class="nav-link" data-scroll-target="#register-và-bit-mask-phải-rõ-nghĩa"><span class="header-section-number">7.1</span> 1. Register và bit mask phải rõ nghĩa</a></li>
+  <li><a href="#isr-phải-ngắn-và-không-block" id="toc-isr-phải-ngắn-và-không-block" class="nav-link" data-scroll-target="#isr-phải-ngắn-và-không-block"><span class="header-section-number">7.2</span> 2. ISR phải ngắn và không block</a></li>
+  <li><a href="#return-code-rõ-ràng" id="toc-return-code-rõ-ràng" class="nav-link" data-scroll-target="#return-code-rõ-ràng"><span class="header-section-number">7.3</span> 3. Return code rõ ràng</a></li>
+  <li><a href="#comment-phần-cứng-nên-mô-tả-điều-ngoài-source-code" id="toc-comment-phần-cứng-nên-mô-tả-điều-ngoài-source-code" class="nav-link" data-scroll-target="#comment-phần-cứng-nên-mô-tả-điều-ngoài-source-code"><span class="header-section-number">7.4</span> 4. Comment phần cứng nên mô tả điều ngoài source code</a></li>
+  </ul></li>
+  <li><a href="#ros2-specific-clean-codecomment-rules" id="toc-ros2-specific-clean-codecomment-rules" class="nav-link" data-scroll-target="#ros2-specific-clean-codecomment-rules"><span class="header-section-number">8</span> ROS2-specific clean code/comment rules</a>
+  <ul class="collapse">
+  <li><a href="#node-chỉ-nên-compose-logic-không-ôm-toàn-bộ-domain" id="toc-node-chỉ-nên-compose-logic-không-ôm-toàn-bộ-domain" class="nav-link" data-scroll-target="#node-chỉ-nên-compose-logic-không-ôm-toàn-bộ-domain"><span class="header-section-number">8.1</span> 1. Node chỉ nên compose logic, không ôm toàn bộ domain</a></li>
+  <li><a href="#parameter-phải-có-đơn-vị-và-range" id="toc-parameter-phải-có-đơn-vị-và-range" class="nav-link" data-scroll-target="#parameter-phải-có-đơn-vị-và-range"><span class="header-section-number">8.2</span> 2. Parameter phải có đơn vị và range</a></li>
+  <li><a href="#callback-không-được-block-nếu-ảnh-hưởng-control-loop" id="toc-callback-không-được-block-nếu-ảnh-hưởng-control-loop" class="nav-link" data-scroll-target="#callback-không-được-block-nếu-ảnh-hưởng-control-loop"><span class="header-section-number">8.3</span> 3. Callback không được block nếu ảnh hưởng control loop</a></li>
+  <li><a href="#qosframetopic-comment-nên-ghi-ở-interface-boundary" id="toc-qosframetopic-comment-nên-ghi-ở-interface-boundary" class="nav-link" data-scroll-target="#qosframetopic-comment-nên-ghi-ở-interface-boundary"><span class="header-section-number">8.4</span> 4. QoS/frame/topic comment nên ghi ở interface boundary</a></li>
+  <li><a href="#frame-convention-phải-được-ghi-gần-code-chuyển-đổi-pose" id="toc-frame-convention-phải-được-ghi-gần-code-chuyển-đổi-pose" class="nav-link" data-scroll-target="#frame-convention-phải-được-ghi-gần-code-chuyển-đổi-pose"><span class="header-section-number">8.5</span> 5. Frame convention phải được ghi gần code chuyển đổi pose</a></li>
+  </ul></li>
+  <li><a href="#review-checklist" id="toc-review-checklist" class="nav-link" data-scroll-target="#review-checklist"><span class="header-section-number">9</span> Review checklist</a>
+  <ul class="collapse">
+  <li><a href="#per-file-checklist" id="toc-per-file-checklist" class="nav-link" data-scroll-target="#per-file-checklist"><span class="header-section-number">9.1</span> Per-file checklist</a></li>
+  <li><a href="#per-function-checklist" id="toc-per-function-checklist" class="nav-link" data-scroll-target="#per-function-checklist"><span class="header-section-number">9.2</span> Per-function checklist</a></li>
+  <li><a href="#robot-safety-checklist" id="toc-robot-safety-checklist" class="nav-link" data-scroll-target="#robot-safety-checklist"><span class="header-section-number">9.3</span> Robot safety checklist</a></li>
+  </ul></li>
+  <li><a href="#example-c-firmware-style" id="toc-example-c-firmware-style" class="nav-link" data-scroll-target="#example-c-firmware-style"><span class="header-section-number">10</span> Example: C firmware style</a>
+  <ul class="collapse">
+  <li><a href="#bad" id="toc-bad" class="nav-link" data-scroll-target="#bad"><span class="header-section-number">10.1</span> Bad</a></li>
+  <li><a href="#better" id="toc-better" class="nav-link" data-scroll-target="#better"><span class="header-section-number">10.2</span> Better</a></li>
+  </ul></li>
+  <li><a href="#example-c-ros2-driver-boundary" id="toc-example-c-ros2-driver-boundary" class="nav-link" data-scroll-target="#example-c-ros2-driver-boundary"><span class="header-section-number">11</span> Example: C++ ROS2 driver boundary</a></li>
+  <li><a href="#example-python-kinematics-layer" id="toc-example-python-kinematics-layer" class="nav-link" data-scroll-target="#example-python-kinematics-layer"><span class="header-section-number">12</span> Example: Python kinematics layer</a></li>
+  <li><a href="#cilinting-suggestion" id="toc-cilinting-suggestion" class="nav-link" data-scroll-target="#cilinting-suggestion"><span class="header-section-number">13</span> CI/Linting suggestion</a></li>
+  <li><a href="#final-heuristic" id="toc-final-heuristic" class="nav-link" data-scroll-target="#final-heuristic"><span class="header-section-number">14</span> Final heuristic</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">15</span> References</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/01-system-foundations/myarm_m750_controller_framework/skills/clean-code-clean-comment-robotics.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../01-system-foundations/index.html">01. System Foundations</a></li><li class="breadcrumb-item"><a href="../../../01-system-foundations/myarm_m750_controller_framework/index.html">MyArm Master 750 Controller Framework</a></li><li class="breadcrumb-item"><a href="../../../01-system-foundations/myarm_m750_controller_framework/skills/clean-code-clean-comment-robotics.html">Clean Code &amp; Clean Comment cho Robotics, Firmware và ROS2</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Clean Code &amp; Clean Comment cho Robotics, Firmware và ROS2</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">software-engineering</div>
+    <div class="quarto-category">clean-code</div>
+    <div class="quarto-category">clean-comment</div>
+    <div class="quarto-category">firmware</div>
+    <div class="quarto-category">mcu</div>
+    <div class="quarto-category">ros2</div>
+    <div class="quarto-category">robotics</div>
+    <div class="quarto-category">controller</div>
+    <div class="quarto-category">myarm-m750</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Checklist đối chiếu khi viết, review và refactor code tầng firmware, MCU, driver, ROS2 controller và kinematics.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nguyen Hoang Dang Khoa </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">25/06/2026 11:51:36+07:00Z</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="mục-tiêu" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Mục tiêu</h1>
+<p>Tài liệu này dùng như một bảng đối chiếu khi phát triển phần mềm robot, đặc biệt cho các tầng:</p>
+<ul>
+<li>firmware/MCU style code;</li>
+<li>hardware driver;</li>
+<li>serial protocol adapter;</li>
+<li>ROS2 node;</li>
+<li>kinematics/control layer;</li>
+<li>benchmark/test code.</li>
+</ul>
+<p>Nguyên tắc nền: <strong>code phải dễ đọc bởi người khác trước khi tối ưu cho máy chạy</strong>. Comment không dùng để che code khó hiểu. Comment tốt bổ sung thông tin mà code không tự nói được: <strong>ý định, ràng buộc, quyết định kỹ thuật, cảnh báo, workaround, nguồn tham khảo, bug lịch sử, phần chưa hoàn chỉnh</strong>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Tinh thần firmware/MCU tôi muốn giữ lại
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Phong cách firmware/MCU tốt thường có các đặc điểm: rõ ràng, trực tiếp, ít magic, gần phần cứng, đặt tên theo register/bit/state rõ ràng, comment giải thích ràng buộc thời gian/phần cứng, không trừu tượng quá mức, và dễ trace từ input đến output.</p>
+</div>
+</div>
+</section>
+<section id="rule-hierarchy" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Rule hierarchy</h1>
+<p>Khi có mâu thuẫn giữa các rule, ưu tiên theo thứ tự:</p>
+<ol type="1">
+<li><strong>Safety/correctness</strong>: không làm robot di chuyển sai, vượt giới hạn, treo driver, hoặc gây trạng thái không xác định.</li>
+<li><strong>Traceability</strong>: có thể truy vết từ command → validation → protocol → hardware response → state feedback.</li>
+<li><strong>Readability</strong>: người mới trong team đọc được mà không cần hỏi tác giả.</li>
+<li><strong>Consistency</strong>: code cùng project phải có style thống nhất.</li>
+<li><strong>Local convention</strong>: tuân thủ style của package/repo đang sửa.</li>
+<li><strong>Personal preference</strong>: chỉ dùng khi không ảnh hưởng các mục trên.</li>
+</ol>
+</section>
+<section id="clean-code-rules" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Clean Code Rules</h1>
+<section id="tên-phải-mang-domain-và-đơn-vị" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="tên-phải-mang-domain-và-đơn-vị"><span class="header-section-number">3.1</span> 1. Tên phải mang domain và đơn vị</h2>
+<p>Không nên dùng tên quá ngắn cho biến domain quan trọng.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bad</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> solver.solve(p)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> <span class="fl">0.5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Good</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>target_joint_rad <span class="op">=</span> solver.solve(target_pose_base)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>max_joint_velocity_rad_s <span class="op">=</span> <span class="fl">0.5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Với robotics, nên đưa đơn vị vào tên biến khi có khả năng nhầm lẫn:</p>
+<ul>
+<li><code>_rad</code>, <code>_deg</code>;</li>
+<li><code>_m</code>, <code>_mm</code>;</li>
+<li><code>_s</code>, <code>_ms</code>, <code>_hz</code>;</li>
+<li><code>_rad_s</code>, <code>_rad_s2</code>;</li>
+<li><code>_tick</code>, <code>_count</code>;</li>
+<li><code>_frame</code>, <code>_topic</code>, <code>_qos</code>.</li>
+</ul>
+</section>
+<section id="không-dùng-magic-number-cho-giới-hạn-vật-lý" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="không-dùng-magic-number-cho-giới-hạn-vật-lý"><span class="header-section-number">3.2</span> 2. Không dùng magic number cho giới hạn vật lý</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Bad</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span><span class="bu">std::</span>abs<span class="op">(</span>delta_q<span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.08</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  delta_q <span class="op">=</span> <span class="bu">std::</span>copysign<span class="op">(</span><span class="fl">0.08</span><span class="op">,</span> delta_q<span class="op">);</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Good</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="dt">double</span> kMaxJointStepRad <span class="op">=</span> <span class="fl">0.08</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span><span class="bu">std::</span>abs<span class="op">(</span>delta_q_rad<span class="op">)</span> <span class="op">&gt;</span> kMaxJointStepRad<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  delta_q_rad <span class="op">=</span> <span class="bu">std::</span>copysign<span class="op">(</span>kMaxJointStepRad<span class="op">,</span> delta_q_rad<span class="op">);</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Magic number được chấp nhận khi bản thân nó là hằng toán học hiển nhiên trong ngữ cảnh, ví dụ <code>0</code>, <code>1</code>, <code>2</code>, hoặc <code>M_PI</code>, nhưng vẫn nên cẩn thận trong code safety.</p>
+</section>
+<section id="hàm-nhỏ-một-mức-trừu-tượng" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="hàm-nhỏ-một-mức-trừu-tượng"><span class="header-section-number">3.3</span> 3. Hàm nhỏ, một mức trừu tượng</h2>
+<p>Một hàm không nên vừa đọc serial, decode packet, validate limit, solve IK, publish ROS topic và ghi log.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Better: mỗi bước có tên riêng, dễ test riêng.</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>packet <span class="op">=</span> transport.read_packet()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>feedback <span class="op">=</span> protocol.decode_feedback(packet)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>validated_feedback <span class="op">=</span> joint_limits.validate_feedback(feedback)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>state_publisher.publish(validated_feedback)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Rule thực dụng: nếu không thể đặt tên hàm rõ ràng mà không dùng chữ <code>and</code>, hàm đó có thể đang làm quá nhiều việc.</p>
+</section>
+<section id="tách-computation-khỏi-side-effect" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="tách-computation-khỏi-side-effect"><span class="header-section-number">3.4</span> 4. Tách computation khỏi side effect</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bad: tên là compute nhưng lại gửi lệnh xuống robot.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_ik(<span class="va">self</span>, pose):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    joint_target <span class="op">=</span> <span class="va">self</span>.solver.solve(pose)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.driver.write(joint_target)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> joint_target</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Good</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_ik(<span class="va">self</span>, pose: CartesianPose) <span class="op">-&gt;</span> IkResult:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span>.solver.solve(pose)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> execute_joint_target(<span class="va">self</span>, target: JointTarget) <span class="op">-&gt;</span> MotionResult:</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span>.driver.write(target)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Tên hàm nên phản ánh side effect:</p>
+<ul>
+<li><code>compute_*</code>, <code>estimate_*</code>, <code>solve_*</code>: không gây side effect;</li>
+<li><code>validate_*</code>: trả kết quả kiểm tra, không tự sửa trừ khi tên là <code>clamp_*</code> hoặc <code>normalize_*</code>;</li>
+<li><code>send_*</code>, <code>write_*</code>, <code>execute_*</code>, <code>publish_*</code>: có side effect;</li>
+<li><code>read_*</code>, <code>poll_*</code>: đọc từ hardware/system;</li>
+<li><code>reset_*</code>, <code>clear_*</code>: thay đổi state nội bộ.</li>
+</ul>
+</section>
+<section id="boundary-condition-phải-tập-trung-một-chỗ" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="boundary-condition-phải-tập-trung-một-chỗ"><span class="header-section-number">3.5</span> 5. Boundary condition phải tập trung một chỗ</h2>
+<p>Không rải joint limit, speed limit, workspace limit ở nhiều file.</p>
+<pre class="text"><code>myarm_m750_control/
+├── joint_limits.hpp
+├── safety_limits.hpp
+├── trajectory_validator.hpp
+└── motion_guard.hpp</code></pre>
+<p>Các boundary nên có API rõ ràng:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ValidationResult validateJointTarget<span class="op">(</span><span class="at">const</span> JointTarget<span class="op">&amp;</span> target<span class="op">);</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>JointTarget clampJointTarget<span class="op">(</span><span class="at">const</span> JointTarget<span class="op">&amp;</span> target<span class="op">);</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> isNearSingularity<span class="op">(</span><span class="at">const</span> JointState<span class="op">&amp;</span> state<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="tránh-flag-argument" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="tránh-flag-argument"><span class="header-section-number">3.6</span> 6. Tránh flag argument</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bad</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> move_to(target, use_ik: <span class="bu">bool</span>):</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Good</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> move_to_joint_target(target: JointTarget) <span class="op">-&gt;</span> MotionResult:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> move_to_cartesian_pose(pose: CartesianPose) <span class="op">-&gt;</span> MotionResult:</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Flag argument làm một hàm có hai hành vi, khó test và dễ phát sinh nhánh ẩn.</p>
+</section>
+<section id="dùng-value-object-thay-vì-primitive-rời-rạc" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="dùng-value-object-thay-vì-primitive-rời-rạc"><span class="header-section-number">3.7</span> 7. Dùng value object thay vì primitive rời rạc</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Bad</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>send_pose(x, y, z, roll, pitch, yaw, speed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Good</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CartesianPose:</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    position_m: np.ndarray</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    orientation_quat_xyzw: np.ndarray</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    frame_id: <span class="bu">str</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span>(frozen<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MotionProfile:</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    max_velocity_rad_s: <span class="bu">float</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    max_acceleration_rad_s2: <span class="bu">float</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>send_pose(target_pose, motion_profile)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Các value object nên có trong dự án MyArm M750:</p>
+<ul>
+<li><code>JointState</code>;</li>
+<li><code>JointTarget</code>;</li>
+<li><code>CartesianPose</code>;</li>
+<li><code>MotionProfile</code>;</li>
+<li><code>IkRequest</code>;</li>
+<li><code>IkResult</code>;</li>
+<li><code>FkResult</code>;</li>
+<li><code>HardwareStatus</code>;</li>
+<li><code>SerialPacket</code>;</li>
+<li><code>SafetyViolation</code>.</li>
+</ul>
+</section>
+<section id="tránh-negative-conditional" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="tránh-negative-conditional"><span class="header-section-number">3.8</span> 8. Tránh negative conditional</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Bad</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(!</span>result<span class="op">.</span>failed<span class="op">())</span> <span class="op">{</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  executeNextStep<span class="op">();</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Good</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>result<span class="op">.</span>succeeded<span class="op">())</span> <span class="op">{</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  executeNextStep<span class="op">();</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Trong safety code, <code>not unsafe</code>, <code>not invalid</code>, <code>not failed</code> dễ đọc nhầm. Nên ưu tiên predicate dương: <code>isValid</code>, <code>isSafe</code>, <code>succeeded</code>, <code>isReady</code>.</p>
+</section>
+<section id="state-machine-phải-explicit" class="level2" data-number="3.9">
+<h2 data-number="3.9" class="anchored" data-anchor-id="state-machine-phải-explicit"><span class="header-section-number">3.9</span> 9. State machine phải explicit</h2>
+<p>Firmware, driver và ROS2 control node thường có state. Không nên để state ẩn trong nhiều boolean.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Bad</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="va">connected_</span><span class="op">;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="va">homed_</span><span class="op">;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="va">moving_</span><span class="op">;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="va">error_</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Good</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> <span class="kw">class</span> DriverState <span class="op">{</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  kDisconnected<span class="op">,</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  kConnecting<span class="op">,</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  kIdle<span class="op">,</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  kExecuting<span class="op">,</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  kFault<span class="op">,</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>State machine nên có transition rõ ràng:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>DriverState nextState<span class="op">(</span>DriverState current<span class="op">,</span> DriverEvent event<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="dependency-direction-phải-rõ" class="level2" data-number="3.10">
+<h2 data-number="3.10" class="anchored" data-anchor-id="dependency-direction-phải-rõ"><span class="header-section-number">3.10</span> 10. Dependency direction phải rõ</h2>
+<p>Driver không nên phụ thuộc ngược lên planner. Kinematics không nên gọi serial. ROS node nên đóng vai trò composition/integration, không chứa toàn bộ logic.</p>
+<pre class="text"><code>application / behavior / benchmark
+        ↓
+planning / kinematics / controller
+        ↓
+hardware abstraction / driver
+        ↓
+transport / protocol / serial
+        ↓
+firmware / MCU</code></pre>
+</section>
+</section>
+<section id="clean-comment-rules" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Clean Comment Rules</h1>
+<section id="comment-không-lặp-lại-code" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="comment-không-lặp-lại-code"><span class="header-section-number">4.1</span> 1. Comment không lặp lại code</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Bad</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> i <span class="op">+</span> <span class="dv">1</span><span class="op">;</span>  <span class="co">/* Add one to i. */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Comment này không thêm thông tin, chỉ tăng noise.</p>
+</section>
+<section id="comment-không-thay-cho-tên-biến-xấu" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="comment-không-thay-cho-tên-biến-xấu"><span class="header-section-number">4.2</span> 2. Comment không thay cho tên biến xấu</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Bad</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>Node<span class="op">*</span> n<span class="op">;</span>  <span class="co">// best child node candidate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Good</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>Node<span class="op">*</span> best_child_node_candidate<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Nếu comment chỉ để giải thích tên biến, hãy đổi tên biến.</p>
+</section>
+<section id="comment-nên-giải-thích-intentwhy" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="comment-nên-giải-thích-intentwhy"><span class="header-section-number">4.3</span> 3. Comment nên giải thích intent/why</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="dt">double</span> kMaxJointStepRad <span class="op">=</span> <span class="fl">0.08</span><span class="op">;</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Keep a single update below the observed MyArm M750 servo jump threshold.</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Larger steps can be accepted by firmware but produce visible jerk.</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>joint_target <span class="op">=</span> clampJointStep<span class="op">(</span>current_joint<span class="op">,</span> requested_joint<span class="op">,</span> kMaxJointStepRad<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Comment này có giá trị vì nó giải thích nguyên nhân kỹ thuật và hậu quả.</p>
+</section>
+<section id="comment-workaround-phải-có-điều-kiện-xóa" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="comment-workaround-phải-có-điều-kiện-xóa"><span class="header-section-number">4.4</span> 4. Comment workaround phải có điều kiện xóa</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Workaround(#42): The coordinate firmware sometimes acknowledges a target</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">// near the workspace boundary without starting motion. Remove this retry path</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">// after joint-space execution fully replaces coordinate mode.</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>result<span class="op">.</span>accepted_but_no_motion<span class="op">())</span> <span class="op">{</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  retry_once_with_equivalent_joint_target<span class="op">();</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Một workaround tốt nên có:</p>
+<ul>
+<li>bug/issue id;</li>
+<li>điều kiện kích hoạt;</li>
+<li>hậu quả nếu xóa sai;</li>
+<li>điều kiện để xóa trong tương lai.</li>
+</ul>
+</section>
+<section id="comment-cảnh-báo-phải-nói-hậu-quả" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="comment-cảnh-báo-phải-nói-hậu-quả"><span class="header-section-number">4.5</span> 5. Comment cảnh báo phải nói hậu quả</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* </span><span class="al">WARNING</span><span class="co">: Do not call from ISR. This function may block while waiting for</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * the UART TX buffer and can break the 1 kHz control loop deadline.</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> myarm_uart_write_packet<span class="op">(</span><span class="dt">const</span> <span class="kw">struct</span> myarm_packet <span class="op">*</span>packet<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Warning không nên chung chung kiểu <code>/* be careful */</code>. Hãy nói rõ vì sao nguy hiểm.</p>
+</section>
+<section id="comment-cho-hardwaremcu-nên-nói-rõ-timing-register-bit-và-errata" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="comment-cho-hardwaremcu-nên-nói-rõ-timing-register-bit-và-errata"><span class="header-section-number">4.6</span> 6. Comment cho hardware/MCU nên nói rõ timing, register, bit và errata</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STATUS_MOTION_DONE_BIT  </span><span class="op">(</span><span class="dv">1</span><span class="bu">u</span><span class="pp"> </span><span class="op">&lt;&lt;</span><span class="pp"> </span><span class="dv">3</span><span class="op">)</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">/* The firmware raises MOTION_DONE before the arm fully settles. Keep a short</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"> * settle window before sampling the final joint state for repeatability tests.</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">const</span> <span class="dt">uint32_t</span> kSettleTimeMs <span class="op">=</span> <span class="dv">120</span><span class="bu">u</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Loại comment này rất có giá trị ở tầng thấp vì code không thể tự nói rõ hành vi vật lý.</p>
+</section>
+<section id="comment-nguồn-thuật-toáncông-thức" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="comment-nguồn-thuật-toáncông-thức"><span class="header-section-number">4.7</span> 7. Comment nguồn thuật toán/công thức</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Damped least-squares IK. See: Nakamura &amp; Hanafusa, 1986.</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Used here only near singularity; otherwise the nominal solver is preferred.</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>q_delta <span class="op">=</span> solveDampedLeastSquares<span class="op">(</span>jacobian<span class="op">,</span> pose_error<span class="op">,</span> damping<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Nếu copy hoặc chuyển thể code/công thức từ nguồn ngoài, hãy ghi nguồn, version, và phần đã chỉnh sửa.</p>
+</section>
+<section id="todo-phải-có-owner-hoặc-issue" class="level2" data-number="4.8">
+<h2 data-number="4.8" class="anchored" data-anchor-id="todo-phải-có-owner-hoặc-issue"><span class="header-section-number">4.8</span> 8. TODO phải có owner hoặc issue</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">TODO</span><span class="co">(khoa, #58): Replace temporary Euler pose stress test with quaternion</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co">// interpolation after the path benchmark format is finalized.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Không nên:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">TODO</span><span class="co"> fix this later</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="không-comment-out-code" class="level2" data-number="4.9">
+<h2 data-number="4.9" class="anchored" data-anchor-id="không-comment-out-code"><span class="header-section-number">4.9</span> 9. Không comment-out code</h2>
+<p>Code cũ nên xóa. Git đã làm nhiệm vụ lưu lịch sử. Nếu cần giữ vì lý do đặc biệt, hãy mở issue hoặc ghi rõ lý do trong commit/PR, không để block code chết trong source.</p>
+</section>
+</section>
+<section id="comment-taxonomy" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Comment taxonomy</h1>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Loại comment</th>
+<th>Dùng khi nào</th>
+<th>Ví dụ ngắn</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Intent</td>
+<td>Quyết định không hiển nhiên</td>
+<td><code>// Prefer joint target to avoid firmware IK ambiguity.</code></td>
+</tr>
+<tr class="even">
+<td>Constraint</td>
+<td>Ràng buộc phần cứng/thời gian</td>
+<td><code>// Must finish before next 10 ms control tick.</code></td>
+</tr>
+<tr class="odd">
+<td>Warning</td>
+<td>Có hậu quả nếu gọi sai</td>
+<td><code>// WARNING: Blocking call; never use in realtime callback.</code></td>
+</tr>
+<tr class="even">
+<td>Workaround</td>
+<td>Bug/errata/hành vi firmware</td>
+<td><code>// Workaround(#42): firmware ACK can arrive before motion.</code></td>
+</tr>
+<tr class="odd">
+<td>Source</td>
+<td>Công thức/thuật toán/chuẩn</td>
+<td><code>// Based on REP-103 frame convention.</code></td>
+</tr>
+<tr class="even">
+<td>TODO</td>
+<td>Nợ kỹ thuật có tracking</td>
+<td><code>// TODO(khoa, #12): replace placeholder.</code></td>
+</tr>
+<tr class="odd">
+<td>API contract</td>
+<td>Public function/class</td>
+<td>Doxygen/docstring</td>
+</tr>
+<tr class="even">
+<td>Test rationale</td>
+<td>Vì sao test tồn tại</td>
+<td><code>// Regression test for boundary pose failure.</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="public-api-documentation" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Public API documentation</h1>
+<section id="cc-doxygen-style" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="cc-doxygen-style"><span class="header-section-number">6.1</span> C/C++ Doxygen style</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@brief</span><span class="co"> Validate a joint target before sending it to hardware.</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"> *</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"> * The validator checks joint limits, velocity step limits, and optional</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co"> * singularity margin. It does not send any command to the robot.</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"> *</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">target</span><span class="co"> Target joint positions in radians.</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@param</span><span class="co"> </span><span class="cv">current</span><span class="co"> Current joint state in radians.</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"> * </span><span class="an">@return</span><span class="co"> ValidationResult with status and first violation, if any.</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>ValidationResult validateJointTarget<span class="op">(</span><span class="at">const</span> JointTarget<span class="op">&amp;</span> target<span class="op">,</span></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">const</span> JointState<span class="op">&amp;</span> current<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="python-docstring-style" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="python-docstring-style"><span class="header-section-number">6.2</span> Python docstring style</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> validate_joint_target(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    target: JointTarget,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    current: JointState,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> ValidationResult:</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Validate a joint target before sending it to hardware.</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="co">        target: Target joint positions in radians.</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="co">        current: Current measured joint state in radians.</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="co">        Validation result with status and first violation, if any.</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a><span class="co">    Side effects:</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="co">        None. This function does not send commands to the robot.</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Public API nên đủ rõ để người khác gọi hàm mà không cần đọc implementation.</p>
+</section>
+</section>
+<section id="firmwaremcu-style-rules-đáng-học" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Firmware/MCU-style rules đáng học</h1>
+<section id="register-và-bit-mask-phải-rõ-nghĩa" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="register-và-bit-mask-phải-rõ-nghĩa"><span class="header-section-number">7.1</span> 1. Register và bit mask phải rõ nghĩa</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MYARM_STATUS_MOVING_MASK      </span><span class="op">(</span><span class="dv">1</span><span class="bu">u</span><span class="pp"> </span><span class="op">&lt;&lt;</span><span class="pp"> </span><span class="dv">0</span><span class="op">)</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MYARM_STATUS_ERROR_MASK       </span><span class="op">(</span><span class="dv">1</span><span class="bu">u</span><span class="pp"> </span><span class="op">&lt;&lt;</span><span class="pp"> </span><span class="dv">1</span><span class="op">)</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MYARM_STATUS_MOTION_DONE_MASK </span><span class="op">(</span><span class="dv">1</span><span class="bu">u</span><span class="pp"> </span><span class="op">&lt;&lt;</span><span class="pp"> </span><span class="dv">3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Không dùng số trực tiếp:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>status <span class="op">&amp;</span> <span class="bn">0x08</span><span class="op">)</span> <span class="op">{</span> <span class="op">...</span> <span class="op">}</span>  <span class="co">/* Bad */</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="isr-phải-ngắn-và-không-block" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="isr-phải-ngắn-và-không-block"><span class="header-section-number">7.2</span> 2. ISR phải ngắn và không block</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> USART1_IRQHandler<span class="op">(</span><span class="dt">void</span><span class="op">)</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> byte <span class="op">=</span> USART1<span class="op">-&gt;</span>RDR<span class="op">;</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    ring_buffer_push_isr<span class="op">(&amp;</span>rx_buffer<span class="op">,</span> byte<span class="op">);</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Không parse protocol dài trong ISR. ISR chỉ thu dữ liệu, set flag, hoặc push buffer.</p>
+</section>
+<section id="return-code-rõ-ràng" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="return-code-rõ-ràng"><span class="header-section-number">7.3</span> 3. Return code rõ ràng</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> myarm_status <span class="op">{</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    MYARM_OK <span class="op">=</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    MYARM_ERR_TIMEOUT <span class="op">=</span> <span class="op">-</span><span class="dv">1</span><span class="op">,</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    MYARM_ERR_BAD_CRC <span class="op">=</span> <span class="op">-</span><span class="dv">2</span><span class="op">,</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    MYARM_ERR_LIMIT <span class="op">=</span> <span class="op">-</span><span class="dv">3</span><span class="op">,</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Không trả <code>-1</code> cho mọi lỗi nếu tầng trên cần recovery khác nhau.</p>
+</section>
+<section id="comment-phần-cứng-nên-mô-tả-điều-ngoài-source-code" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="comment-phần-cứng-nên-mô-tả-điều-ngoài-source-code"><span class="header-section-number">7.4</span> 4. Comment phần cứng nên mô tả điều ngoài source code</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* The device requires at least 2 ms after reset before accepting UART frames.</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"> * Without this delay the first packet is randomly dropped on cold boot.</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co"> */</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>myarm_delay_ms<span class="op">(</span><span class="dv">2</span><span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="ros2-specific-clean-codecomment-rules" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> ROS2-specific clean code/comment rules</h1>
+<section id="node-chỉ-nên-compose-logic-không-ôm-toàn-bộ-domain" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="node-chỉ-nên-compose-logic-không-ôm-toàn-bộ-domain"><span class="header-section-number">8.1</span> 1. Node chỉ nên compose logic, không ôm toàn bộ domain</h2>
+<pre class="text"><code>myarm_m750_driver_node
+├── parameters
+├── publishers/subscribers/actions
+├── lifecycle/state bridge
+└── calls into driver/control classes</code></pre>
+<p>Không nên nhét toàn bộ serial codec, IK, FK, retry policy, benchmark logic vào một node class.</p>
+</section>
+<section id="parameter-phải-có-đơn-vị-và-range" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="parameter-phải-có-đơn-vị-và-range"><span class="header-section-number">8.2</span> 2. Parameter phải có đơn vị và range</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">myarm_m750_control</span><span class="kw">:</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">ros__parameters</span><span class="kw">:</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">control_rate_hz</span><span class="kw">:</span><span class="at"> </span><span class="fl">50.0</span><span class="co">        # Range: 10..100 Hz. Higher rates may saturate serial transport.</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">max_joint_step_rad</span><span class="kw">:</span><span class="at"> </span><span class="fl">0.08</span><span class="co">     # Per control cycle safety clamp.</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">command_timeout_ms</span><span class="kw">:</span><span class="at"> </span><span class="dv">250</span><span class="co">      # Driver fault if no ACK within this window.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="callback-không-được-block-nếu-ảnh-hưởng-control-loop" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="callback-không-được-block-nếu-ảnh-hưởng-control-loop"><span class="header-section-number">8.3</span> 3. Callback không được block nếu ảnh hưởng control loop</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">WARNING</span><span class="co">: This timer callback runs the command path. Keep it bounded and do</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co">// not perform blocking serial reads here.</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> controlTimerCallback<span class="op">();</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="qosframetopic-comment-nên-ghi-ở-interface-boundary" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="qosframetopic-comment-nên-ghi-ở-interface-boundary"><span class="header-section-number">8.4</span> 4. QoS/frame/topic comment nên ghi ở interface boundary</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Publishes measured joint state, not commanded state. Consumers must not use</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co">// this topic as proof that the last command was accepted by firmware.</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="va">joint_state_pub_</span> <span class="op">=</span> create_publisher<span class="op">&lt;</span>sensor_msgs<span class="op">::</span>msg<span class="op">::</span>JointState<span class="op">&gt;(</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"/myarm_m750/joint_states"</span><span class="op">,</span> qos_sensor_data<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="frame-convention-phải-được-ghi-gần-code-chuyển-đổi-pose" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="frame-convention-phải-được-ghi-gần-code-chuyển-đổi-pose"><span class="header-section-number">8.5</span> 5. Frame convention phải được ghi gần code chuyển đổi pose</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Input pose is expressed in base_link. The firmware coordinate API uses its</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co">// own base convention, so conversion must happen exactly once at this boundary.</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>FirmwarePose convertRosPoseToFirmwarePose<span class="op">(</span><span class="at">const</span> geometry_msgs<span class="op">::</span>msg<span class="op">::</span>Pose<span class="op">&amp;</span> pose<span class="op">);</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="review-checklist" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Review checklist</h1>
+<section id="per-file-checklist" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="per-file-checklist"><span class="header-section-number">9.1</span> Per-file checklist</h2>
+<ul>
+<li>File có một trách nhiệm rõ không?</li>
+<li>Tên file/class/function có phản ánh domain không?</li>
+<li>Có phụ thuộc ngược tầng không?</li>
+<li>Có magic number phần cứng không?</li>
+<li>Có constant/parameter cho giới hạn vật lý không?</li>
+<li>Comment có còn đúng với code không?</li>
+<li>Comment có giải thích why/constraint/warning/workaround/source không?</li>
+<li>Có block code bị comment-out không?</li>
+</ul>
+</section>
+<section id="per-function-checklist" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="per-function-checklist"><span class="header-section-number">9.2</span> Per-function checklist</h2>
+<ul>
+<li>Hàm có làm một việc không?</li>
+<li>Tên hàm có nói rõ side effect không?</li>
+<li>Argument có quá nhiều primitive không?</li>
+<li>Có flag argument không?</li>
+<li>Có negative conditional khó đọc không?</li>
+<li>Boundary condition có được gom lại không?</li>
+<li>Hàm public có docstring/Doxygen đủ để gọi không?</li>
+<li>Return value/exception/error code có rõ không?</li>
+</ul>
+</section>
+<section id="robot-safety-checklist" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="robot-safety-checklist"><span class="header-section-number">9.3</span> Robot safety checklist</h2>
+<ul>
+<li>Lệnh hardware đã qua validate chưa?</li>
+<li>Đơn vị đã rõ chưa?</li>
+<li>Frame đã rõ chưa?</li>
+<li>Timeout/retry có giới hạn không?</li>
+<li>Callback realtime có tránh block không?</li>
+<li>Workaround firmware có issue/comment không?</li>
+<li>Test regression có tồn tại cho bug đã fix không?</li>
+</ul>
+</section>
+</section>
+<section id="example-c-firmware-style" class="level1" data-number="10">
+<h1 data-number="10"><span class="header-section-number">10</span> Example: C firmware style</h1>
+<section id="bad" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="bad"><span class="header-section-number">10.1</span> Bad</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> send<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// send command</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span><span class="bn">0xff</span><span class="op">);</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>a<span class="op">);</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>b<span class="op">);</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>a <span class="op">+</span> b<span class="op">);</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="better" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="better"><span class="header-section-number">10.2</span> Better</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MYARM_FRAME_HEADER      </span><span class="bn">0xFF</span><span class="bu">u</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MYARM_CMD_SET_JOINT    </span><span class="bn">0x21</span><span class="bu">u</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">uint8_t</span> myarm_checksum<span class="op">(</span><span class="dt">uint8_t</span> command<span class="op">,</span> <span class="dt">uint8_t</span> payload<span class="op">)</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">(</span><span class="dt">uint8_t</span><span class="op">)(</span>command <span class="op">+</span> payload<span class="op">);</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> myarm_send_joint_command<span class="op">(</span><span class="dt">uint8_t</span> joint_id<span class="op">,</span> <span class="dt">uint8_t</span> target_tick<span class="op">)</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Packet format is defined by the firmware protocol:</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a><span class="co">     * [header][command][joint_id][target_tick][checksum]</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a><span class="co">     */</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>MYARM_FRAME_HEADER<span class="op">);</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>MYARM_CMD_SET_JOINT<span class="op">);</span></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>joint_id<span class="op">);</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>target_tick<span class="op">);</span></span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>    uart_write<span class="op">(</span>myarm_checksum<span class="op">(</span>MYARM_CMD_SET_JOINT<span class="op">,</span> target_tick<span class="op">));</span></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> MYARM_OK<span class="op">;</span></span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="example-c-ros2-driver-boundary" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> Example: C++ ROS2 driver boundary</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyArmM750SerialDriver</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">/**</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="co">   * </span><span class="an">@brief</span><span class="co"> Send a validated joint target to the firmware.</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a><span class="co">   *</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="co">   * This function does not run IK and does not clamp limits. Callers must pass</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="co">   * a target that has already been validated by MotionGuard.</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a><span class="co">   */</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  MotionResult writeJointTarget<span class="op">(</span><span class="at">const</span> JointTarget<span class="op">&amp;</span> target<span class="op">);</span></span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span><span class="op">:</span></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>  SerialTransport <span class="va">transport_</span><span class="op">;</span></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>  MyArmPacketCodec <span class="va">codec_</span><span class="op">;</span></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-python-kinematics-layer" class="level1" data-number="12">
+<h1 data-number="12"><span class="header-section-number">12</span> Example: Python kinematics layer</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PinocchioKinematics:</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""FK/IK service for MyArm M750 model.</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co">    This class owns only kinematic computation. It does not publish ROS topics</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co">    and does not send commands to hardware.</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> compute_fk(<span class="va">self</span>, joint_state: JointState) <span class="op">-&gt;</span> CartesianPose:</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""Compute end-effector pose from measured joint state."""</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="cilinting-suggestion" class="level1" data-number="13">
+<h1 data-number="13"><span class="header-section-number">13</span> CI/Linting suggestion</h1>
+<p>For ROS2 packages, enforce style through CI rather than relying only on human review:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode xml code-with-copy"><code class="sourceCode xml"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">test_depend</span>&gt;ament_lint_auto&lt;/<span class="kw">test_depend</span>&gt;</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">test_depend</span>&gt;ament_lint_common&lt;/<span class="kw">test_depend</span>&gt;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode cmake code-with-copy"><code class="sourceCode cmake"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="dv">BUILD_TESTING</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">find_package</span>(ament_lint_auto <span class="ot">REQUIRED</span>)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ament_lint_auto_find_test_dependencies</span>()</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="cf">endif</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Recommended checks:</p>
+<ul>
+<li>C/C++: <code>clang-format</code>, <code>clang-tidy</code>, <code>cppcheck</code>, <code>ament_cpplint</code>.</li>
+<li>Python: <code>ruff</code> or <code>flake8</code>, <code>mypy</code> where useful, <code>pydocstyle</code> for public APIs.</li>
+<li>ROS2: <code>ament_lint_auto</code>, <code>ament_lint_common</code>.</li>
+<li>Documentation: Doxygen for C/C++, docstrings for Python.</li>
+</ul>
+</section>
+<section id="final-heuristic" class="level1" data-number="14">
+<h1 data-number="14"><span class="header-section-number">14</span> Final heuristic</h1>
+<p>Use this mental model:</p>
+<ul>
+<li><strong>Tên tốt</strong> thay cho comment thừa.</li>
+<li><strong>Function nhỏ</strong> thay cho comment giải thích code rối.</li>
+<li><strong>Value object</strong> thay cho primitive rời rạc.</li>
+<li><strong>Boundary class</strong> thay cho limit rải rác.</li>
+<li><strong>Comment tốt</strong> chỉ giữ phần code không thể tự nói: why, constraint, warning, workaround, source, TODO.</li>
+</ul>
+</section>
+<section id="references" class="level1" data-number="15">
+<h1 data-number="15"><span class="header-section-number">15</span> References</h1>
+<ul>
+<li>PEP 8 – Style Guide for Python Code: https://peps.python.org/pep-0008/</li>
+<li>Google C++ Style Guide – Comments: https://google.github.io/styleguide/cppguide.html#Comments</li>
+<li>Google Python Style Guide – Comments and Docstrings: https://google.github.io/styleguide/pyguide.html</li>
+<li>C++ Core Guidelines: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines</li>
+<li>Linux kernel coding style: https://www.kernel.org/doc/html/latest/process/coding-style.html</li>
+<li>Zephyr Project C Code and General Style Guidelines: https://docs.zephyrproject.org/latest/contribute/style/code.html</li>
+<li>Doxygen manual – Documenting the code: https://www.doxygen.nl/manual/docblocks.html</li>
+<li>ROS2 Quality Guide: https://docs.ros.org/en/foxy/The-ROS2-Project/Contributing/Quality-Guide.html</li>
+<li>ament_lint_common documentation: https://docs.ros.org/en/rolling/p/ament_lint_common/</li>
+<li>Barr Group Embedded C Coding Standard: https://barrgroup.com/embedded-systems/books/embedded-c-coding-standard/</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<button type="button" class="layout-toggle" id="layout-toggle" aria-pressed="false" title="Mở rộng nội dung">
+  <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+  <span class="visually-hidden">Mở rộng nội dung</span>
+</button>
+
+<script>
+(() => {
+  const storageKey = "dynacortex-layout-wide";
+  const wideClass = "layout-wide";
+
+  const readSavedState = () => {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  };
+
+  const saveState = (enabled) => {
+    try {
+      localStorage.setItem(storageKey, String(enabled));
+    } catch {
+      return;
+    }
+  };
+
+  const applyState = (enabled) => {
+    document.body.classList.toggle(wideClass, enabled);
+
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    const icon = button.querySelector("i");
+    const label = enabled ? "Thu gọn nội dung" : "Mở rộng nội dung";
+    button.setAttribute("aria-pressed", String(enabled));
+    button.setAttribute("title", label);
+
+    const hiddenLabel = button.querySelector(".visually-hidden");
+    if (hiddenLabel) {
+      hiddenLabel.textContent = label;
+    }
+
+    if (icon) {
+      icon.className = enabled ? "bi bi-arrows-angle-contract" : "bi bi-arrows-angle-expand";
+    }
+  };
+
+  applyState(readSavedState());
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const button = document.getElementById("layout-toggle");
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener("click", () => {
+      const enabled = !document.body.classList.contains(wideClass);
+      saveState(enabled);
+      applyState(enabled);
+    });
+  });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/uitshirodoragon\.github\.io\/dynacortex-hub\/docs\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../../01-system-foundations/myarm_m750_controller_framework/12-versioning-and-changelog/index.html" class="pagination-link" aria-label="12. Versioning và changelog">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">12. Versioning và changelog</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../../01-system-foundations/modern-robotics/index.html" class="pagination-link" aria-label="Modern Robotics Core">
+        <span class="nav-page-text">Modern Robotics Core</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/edit/main/01-system-foundations/myarm_m750_controller_framework/skills/clean-code-clean-comment-robotics.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/UITshirodoragon/dynacortex-hub/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer><script src="../../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

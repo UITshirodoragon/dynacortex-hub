@@ -1,0 +1,150 @@
+---
+title: "07. ROS 2, non-ROS runtime và network"
+description: "Thiết kế runtime native ROS2, non-ROS, DDS qua RJ45, WebSocket/gRPC/ZMQ, RViz2/Gazebo/MuJoCo và remote visualization."
+categories: [ros2, dds, websocket, mujoco, gazebo, network]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 07. ROS 2, non-ROS runtime và network
+
+## 07.1. Runtime topology
+
+Phần cứng chính:
+
+```text
+Jetson AGX Xavier Ubuntu 20.04 / ROS 2 Foxy / Python 3.8
+  ↔ RJ45 LAN 1Gbit/s
+Host PC Ubuntu 22.04 + Docker Ubuntu 20.04 / ROS 2 Foxy
+```
+
+Jetson chạy runtime thật. Host PC chạy visualization, sim và analysis.
+
+## 07.2. Native ROS 2 path
+
+```{mermaid}
+flowchart LR
+    JET[Jetson] --> DDS[DDS over Ethernet]
+    DDS --> HOST[Host PC]
+
+    subgraph JET[Jetson Runtime]
+      DRV[myarm_m750_driver_node]
+      CAM[ROS 2 camera nodes]
+      TF[robot_state_publisher / tf]
+      LOG[rosbag2 optional]
+    end
+
+    subgraph HOST[Host PC]
+      RVIZ[RViz2]
+      MOVEIT[MoveIt2]
+      GAZ[Gazebo Classic]
+      ANALYSIS[Offline analysis]
+    end
+```
+
+ROS 2 interfaces dự kiến:
+
+| Interface | Tên | Vai trò |
+|---|---|---|
+| topic | `/joint_states` | Joint feedback chuẩn. |
+| topic | `/myarm/status` | Runtime/hardware status. |
+| topic | `/myarm/diagnostics` | Diagnostics optional. |
+| service | `/myarm/enable` | Enable/power/focus nếu backend hỗ trợ. |
+| service | `/myarm/stop` | Stop motion. |
+| action | `/myarm/follow_joint_trajectory` | Driver action path trước ros2_control. |
+| action | `/myarm/move_to_pose` | Pose request qua software IK/planner. |
+| tf | `base_link -> ... -> tool0` | Robot frame tree. |
+| image | `/camera_01_wrist/image_raw` | Wrist camera. |
+| image | `/camera_02_shoulder/image_raw` | Shoulder/external observer camera. |
+
+## 07.3. ros2_control path dài hạn
+
+v0.0.3 chưa bắt buộc implement ros2_control production. Roadmap dài hạn:
+
+```text
+MoveIt2
+  -> FollowJointTrajectory
+  -> joint_trajectory_controller
+  -> controller_manager
+  -> MyArmM750SystemInterface
+  -> HardwarePort Adapter
+  -> MyArmMControl / firmware
+```
+
+Trong giai đoạn đầu, custom driver node kiểu reBot dễ debug hơn. Khi Core SDK và benchmark ổn định mới triển khai `ros2_control`.
+
+## 07.4. Non-ROS path
+
+Non-ROS runtime dùng khi:
+
+- chạy Python SDK trực tiếp;
+- chạy MuJoCo Python 3.10+;
+- GUI dashboard web;
+- benchmark headless không cần ROS graph;
+- AI/RL/LeRobot style application.
+
+```text
+Application / MuJoCo / GUI
+  -> Python Core SDK
+  -> RuntimePort
+  -> HardwarePort
+```
+
+Communication adapter:
+
+| Adapter | Dùng cho |
+|---|---|
+| WebSocket | Dashboard, lightweight telemetry, high-level commands. |
+| gRPC | Service API có schema rõ. |
+| ZMQ | Python stream/telemetry nhanh trong lab. |
+| RTSP/WebRTC | Video stream non-ROS nếu cần. |
+| File/replay | Offline analysis và digital twin. |
+
+::: {.callout-warning}
+## Control critical path
+
+Control critical path không nên đặt trực tiếp trên WebSocket ở giai đoạn đầu. WebSocket phù hợp dashboard và high-level command, còn execution thật đi qua local Core SDK hoặc ROS 2 action có watchdog.
+:::
+
+## 07.5. Network config
+
+Config cần nằm ngoài code:
+
+```yaml
+network:
+  primary_transport: ros2_dds
+  preferred_link: wired_ethernet_1g
+  ros:
+    domain_id: 42
+    localhost_only: false
+    rmw_implementation: rmw_cyclonedds_cpp
+  non_ros:
+    websocket:
+      enabled: false
+      host: 0.0.0.0
+      port: 8765
+```
+
+## 07.6. Bật/tắt visualization/simulation
+
+Runtime profile quyết định bật/tắt:
+
+```yaml
+runtime_profile: benchmark_headless
+ros2:
+  enabled: true
+  rviz_remote: false
+  gazebo: false
+non_ros:
+  websocket_dashboard: false
+simulation:
+  mujoco: false
+debug:
+  online_visualization: false
+  offline_report: true
+```
+
+Cùng một Core SDK không phụ thuộc việc RViz2/Gazebo/MuJoCo có bật hay không.

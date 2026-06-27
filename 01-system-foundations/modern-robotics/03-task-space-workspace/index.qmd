@@ -8,9 +8,6 @@ date-format: DD/MM/YYYY HH:mm:ssZ[Z]
 author: "Nguyen Hoang Dang Khoa"
 ---
 
-# 03. Task Space và Workspace
-
-![03. Task Space và Workspace](assets/images/03-task-space-workspace.svg){#fig-03-task-space-workspace width=85%}
 
 **Task space** là không gian mà nhiệm vụ quan tâm. Với robot arm, task space thường là pose của end-effector:
 

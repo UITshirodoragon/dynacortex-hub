@@ -1,0 +1,90 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"00. Lộ trình học Modern Robotics cho robot arm\"\n",
+        "description: \"Bản đồ kiến thức nối tiếp từ C-space đến control.\"\n",
+        "categories: [modern-robotics, robotics-math, system-foundations]\n",
+        "status: draft\n",
+        "date: last-modified\n",
+        "date-format: DD/MM/YYYY HH:mm:ssZ[Z]\n",
+        "author: \"Nguyen Hoang Dang Khoa\"\n",
+        "---\n",
+        "\n",
+        "# 00. Lộ trình học Modern Robotics cho robot arm\n",
+        "\n",
+        "![00. Lộ trình học Modern Robotics cho robot arm](assets/images/00-learning-roadmap.svg){#fig-00-learning-roadmap width=85%}\n",
+        "\n",
+        "Trang này đóng vai trò **mục lục học có thứ tự**. Khi học robotics cho robot arm, lỗi phổ biến là học thẳng IK, MoveIt 2 hoặc controller mà chưa vững ba lớp nền: **frame**, **pose transform**, và **joint-space representation**. *Modern Robotics* nên được đọc như một chuỗi khái niệm nối tiếp, không phải như một tập công thức rời rạc [@lynch2017modernrobotics].\n",
+        "\n",
+        "```{mermaid}\n",
+        "flowchart LR\n",
+        "    A[Configuration Space] --> B[Rigid-Body Motion]\n",
+        "    B --> C[SO(3) / SE(3)]\n",
+        "    C --> D[Twist / Screw]\n",
+        "    D --> E[Forward Kinematics]\n",
+        "    E --> F[Jacobian]\n",
+        "    F --> G[Inverse Kinematics]\n",
+        "    F --> H[Singularity]\n",
+        "    C --> I[Dynamics]\n",
+        "    G --> J[Trajectory]\n",
+        "    J --> K[Motion Planning]\n",
+        "    I --> L[Control]\n",
+        "    K --> L\n",
+        "```\n",
+        "\n",
+        "## Cách học thực dụng\n",
+        "\n",
+        "Không cần đọc toàn bộ sách theo cùng độ sâu. Với robot arm, nên chia thành ba tầng:\n",
+        "\n",
+        "| Tầng | Cần nắm chắc | Mục tiêu thực dụng |\n",
+        "|---|---|---|\n",
+        "| Tầng hình học | $SO(3)$, $SE(3)$, transform chain | Đọc đúng URDF/TF/Pinocchio placement |\n",
+        "| Tầng động học | FK, PoE, Jacobian, IK, singularity | Debug pose, solver và vùng làm việc |\n",
+        "| Tầng chuyển động | trajectory, planning, dynamics, control | Hiểu vì sao robot chạy giật, fail hoặc lệch |\n",
+        "\n",
+        "::: callout-important\n",
+        "Thứ tự học khuyến nghị: đừng học IK trước FK; đừng học MoveIt trước C-space; đừng học dynamics trước khi nắm được twist/Jacobian.\n",
+        ":::\n",
+        "\n",
+        "## Bảng học nhanh"
+      ],
+      "id": "44c6522e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| eval: false\n",
+        "import pandas as pd\n",
+        "pd.read_csv(\"assets/tables/modern_robotics_learning_path.csv\")"
+      ],
+      "id": "3c29f6e7",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "::: callout-tip\n",
+        "Khi đọc source robot, mỗi hàm nên được gắn nhãn bằng một khái niệm nền: `forwardKinematics` thuộc FK, `computeFrameJacobian` thuộc Jacobian, `rnea` thuộc inverse dynamics, `FollowJointTrajectory` thuộc trajectory execution.\n",
+        ":::"
+      ],
+      "id": "896dc96f"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/khoa/.local/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

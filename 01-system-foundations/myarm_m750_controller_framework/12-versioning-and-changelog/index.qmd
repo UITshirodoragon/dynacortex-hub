@@ -1,0 +1,112 @@
+---
+title: "12. Versioning và changelog"
+description: "Quy tắc versioning tài liệu, framework, config schema và benchmark protocol."
+categories: [versioning, changelog, documentation, release]
+status: standard
+version: "0.0.3"
+author: "Nguyen Hoang Dang Khoa"
+date: last-modified
+date-format: "DD/MM/YYYY HH:mm:ssZ[Z]"
+---
+
+# 12. Versioning và changelog
+
+## 12.1. Version tài liệu đi cùng version framework
+
+Phiên bản tài liệu không phải chân lý cố định. Tài liệu phải cập nhật theo phần mềm/framework.
+
+```text
+framework version == docs version == config schema version
+```
+
+Ở giai đoạn đầu, dùng semantic version nhẹ:
+
+```text
+MAJOR.MINOR.PATCH
+```
+
+- `PATCH`: sửa lỗi docs, typo, làm rõ câu chữ, không đổi thiết kế.
+- `MINOR`: thêm adapter, thêm config schema, đổi benchmark protocol nhẹ.
+- `MAJOR`: đổi kiến trúc, boundary, package layout hoặc runtime path chính.
+
+## 12.2. Changelog bắt buộc
+
+`CHANGELOG.md` phải ghi:
+
+1. Thay đổi cấu trúc thư mục.
+2. Thay đổi kiến trúc.
+3. Thay đổi config schema.
+4. Thay đổi API boundary.
+5. Thay đổi benchmark task/count/metric.
+6. Thay đổi ROS 2 interface.
+7. Thay đổi default runtime/debug profile.
+8. Thay đổi safety/recovery policy.
+
+## 12.3. Release artifact
+
+Cần phân biệt hai loại artifact.
+
+### 12.3.1. Docs-only release
+
+Dùng khi chỉ đóng gói tài liệu để port vào Quarto site hoặc knowledge hub.
+
+```text
+01-system-foundations/myarm_m750_controller_framework/
+  README.md
+  CHANGELOG.md
+  index.qmd
+  00-overview/
+  01-requirements/
+  02-architecture-principles/
+  03-repo-and-docs-organization/
+  04-domain-model-ports-and-adapters/
+  05-kinematics-planning-and-controller/
+  06-hardware-port-and-observation/
+  07-ros2-nonros-runtime-and-network/
+  08-config-system/
+  09-testing-debug-visualize-benchmark/
+  10-simulation-digital-twin/
+  11-ai-agent-coding-and-maintenance/
+  12-versioning-and-changelog/
+  skills/
+```
+
+Docs-only release **không** kèm `_quarto.yml`, `src/`, `config/`, `requirements/`, `tools/`, `plugins/`, `.agents/`.
+
+### 12.3.2. Project repo release
+
+Dùng khi đã tạo skeleton hoặc source project thật.
+
+```text
+myarm_m750_controller_framework/
+  README.md
+  CHANGELOG.md
+  VERSION
+  docs/
+  skills/
+  config/
+  requirements/
+  docker/
+  scripts/
+  src/
+  plugins/
+  tools/
+  tests/
+  launch/
+  data/
+```
+
+Project repo release có thể là ROS 2 workspace, nhưng Python Core SDK vẫn phải chạy được độc lập với ROS 2.
+
+## 12.4. Review trước release
+
+Checklist:
+
+- [ ] `VERSION` đúng.
+- [ ] `CHANGELOG.md` có entry version mới.
+- [ ] `_quarto.yml` trỏ đúng các page.
+- [ ] Mọi page QMD có front matter.
+- [ ] Benchmark count đúng bản chốt.
+- [ ] Config YAML chia đúng tầng.
+- [ ] Skills clean code/comment có trong `skills/`.
+- [ ] Quarto render được hoặc ghi rõ chưa render vì thiếu Quarto.
